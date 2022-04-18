@@ -24,7 +24,7 @@ class Cell
 {
     private:
     inline static int cellNum             = 0; //!< 現在のCell数
-    inline const static double DELTA_TIME = 0.1; //!< 時間スケール(1が通常時)
+    inline const static double DELTA_TIME = 0.05; //!< 時間スケール(1が通常時)
 
     Vec3 position; //!< Cellの座標(x,y,z)
     Vec3 velocity; //!< Cellの速度(x,y,z)
