@@ -171,7 +171,7 @@ Vec3 Simulation::calcRemoteForce(Cell& c) const noexcept
         Vec3 diff   = c.getPosition() - cells[i].getPosition();
         double dist = diff.length();
 
-        constexpr double LAMBDA      = 40.0;
+        constexpr double LAMBDA      = 20.0;
         constexpr double COEFFICIENT = 1.0;
 
         // d = |C1 - C2|
@@ -191,6 +191,7 @@ Vec3 Simulation::calcRemoteForce(Cell& c) const noexcept
  * @return Vec3
  * @details @f{eqnarray*}{
  * F = \sum_i
+ * @f}
  */
 Vec3 Simulation::calcVolumeExclusion(Cell& c) const noexcept
 {
@@ -205,18 +206,25 @@ Vec3 Simulation::calcVolumeExclusion(Cell& c) const noexcept
 
         const Vec3 diff          = c.getPosition() - cells[i].getPosition();
         const double dist        = diff.length();
+        const double sumRadius   = c.radius + cells[i].radius;
         const double overlapDist = c.radius + cells[i].radius - dist;
 
         if (dist < c.radius + cells[i].radius) {
-            force +=
-              diff.normalize().timesScalar(1.0 / overlapDist).timesScalar(BIAS);
+            force += diff.normalize()
+                       .timesScalar(std::pow(1.8, overlapDist))
+                       .timesScalar(BIAS);
         }
     }
 
     return force;
 }
 
-// O(n^2)
+/**
+ * @brief 指定したCellにかかるすべての力を計算する。O(n^2)
+ *
+ * @param c
+ * @return Vec3
+ */
 Vec3 Simulation::calcForce(Cell& c) const noexcept
 {
     Vec3 force = Vec3::zero();
@@ -227,6 +235,12 @@ Vec3 Simulation::calcForce(Cell& c) const noexcept
     return force;
 }
 
+/**
+ * @brief すべてのCellに力を加えた後、それぞれのCellの位置を更新する。
+ *
+ * @return int32_t
+ * @details Cellの数が多いので、スレッドを用いて並列処理を行う。
+ */
 int32_t Simulation::nextStep() noexcept
 {
     std::vector<std::thread> threads;
@@ -235,7 +249,27 @@ int32_t Simulation::nextStep() noexcept
     for (int i = 0; i < CELL_NUM; i++) {
         Vec3 force;
         threads.emplace_back([&, i] {
-            force = calcForce(cells[i]);
+            force = calcRemoteForce(cells[i]);
+            cells[i].addForce(force);
+        });
+    }
+
+    // すべてのスレッドが終了するのを待つ
+    for (auto& t : threads) {
+        t.join();
+    }
+
+    for (int32_t cellID = 0; cellID < CELL_NUM; cellID++) {
+        cells[cellID].nextStep();
+    }
+
+    threads.clear();
+
+    // スレッドを使って計算を行う
+    for (int i = 0; i < CELL_NUM; i++) {
+        Vec3 force;
+        threads.emplace_back([&, i] {
+            force = calcVolumeExclusion(cells[i]);
             cells[i].addForce(force);
         });
     }
@@ -252,6 +286,12 @@ int32_t Simulation::nextStep() noexcept
     return 0;
 }
 
+/**
+ * @brief シミュレーションを実行する。
+ *
+ * @return int32_t
+ * @details Cellの位置更新と情報出力を繰り返すだけ。
+ */
 int32_t Simulation::run()
 {
     printCells(0);
@@ -265,6 +305,12 @@ int32_t Simulation::run()
     return 0;
 }
 
+/**
+ * @brief
+ * なくてもいい。Pythonに情報を渡す都合上必要かもしれなかった。(使っていない)
+ *
+ * @return int32_t
+ */
 int32_t Simulation::getFieldLen()
 {
     return FIELD_X_LEN;
