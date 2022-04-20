@@ -19,6 +19,7 @@
 #include <sstream>
 #include <string>
 #include <thread>
+#include <unordered_set>
 #include <vector>
 
 /**
@@ -55,7 +56,7 @@ class Simulation
 
     std::vector<Cell> cells; //!< シミュレーションで使うCellのリスト。
 
-    Field<std::vector<int>>
+    Field<std::vector<int32_t>>
       cellsInGrid; //!< グリッド内にcellのリスト(ID)を入れる。
 
     std::streambuf* consoleStream; //!< 標準出力のストリームバッファ
@@ -63,6 +64,12 @@ class Simulation
 
     void printHeader() const noexcept;
     void printCells(int32_t) const;
+
+    //  std::vector<std::unordered_set<int32_t>> aroundCellSetList;
+    //  周辺のCellのIDを格納する。ただし、vectorは一列分のみしか確保しない。
+
+    std::vector<int32_t> aroundCellList(const Cell&) const;
+    void resetGrid() noexcept;
 
     public:
     Simulation(/* args */);
@@ -97,6 +104,7 @@ Simulation::Simulation()
   : randomCellPosX(-FIELD_X_LEN / 2, FIELD_X_LEN / 2)
   , randomCellPosY(-FIELD_Y_LEN / 2, FIELD_Y_LEN / 2)
   , randomForce(-10, 10)
+// , aroundCellSetList(FIELD_Y_LEN, std::unordered_set<int32_t>())
 {
     consoleStream = std::cout.rdbuf();
 }
@@ -119,10 +127,10 @@ void Simulation::initCells() noexcept
         cells.push_back(c);
     }
 
-    cellsInGrid.resize(FIELD_Y_LEN);
-    for (int32_t y = 0; y < FIELD_Y_LEN; y++) {
-        cellsInGrid.resize(FIELD_X_LEN);
-        for (int32_t x = 0; x < FIELD_X_LEN; x++) {
+    cellsInGrid.resize(FIELD_Y_LEN * 2);
+    for (int32_t y = 0; y < FIELD_Y_LEN * 2; y++) {
+        cellsInGrid[y].resize(FIELD_X_LEN * 2);
+        for (int32_t x = 0; x < FIELD_X_LEN * 2; x++) {
             cellsInGrid[y][x] = std::vector<int>();
         }
     }
@@ -160,6 +168,60 @@ void Simulation::printCells(int32_t time) const
 }
 
 /**
+ * @brief 指定したCellの周囲にあるCellのIDリストを返す。
+ *
+ * @param c
+ * @return std::vector<int>
+ * @note CHECK_WIDTHはcalcRemoteForceのLAMBDAより大きくするのが理想。
+ */
+std::vector<int> Simulation::aroundCellList(const Cell& c) const
+{
+    std::vector<int> aroundCells;
+    constexpr int32_t CHECK_WIDTH = 50;
+
+    Vec3 pos = c.getPosition();
+
+    for (int32_t y = pos.y - CHECK_WIDTH; y <= pos.y + CHECK_WIDTH; y++) {
+        for (int32_t x = pos.x - CHECK_WIDTH; x <= pos.x + CHECK_WIDTH; x++) {
+            if (x < -FIELD_X_LEN || FIELD_X_LEN < x || // 範囲外
+                y < -FIELD_Y_LEN || FIELD_Y_LEN < y) {
+                continue;
+            }
+
+            int32_t adjustedY = y + FIELD_Y_LEN;
+            int32_t adjustedX = x + FIELD_X_LEN;
+
+            for (int i = 0;
+                 i < (int32_t)cellsInGrid[adjustedY][adjustedX].size(); i++) {
+                int32_t id = cellsInGrid[adjustedY][adjustedX][i];
+                if (id == c.id) {
+                    continue;
+                }
+                aroundCells.push_back(id);
+            }
+        }
+    }
+
+    return aroundCells;
+}
+
+void Simulation::resetGrid() noexcept
+{
+    // グリッドに保存されているCellのリストを初期化する。O(n^2) nは1辺の長さ
+    for (int32_t y = 0; y < FIELD_Y_LEN * 2; y++) {
+        for (int32_t x = 0; x < FIELD_X_LEN * 2; x++) {
+            cellsInGrid[y][x].clear();
+        }
+    }
+
+    for (int32_t i = 0; i < (int32_t)cells.size(); i++) {
+        Vec3 pos = cells[i].getPosition();
+        cellsInGrid[(int32_t)pos.y + FIELD_Y_LEN][(int32_t)pos.x + FIELD_X_LEN]
+          .push_back(i);
+    }
+}
+
+/**
  * @brief 与えられたCellに対して働く遠隔力を計算する。O(n^2)
  *
  * @param c
@@ -173,12 +235,12 @@ Vec3 Simulation::calcRemoteForce(Cell& c) const noexcept
 {
     Vec3 force = Vec3::zero();
 
-    for (int32_t i = 0; i < (int32_t)cells.size(); i++) {
-        if (c.id == cells[i].id) {
-            continue;
-        }
+    std::vector<int> aroundCells = aroundCellList(c);
 
-        Vec3 diff   = c.getPosition() - cells[i].getPosition();
+    for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
+        int32_t id = aroundCells[i];
+
+        Vec3 diff   = c.getPosition() - cells[id].getPosition();
         double dist = diff.length();
 
         constexpr double LAMBDA      = 30.0;
@@ -207,19 +269,19 @@ Vec3 Simulation::calcVolumeExclusion(Cell& c) const noexcept
 {
     Vec3 force = Vec3::zero();
 
-    for (int32_t i = 0; i < (int32_t)cells.size(); i++) {
-        if (c.id == cells[i].id) {
-            continue;
-        }
+    std::vector<int> aroundCells = aroundCellList(c);
+
+    for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
+        int32_t id = aroundCells[i];
 
         constexpr double BIAS = 1.0;
 
-        const Vec3 diff          = c.getPosition() - cells[i].getPosition();
+        const Vec3 diff          = c.getPosition() - cells[id].getPosition();
         const double dist        = diff.length();
-        const double sumRadius   = c.radius + cells[i].radius;
-        const double overlapDist = c.radius + cells[i].radius - dist;
+        const double sumRadius   = c.radius + cells[id].radius;
+        const double overlapDist = c.radius + cells[id].radius - dist;
 
-        if (dist < c.radius + cells[i].radius) {
+        if (dist < c.radius + cells[id].radius) {
             force += diff.normalize()
                        .timesScalar(std::pow(1.8, overlapDist))
                        .timesScalar(BIAS);
@@ -253,6 +315,8 @@ Vec3 Simulation::calcForce(Cell& c) const noexcept
  */
 int32_t Simulation::nextStep() noexcept
 {
+    resetGrid();
+
     std::vector<std::thread> threads;
 
     // スレッドを使って計算を行う
@@ -305,6 +369,7 @@ int32_t Simulation::nextStep() noexcept
 int32_t Simulation::run()
 {
     printCells(0);
+
     for (int32_t step = 1; step < SIM_STEP; step++) {
         nextStep();
         printCells(step);
