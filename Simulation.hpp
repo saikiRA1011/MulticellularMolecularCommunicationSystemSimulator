@@ -28,8 +28,10 @@
  */
 class Simulation
 {
-    using FieldLine = std::vector<double>;    //!< 2次元フィールドの行
-    using Field     = std::vector<FieldLine>; //!< 2次元フィールド
+    template<typename T>
+    using FieldLine = std::vector<T>; //!< 2次元フィールドの行
+    template<typename T>
+    using Field = std::vector<FieldLine<T>>; //!< 2次元フィールド
 
     private:
     /**
@@ -53,7 +55,8 @@ class Simulation
 
     std::vector<Cell> cells; //!< シミュレーションで使うCellのリスト。
 
-    Field remoteForceField; //!< 遠隔力フィールド。
+    Field<std::vector<int>>
+      cellsInGrid; //!< グリッド内にcellのリスト(ID)を入れる。
 
     std::streambuf* consoleStream; //!< 標準出力のストリームバッファ
     std::ofstream outputfile;      //!< 標準出力の変更先ファイル
@@ -94,7 +97,6 @@ Simulation::Simulation()
   : randomCellPosX(-FIELD_X_LEN / 2, FIELD_X_LEN / 2)
   , randomCellPosY(-FIELD_Y_LEN / 2, FIELD_Y_LEN / 2)
   , randomForce(-10, 10)
-  , remoteForceField(FIELD_Y_LEN, FieldLine(FIELD_X_LEN, 0.0))
 {
     consoleStream = std::cout.rdbuf();
 }
@@ -115,6 +117,14 @@ void Simulation::initCells() noexcept
     for (int32_t i = 0; i < CELL_NUM; i++) {
         Cell c(randomCellPosX(rand_gen), randomCellPosY(rand_gen));
         cells.push_back(c);
+    }
+
+    cellsInGrid.resize(FIELD_Y_LEN);
+    for (int32_t y = 0; y < FIELD_Y_LEN; y++) {
+        cellsInGrid.resize(FIELD_X_LEN);
+        for (int32_t x = 0; x < FIELD_X_LEN; x++) {
+            cellsInGrid[y][x] = std::vector<int>();
+        }
     }
 }
 
@@ -171,7 +181,7 @@ Vec3 Simulation::calcRemoteForce(Cell& c) const noexcept
         Vec3 diff   = c.getPosition() - cells[i].getPosition();
         double dist = diff.length();
 
-        constexpr double LAMBDA      = 20.0;
+        constexpr double LAMBDA      = 30.0;
         constexpr double COEFFICIENT = 1.0;
 
         // d = |C1 - C2|
