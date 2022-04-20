@@ -146,6 +146,22 @@ void Cell::addForce(Vec3 f) noexcept
 void Cell::nextStep() noexcept
 {
     position += velocity.timesScalar(DELTA_TIME);
+
+    const int32_t FIELD_WIDTH = 1024;
+
+    // 座標が画面外に出たら、一周回して画面内に戻す
+    if (position.x < -(FIELD_WIDTH / 2)) {
+        position.x = -(FIELD_WIDTH / 2);
+    }
+    if (FIELD_WIDTH / 2 <= position.x) {
+        position.x = FIELD_WIDTH / 2 - 1;
+    }
+    if (position.y < -(FIELD_WIDTH / 2)) {
+        position.y = -(FIELD_WIDTH / 2);
+    }
+    if (FIELD_WIDTH / 2 <= position.y) {
+        position.y = FIELD_WIDTH / 2 - 1;
+    }
 }
 
 /**
