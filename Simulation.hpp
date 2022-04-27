@@ -39,16 +39,20 @@ class Simulation
      * @brief
      * シミュレーションで行うステップの絶対数。シミュレーションの時間はDELTA_TIME*SIM_STEP[単位時間]となる。
      */
-    const int32_t SIM_STEP = 300;
-    const int32_t CELL_NUM = 1000; //!< シミュレーションで生成するCell数
+    static constexpr int32_t SIM_STEP = 300;
+    static constexpr int32_t CELL_NUM = 10000; //!< シミュレーションで生成するCell数
 
-    const int32_t FIELD_X_LEN =
+    static constexpr int32_t FIELD_X_LEN =
       1024; //!< フィールドのx方向の辺の長さ。長さは2のn乗とする。
-    const int32_t FIELD_Y_LEN =
+    static constexpr int32_t FIELD_Y_LEN =
       1024; //!< フィールドのy方向の辺の長さ。長さは2のn乗とする。
 
+    static constexpr int32_t GRID_SIZE_MAGNIFICATION =
+      16; //!< フィールドのグリッドサイズの倍率。最小は1、値は2^nである必要がある。
+    static constexpr int32_t SEARCH_RADIUS = 50; //!< この半径内にあるcellを力の計算の対象とする。
+
     // random
-    std::mt19937 rand_gen{ 0 }; //!< 乱数生成器(seedはとりあえず0)
+    std::mt19937 rand_gen{ 0 };                      //!< 乱数生成器(seedはとりあえず0)
     std::uniform_real_distribution<> randomCellPosX; //!< Cellのx座標の生成器
     std::uniform_real_distribution<> randomCellPosY; //!< Cellのy座標の生成器
     std::uniform_real_distribution<>
@@ -56,8 +60,7 @@ class Simulation
 
     std::vector<Cell> cells; //!< シミュレーションで使うCellのリスト。
 
-    Field<std::vector<int32_t>>
-      cellsInGrid; //!< グリッド内にcellのリスト(ID)を入れる。
+    Field<std::vector<int32_t>> cellsInGrid; //!< グリッド内にcellのリスト(ID)を入れる。
 
     std::streambuf* consoleStream; //!< 標準出力のストリームバッファ
     std::ofstream outputfile;      //!< 標準出力の変更先ファイル
@@ -127,10 +130,13 @@ void Simulation::initCells() noexcept
         cells.push_back(c);
     }
 
-    cellsInGrid.resize(FIELD_Y_LEN);
-    for (int32_t y = 0; y < FIELD_Y_LEN; y++) {
-        cellsInGrid[y].resize(FIELD_X_LEN);
-        for (int32_t x = 0; x < FIELD_X_LEN; x++) {
+    constexpr int32_t CELL_GRID_LEN_X = FIELD_X_LEN / GRID_SIZE_MAGNIFICATION;
+    constexpr int32_t CELL_GRID_LEN_Y = FIELD_Y_LEN / GRID_SIZE_MAGNIFICATION;
+
+    cellsInGrid.resize(CELL_GRID_LEN_Y);
+    for (int32_t y = 0; y < CELL_GRID_LEN_Y; y++) {
+        cellsInGrid[y].resize(CELL_GRID_LEN_X);
+        for (int32_t x = 0; x < CELL_GRID_LEN_X; x++) {
             cellsInGrid[y][x] = std::vector<int>();
         }
     }
@@ -177,26 +183,36 @@ void Simulation::printCells(int32_t time) const
 std::vector<int> Simulation::aroundCellList(const Cell& c) const
 {
     std::vector<int> aroundCells;
-    constexpr int32_t CHECK_WIDTH = 50;
+    constexpr int32_t CHECK_GRID_WIDTH =
+      (SEARCH_RADIUS + GRID_SIZE_MAGNIFICATION - 1) / GRID_SIZE_MAGNIFICATION; // 切り上げの割り算
 
     Vec3 pos = c.getPosition();
 
-    for (int32_t y = pos.y - CHECK_WIDTH; y <= pos.y + CHECK_WIDTH; y++) {
-        for (int32_t x = pos.x - CHECK_WIDTH; x <= pos.x + CHECK_WIDTH; x++) {
-            if (x < -FIELD_X_LEN / 2 || FIELD_X_LEN / 2 <= x || // 範囲外
-                y < -FIELD_Y_LEN / 2 || FIELD_Y_LEN / 2 <= y) {
+    const int32_t scaledY = (pos.y + FIELD_Y_LEN / 2) / GRID_SIZE_MAGNIFICATION;
+    const int32_t scaledX = (pos.x + FIELD_X_LEN / 2) / GRID_SIZE_MAGNIFICATION;
+
+    constexpr int32_t GRID_X_WIDTH = FIELD_X_LEN / GRID_SIZE_MAGNIFICATION;
+    constexpr int32_t GRID_Y_WIDTH = FIELD_Y_LEN / GRID_SIZE_MAGNIFICATION;
+
+    for (int32_t y = scaledY - CHECK_GRID_WIDTH; y <= scaledY + CHECK_GRID_WIDTH; y++) {
+        for (int32_t x = scaledX - CHECK_GRID_WIDTH; x <= scaledX + CHECK_GRID_WIDTH; x++) {
+            // 範囲外の場合はスキップ
+            if (x < 0 || GRID_X_WIDTH <= x || y < 0 || GRID_Y_WIDTH <= y) {
                 continue;
             }
 
-            int32_t adjustedY = y + FIELD_Y_LEN / 2;
-            int32_t adjustedX = x + FIELD_X_LEN / 2;
+            for (int i = 0; i < (int32_t)cellsInGrid[y][x].size(); i++) {
+                int32_t id = cellsInGrid[y][x][i];
 
-            for (int i = 0;
-                 i < (int32_t)cellsInGrid[adjustedY][adjustedX].size(); i++) {
-                int32_t id = cellsInGrid[adjustedY][adjustedX][i];
-                if (id == c.id) {
+                const bool isSame = (id == c.id);
+                const bool isInRange =
+                  c.getPosition().dist(cells[id].getPosition()) <= SEARCH_RADIUS;
+
+                // 調べるセルが自分自身、あるいは距離がSEARCH_RADIUSより離れている場合はスキップ
+                if (isSame || !isInRange) {
                     continue;
                 }
+
                 aroundCells.push_back(id);
             }
         }
@@ -207,18 +223,23 @@ std::vector<int> Simulation::aroundCellList(const Cell& c) const
 
 void Simulation::resetGrid() noexcept
 {
+    constexpr int32_t GRID_X_WIDTH = FIELD_X_LEN / GRID_SIZE_MAGNIFICATION;
+    constexpr int32_t GRID_Y_WIDTH = FIELD_Y_LEN / GRID_SIZE_MAGNIFICATION;
+
     // グリッドに保存されているCellのリストを初期化する。O(n^2) nは1辺の長さ
-    for (int32_t y = 0; y < FIELD_Y_LEN; y++) {
-        for (int32_t x = 0; x < FIELD_X_LEN; x++) {
+    for (int32_t y = 0; y < GRID_Y_WIDTH; y++) {
+        for (int32_t x = 0; x < GRID_X_WIDTH; x++) {
             cellsInGrid[y][x].clear();
         }
     }
 
     for (int32_t i = 0; i < (int32_t)cells.size(); i++) {
         Vec3 pos = cells[i].getPosition();
-        cellsInGrid[(int32_t)pos.y + FIELD_Y_LEN / 2]
-                   [(int32_t)pos.x + FIELD_X_LEN / 2]
-                     .push_back(i);
+
+        const int32_t scaledY = (pos.y + FIELD_Y_LEN / 2) / GRID_SIZE_MAGNIFICATION;
+        const int32_t scaledX = (pos.x + FIELD_X_LEN / 2) / GRID_SIZE_MAGNIFICATION;
+
+        cellsInGrid[scaledY][scaledX].push_back(i);
     }
 }
 
@@ -249,9 +270,7 @@ Vec3 Simulation::calcRemoteForce(Cell& c) const noexcept
 
         // d = |C1 - C2|
         // F += c (C1 - C2) / d * e^(-d/λ)
-        force += -diff.normalize()
-                    .timesScalar(COEFFICIENT)
-                    .timesScalar(std::exp(-dist / LAMBDA));
+        force += -diff.normalize().timesScalar(COEFFICIENT).timesScalar(std::exp(-dist / LAMBDA));
     }
 
     return force;
@@ -283,9 +302,7 @@ Vec3 Simulation::calcVolumeExclusion(Cell& c) const noexcept
         const double overlapDist = c.radius + cells[id].radius - dist;
 
         if (dist < c.radius + cells[id].radius) {
-            force += diff.normalize()
-                       .timesScalar(std::pow(1.8, overlapDist))
-                       .timesScalar(BIAS);
+            force += diff.normalize().timesScalar(std::pow(1.8, overlapDist)).timesScalar(BIAS);
         }
     }
 
