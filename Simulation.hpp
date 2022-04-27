@@ -39,8 +39,8 @@ class Simulation
      * @brief
      * シミュレーションで行うステップの絶対数。シミュレーションの時間はDELTA_TIME*SIM_STEP[単位時間]となる。
      */
-    const int32_t SIM_STEP = 500;
-    const int32_t CELL_NUM = 2000; //!< シミュレーションで生成するCell数
+    const int32_t SIM_STEP = 300;
+    const int32_t CELL_NUM = 1000; //!< シミュレーションで生成するCell数
 
     const int32_t FIELD_X_LEN =
       1024; //!< フィールドのx方向の辺の長さ。長さは2のn乗とする。
@@ -127,10 +127,10 @@ void Simulation::initCells() noexcept
         cells.push_back(c);
     }
 
-    cellsInGrid.resize(FIELD_Y_LEN * 2);
-    for (int32_t y = 0; y < FIELD_Y_LEN * 2; y++) {
-        cellsInGrid[y].resize(FIELD_X_LEN * 2);
-        for (int32_t x = 0; x < FIELD_X_LEN * 2; x++) {
+    cellsInGrid.resize(FIELD_Y_LEN);
+    for (int32_t y = 0; y < FIELD_Y_LEN; y++) {
+        cellsInGrid[y].resize(FIELD_X_LEN);
+        for (int32_t x = 0; x < FIELD_X_LEN; x++) {
             cellsInGrid[y][x] = std::vector<int>();
         }
     }
@@ -183,13 +183,13 @@ std::vector<int> Simulation::aroundCellList(const Cell& c) const
 
     for (int32_t y = pos.y - CHECK_WIDTH; y <= pos.y + CHECK_WIDTH; y++) {
         for (int32_t x = pos.x - CHECK_WIDTH; x <= pos.x + CHECK_WIDTH; x++) {
-            if (x < -FIELD_X_LEN || FIELD_X_LEN < x || // 範囲外
-                y < -FIELD_Y_LEN || FIELD_Y_LEN < y) {
+            if (x < -FIELD_X_LEN / 2 || FIELD_X_LEN / 2 <= x || // 範囲外
+                y < -FIELD_Y_LEN / 2 || FIELD_Y_LEN / 2 <= y) {
                 continue;
             }
 
-            int32_t adjustedY = y + FIELD_Y_LEN;
-            int32_t adjustedX = x + FIELD_X_LEN;
+            int32_t adjustedY = y + FIELD_Y_LEN / 2;
+            int32_t adjustedX = x + FIELD_X_LEN / 2;
 
             for (int i = 0;
                  i < (int32_t)cellsInGrid[adjustedY][adjustedX].size(); i++) {
@@ -208,16 +208,17 @@ std::vector<int> Simulation::aroundCellList(const Cell& c) const
 void Simulation::resetGrid() noexcept
 {
     // グリッドに保存されているCellのリストを初期化する。O(n^2) nは1辺の長さ
-    for (int32_t y = 0; y < FIELD_Y_LEN * 2; y++) {
-        for (int32_t x = 0; x < FIELD_X_LEN * 2; x++) {
+    for (int32_t y = 0; y < FIELD_Y_LEN; y++) {
+        for (int32_t x = 0; x < FIELD_X_LEN; x++) {
             cellsInGrid[y][x].clear();
         }
     }
 
     for (int32_t i = 0; i < (int32_t)cells.size(); i++) {
         Vec3 pos = cells[i].getPosition();
-        cellsInGrid[(int32_t)pos.y + FIELD_Y_LEN][(int32_t)pos.x + FIELD_X_LEN]
-          .push_back(i);
+        cellsInGrid[(int32_t)pos.y + FIELD_Y_LEN / 2]
+                   [(int32_t)pos.x + FIELD_X_LEN / 2]
+                     .push_back(i);
     }
 }
 
@@ -322,6 +323,10 @@ int32_t Simulation::nextStep() noexcept
     // スレッドを使って計算を行う
     for (int i = 0; i < CELL_NUM; i++) {
         Vec3 force;
+
+        // force = calcRemoteForce(cells[i]);
+        // cells[i].addForce(force);
+
         threads.emplace_back([&, i] {
             force = calcRemoteForce(cells[i]);
             cells[i].addForce(force);
