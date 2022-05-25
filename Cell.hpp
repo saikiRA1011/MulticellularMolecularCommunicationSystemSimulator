@@ -23,16 +23,17 @@
 class Cell
 {
     private:
-    inline static int cellNum             = 0; //!< 現在のCell数
-    inline const static double DELTA_TIME = 0.05; //!< 時間スケール(1が通常時)
-
     Vec3 position; //!< Cellの座標(x,y,z)
     Vec3 velocity; //!< Cellの速度(x,y,z)
 
+    double divisionCycleTime;         //!< 細胞の分裂周期
+    double divisionCycleGauge;        //!< 細胞の分裂周期のゲージ。divisionCycleTimeを超えたら分裂する。
+    std::vector<int> molecularStocks; //!< 細胞の保持している分子数
+
     public:
-    Cell();
-    Cell(double x, double y, double vx, double vy);
-    Cell(Vec3 pos, Vec3 v);
+    Cell(int _id);
+    Cell(int _id, double x, double y, double vx, double vy);
+    Cell(int _id, Vec3 pos, Vec3 v);
     ~Cell();
 
     Vec3 getPosition() const noexcept;
@@ -53,51 +54,48 @@ class Cell
 #endif // CELL_H
 
 /**
- * @brief 基本となるコンストラクタ。呼び出し毎にcellNumをインクリメントする。
+ * @brief 基本となるコンストラクタ。
  *
+ * @param _id
  */
-Cell::Cell()
+Cell::Cell(int _id)
   : position(0, 0, 0)
   , velocity(0, 0, 0)
-  , id(cellNum)
+  , id(_id)
   , radius(5.0)
-{
-    cellNum++;
-}
+{}
 
 /**
  * @brief
- * 座標と速度をdouble型で指定して初期化するコンストラクタ。呼び出し毎にcellNumをインクリメントする。
+ * 座標と速度をdouble型で指定して初期化するコンストラクタ。
  *
+ * @param _id
  * @param x
  * @param y
  * @param vx
  * @param vy
  */
-Cell::Cell(double x, double y, double vx = 0, double vy = 0)
+Cell::Cell(int _id, double x, double y, double vx = 0, double vy = 0)
   : position(x, y)
   , velocity(vx, vy)
-  , id(cellNum)
+  , id(_id)
   , radius(5.0)
-{
-    cellNum++;
-}
+{}
 
 /**
  * @brief
  * 座標と速度をVec3型で指定して初期化するコンストラクタ。呼び出し毎にcellNumをインクリメントする。
  *
+ * @param _id
  * @param pos
  * @param v
  */
-Cell::Cell(Vec3 pos, Vec3 v = Vec3::zero())
+Cell::Cell(int _id, Vec3 pos, Vec3 v = Vec3::zero())
   : position(pos)
   , velocity(v)
-  , id(cellNum)
+  , id(_id)
   , radius(5.0)
-{
-    cellNum++;
-}
+{}
 
 /**
  * @brief デストラクタは定義していない。
@@ -145,7 +143,7 @@ void Cell::addForce(Vec3 f) noexcept
  */
 void Cell::nextStep() noexcept
 {
-    position += velocity.timesScalar(DELTA_TIME);
+    position += velocity;
 
     const int32_t FIELD_WIDTH = 1024;
 
@@ -171,9 +169,7 @@ void Cell::nextStep() noexcept
 void Cell::printCell() const noexcept
 {
     std::cout << id << "\t";
-    std::cout << position.x << "\t" << position.y << "\t" << position.z << "\t"
-              << velocity.x << "\t" << velocity.y << "\t" << velocity.z
-              << std::endl;
+    std::cout << position.x << "\t" << position.y << "\t" << position.z << "\t" << velocity.x << "\t" << velocity.y << "\t" << velocity.z << std::endl;
 }
 
 /**
