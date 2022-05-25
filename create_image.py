@@ -22,6 +22,9 @@ for file in files:
         x = float(cell[1])+IMAGE_LEN/2
         y = float(cell[2])+IMAGE_LEN/2
 
+        if x < 0 or x > IMAGE_LEN or y < 0 or y > IMAGE_LEN:
+            print('out of range')
+
         cv2.circle(img, (math.floor(x), math.floor(y)),
                    CELL_RADIUS, (0, 200, 0), thickness=1)
 
