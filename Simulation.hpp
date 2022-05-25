@@ -13,9 +13,12 @@
 #define SIMULATION_H
 
 #include "Cell.hpp"
+#include <chrono>
 #include <fstream>
 #include <iomanip>
 #include <numbers>
+#include <omp.h>
+#include <queue>
 #include <sstream>
 #include <string>
 #include <thread>
@@ -39,26 +42,25 @@ class Simulation
      * @brief
      * シミュレーションで行うステップの絶対数。シミュレーションの時間はDELTA_TIME*SIM_STEP[単位時間]となる。
      */
-    static constexpr int32_t SIM_STEP = 300;
-    static constexpr int32_t CELL_NUM = 10000; //!< シミュレーションで生成するCell数
+    static constexpr int32_t SIM_STEP = 500;
+    static constexpr int32_t CELL_NUM = 5000; //!< シミュレーションで生成するCell数
 
-    static constexpr int32_t FIELD_X_LEN =
-      1024; //!< フィールドのx方向の辺の長さ。長さは2のn乗とする。
-    static constexpr int32_t FIELD_Y_LEN =
-      1024; //!< フィールドのy方向の辺の長さ。長さは2のn乗とする。
+    static constexpr int32_t FIELD_X_LEN = 1024; //!< フィールドのx方向の辺の長さ。長さは2のn乗とする。
+    static constexpr int32_t FIELD_Y_LEN = 1024; //!< フィールドのy方向の辺の長さ。長さは2のn乗とする。
 
-    static constexpr int32_t GRID_SIZE_MAGNIFICATION =
-      16; //!< フィールドのグリッドサイズの倍率。最小は1、値は2^nである必要がある。
-    static constexpr int32_t SEARCH_RADIUS = 50; //!< この半径内にあるcellを力の計算の対象とする。
+    static constexpr int32_t GRID_SIZE_MAGNIFICATION = 16; //!< フィールドのグリッドサイズの倍率。最小は1、値は2^nである必要がある。
+    static constexpr int32_t SEARCH_RADIUS           = 50; //!< この半径内にあるcellを力の計算の対象とする。
+
+    static constexpr double DELTA_TIME = 0.1; //!< 時間スケール(1が通常時)
 
     // random
-    std::mt19937 rand_gen{ 0 };                      //!< 乱数生成器(seedはとりあえず0)
+    std::mt19937 rand_gen{ 10 };                     //!< 乱数生成器(seedはとりあえず0)
     std::uniform_real_distribution<> randomCellPosX; //!< Cellのx座標の生成器
     std::uniform_real_distribution<> randomCellPosY; //!< Cellのy座標の生成器
-    std::uniform_real_distribution<>
-      randomForce; //!< Cellのx,y方向の速度の生成器(ランダムウォークモデルで使用)
+    std::uniform_real_distribution<> randomForce;    //!< Cellのx,y方向の速度の生成器(ランダムウォークモデルで使用)
 
-    std::vector<Cell> cells; //!< シミュレーションで使うCellのリスト。
+    std::queue<int> cellPool; //!< CellのIDを管理するためのキュー
+    std::vector<Cell> cells;  //!< シミュレーションで使うCellのリスト。
 
     Field<std::vector<int32_t>> cellsInGrid; //!< グリッド内にcellのリスト(ID)を入れる。
 
@@ -80,6 +82,7 @@ class Simulation
 
     void initCells() noexcept;
 
+    Vec3 calcCellCellForce(Cell&) const noexcept;
     Vec3 calcRemoteForce(Cell&) const noexcept;
     Vec3 calcVolumeExclusion(Cell&) const noexcept;
     Vec3 calcForce(Cell&) const noexcept;
@@ -126,7 +129,7 @@ Simulation::~Simulation()
 void Simulation::initCells() noexcept
 {
     for (int32_t i = 0; i < CELL_NUM; i++) {
-        Cell c(randomCellPosX(rand_gen), randomCellPosY(rand_gen));
+        Cell c(i, randomCellPosX(rand_gen), randomCellPosY(rand_gen));
         cells.push_back(c);
     }
 
@@ -183,8 +186,7 @@ void Simulation::printCells(int32_t time) const
 std::vector<int> Simulation::aroundCellList(const Cell& c) const
 {
     std::vector<int> aroundCells;
-    constexpr int32_t CHECK_GRID_WIDTH =
-      (SEARCH_RADIUS + GRID_SIZE_MAGNIFICATION - 1) / GRID_SIZE_MAGNIFICATION; // 切り上げの割り算
+    constexpr int32_t CHECK_GRID_WIDTH = (SEARCH_RADIUS + GRID_SIZE_MAGNIFICATION - 1) / GRID_SIZE_MAGNIFICATION; // 切り上げの割り算
 
     Vec3 pos = c.getPosition();
 
@@ -204,9 +206,8 @@ std::vector<int> Simulation::aroundCellList(const Cell& c) const
             for (int i = 0; i < (int32_t)cellsInGrid[y][x].size(); i++) {
                 int32_t id = cellsInGrid[y][x][i];
 
-                const bool isSame = (id == c.id);
-                const bool isInRange =
-                  c.getPosition().dist(cells[id].getPosition()) <= SEARCH_RADIUS;
+                const bool isSame    = (id == c.id);
+                const bool isInRange = c.getPosition().dist(cells[id].getPosition()) <= SEARCH_RADIUS;
 
                 // 調べるセルが自分自身、あるいは距離がSEARCH_RADIUSより離れている場合はスキップ
                 if (isSame || !isInRange) {
@@ -244,6 +245,56 @@ void Simulation::resetGrid() noexcept
 }
 
 /**
+ * @brief  与えられたCellに対して他のCellから働く力を計算する。
+ *
+ * @param c
+ * @return Vec3
+ * @details Cellから働く力は遠隔力と近隣力の2つで構成される。さらに、近接力は体積排除効果と接着力の2つに分類される。
+ */
+Vec3 Simulation::calcCellCellForce(Cell& c) const noexcept
+{
+    Vec3 force = Vec3::zero();
+
+    std::vector<int> aroundCells = aroundCellList(c);
+
+    for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
+        int32_t id        = aroundCells[i];
+        const Vec3 diff   = c.getPosition() - cells[id].getPosition();
+        const double dist = diff.length();
+
+        constexpr double LAMBDA      = 30.0;
+        constexpr double COEFFICIENT = 0.5;
+
+        // d = |C1 - C2|
+        // F += c (C1 - C2) / d * e^(-d/λ)
+        force += -diff.normalize().timesScalar(COEFFICIENT).timesScalar(std::exp(-dist / LAMBDA));
+    }
+
+    force = force.normalize();
+
+    for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
+        int32_t id        = aroundCells[i];
+        const Vec3 diff   = c.getPosition() - cells[id].getPosition();
+        const double dist = diff.length();
+
+        constexpr double ELIMINATION_BIAS = 10.0;
+        constexpr double ADHESION_BIAS    = 0.4;
+        const double sumRadius            = c.radius + cells[id].radius;
+        const double overlapDist          = c.radius + cells[id].radius - dist;
+
+        if (dist < sumRadius) {
+            // force += diff.normalize().timesScalar(std::pow(1.8, overlapDist)).timesScalar(BIAS);
+            force += diff.normalize().timesScalar(pow(1.0 - overlapDist / sumRadius, 2)).timesScalar(ELIMINATION_BIAS);
+            force -= diff.normalize().timesScalar(pow(1.0 - overlapDist / sumRadius, 2)).timesScalar(ADHESION_BIAS);
+        }
+    }
+
+    force = force.timesScalar(DELTA_TIME);
+
+    return force;
+}
+
+/**
  * @brief 与えられたCellに対して働く遠隔力を計算する。O(n^2)
  *
  * @param c
@@ -266,12 +317,14 @@ Vec3 Simulation::calcRemoteForce(Cell& c) const noexcept
         double dist = diff.length();
 
         constexpr double LAMBDA      = 30.0;
-        constexpr double COEFFICIENT = 1.0;
+        constexpr double COEFFICIENT = 0.5;
 
         // d = |C1 - C2|
         // F += c (C1 - C2) / d * e^(-d/λ)
         force += -diff.normalize().timesScalar(COEFFICIENT).timesScalar(std::exp(-dist / LAMBDA));
     }
+
+    force = force.timesScalar(DELTA_TIME);
 
     return force;
 }
@@ -294,7 +347,7 @@ Vec3 Simulation::calcVolumeExclusion(Cell& c) const noexcept
     for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
         int32_t id = aroundCells[i];
 
-        constexpr double BIAS = 1.0;
+        constexpr double BIAS = 10.0;
 
         const Vec3 diff          = c.getPosition() - cells[id].getPosition();
         const double dist        = diff.length();
@@ -302,9 +355,12 @@ Vec3 Simulation::calcVolumeExclusion(Cell& c) const noexcept
         const double overlapDist = c.radius + cells[id].radius - dist;
 
         if (dist < c.radius + cells[id].radius) {
-            force += diff.normalize().timesScalar(std::pow(1.8, overlapDist)).timesScalar(BIAS);
+            // force += diff.normalize().timesScalar(std::pow(1.8, overlapDist)).timesScalar(BIAS);
+            force += diff.normalize().timesScalar(pow(1.0 - overlapDist / sumRadius, 2)).timesScalar(BIAS);
         }
     }
+
+    force = force.timesScalar(DELTA_TIME);
 
     return force;
 }
@@ -319,8 +375,9 @@ Vec3 Simulation::calcForce(Cell& c) const noexcept
 {
     Vec3 force = Vec3::zero();
 
-    force += calcRemoteForce(c);
-    force += calcVolumeExclusion(c);
+    force += calcCellCellForce(c);
+    // force += calcRemoteForce(c);
+    // force += calcVolumeExclusion(c);
 
     return force;
 }
@@ -335,45 +392,32 @@ int32_t Simulation::nextStep() noexcept
 {
     resetGrid();
 
-    std::vector<std::thread> threads;
-
-    // スレッドを使って計算を行う
+    // threadを使うよりもopenMPを利用したほうが速い
+    //#pragma omp parallel
     for (int i = 0; i < CELL_NUM; i++) {
+        // std::cout << omp_get_thread_num() << std::endl;
         Vec3 force;
-
-        // force = calcRemoteForce(cells[i]);
-        // cells[i].addForce(force);
-
-        threads.emplace_back([&, i] {
-            force = calcRemoteForce(cells[i]);
-            cells[i].addForce(force);
-        });
+        force = calcForce(cells[i]);
+        cells[i].addForce(force);
     }
 
-    // すべてのスレッドが終了するのを待つ
-    for (auto& t : threads) {
-        t.join();
-    }
+    // std::vector<std::thread> threads;
+    // for (int i = 0; i < CELL_NUM; i++) {
+    //     Vec3 force;
 
-    for (int32_t cellID = 0; cellID < CELL_NUM; cellID++) {
-        cells[cellID].nextStep();
-    }
+    //     // force = calcRemoteForce(cells[i]);
+    //     // cells[i].addForce(force);
 
-    threads.clear();
+    //     threads.emplace_back([&, i] {
+    //         force = calcForce(cells[i]);
+    //         cells[i].addForce(force);
+    //     });
+    // }
 
-    // スレッドを使って計算を行う
-    for (int i = 0; i < CELL_NUM; i++) {
-        Vec3 force;
-        threads.emplace_back([&, i] {
-            force = calcVolumeExclusion(cells[i]);
-            cells[i].addForce(force);
-        });
-    }
-
-    // すべてのスレッドが終了するのを待つ
-    for (auto& t : threads) {
-        t.join();
-    }
+    // // すべてのスレッドが終了するのを待つ
+    // for (auto& t : threads) {
+    //     t.join();
+    // }
 
     for (int32_t cellID = 0; cellID < CELL_NUM; cellID++) {
         cells[cellID].nextStep();
@@ -393,10 +437,14 @@ int32_t Simulation::run()
     printCells(0);
 
     for (int32_t step = 1; step < SIM_STEP; step++) {
+        auto start = std::chrono::system_clock::now();
         nextStep();
         printCells(step);
+        auto end = std::chrono::system_clock::now();
 
-        std::cout << "step: " << step << std::endl;
+        auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+
+        std::cout << "step: " << step << "  " << msec << "msec" << std::endl;
     }
 
     return 0;
