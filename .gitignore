@@ -13,3 +13,4 @@ SimMain
 *.mp4
 .DS_store
 archive*
+*.o
