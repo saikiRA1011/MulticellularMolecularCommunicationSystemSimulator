@@ -14,3 +14,4 @@ SimMain
 .DS_store
 archive*
 *.o
+config.txt
