@@ -1,6 +1,6 @@
 CC := g++-11
 CFLAGS := -std=c++20 -Wall -Wextra -fopenmp
-OBJS := Vec3.o Cell.o
+OBJS := Vec3.o Cell.o Simulation.o
 
 nowdate:=$(shell date +%Y%m%d_%H%M)
 
@@ -14,6 +14,9 @@ Vec3.o: Vec3.cpp
 
 Cell.o: Cell.cpp
 	$(CC) -c $(CFLAGS) Cell.cpp
+
+Simulation.o: Simulation.cpp
+	$(CC) -c $(CFLAGS) Simulation.cpp
 
 run: SimMain
 	./SimMain
