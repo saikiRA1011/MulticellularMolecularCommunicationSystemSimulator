@@ -4,9 +4,14 @@ import glob
 import math
 
 files = sorted(glob.glob('./result/*'))
-IMAGE_LEN = 1024
 
-CELL_RADIUS = 5
+with open('config.txt', 'r') as f:
+    img_w_len = int(f.readline())
+    img_h_len = int(f.readline())
+
+IMAGE_LEN = img_w_len
+
+CELL_RADIUS = 2
 
 for file in files:
     img = np.full((IMAGE_LEN, IMAGE_LEN, 3), 255, dtype=np.uint8)
