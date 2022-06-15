@@ -15,6 +15,7 @@ int main(void)
 {
     Simulation sim;
 
+    sim.exportConfig();
     sim.initCells();
 
     int32_t simResult = sim.run();
