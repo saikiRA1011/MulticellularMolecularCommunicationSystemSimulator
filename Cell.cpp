@@ -20,8 +20,9 @@ Cell::Cell(int _id)
   : position(0, 0, 0)
   , velocity(0, 0, 0)
   , id(_id)
-  , radius(2.0)
-{}
+  , radius(5.0)
+{
+}
 
 /**
  * @brief
@@ -37,8 +38,9 @@ Cell::Cell(int _id, double x, double y, double vx, double vy)
   : position(x, y)
   , velocity(vx, vy)
   , id(_id)
-  , radius(2.0)
-{}
+  , radius(5.0)
+{
+}
 
 /**
  * @brief
@@ -52,15 +54,17 @@ Cell::Cell(int _id, Vec3 pos, Vec3 v)
   : position(pos)
   , velocity(v)
   , id(_id)
-  , radius(2.0)
-{}
+  , radius(5.0)
+{
+}
 
 /**
  * @brief デストラクタは定義していない。
  *
  */
 Cell::~Cell()
-{}
+{
+}
 
 /**
  * @brief Cellの座標を返す。必ず副作用を付けない点に注意。
@@ -133,7 +137,7 @@ void Cell::emitMolecule(int moleculeId) noexcept
 void Cell::printCell() const noexcept
 {
     std::cout << id << "\t";
-    std::cout << position.x << "\t" << position.y << "\t" << position.z << "\t" << velocity.x << "\t" << velocity.y << "\t" << velocity.z << std::endl;
+    std::cout << position.x << "\t" << position.y << "\t" << position.z << "\t" << velocity.x << "\t" << velocity.y << "\t" << velocity.z << "\t" << radius << std::endl;
 }
 
 /**
