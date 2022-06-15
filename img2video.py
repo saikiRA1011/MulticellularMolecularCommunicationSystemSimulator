@@ -7,7 +7,11 @@ import glob
 # encoder
 fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
 
-img_len = 1024
+with open('config.txt', 'r') as f:
+    img_w_len = int(f.readline())
+    img_h_len = int(f.readline())
+
+img_len = img_w_len
 
 # output
 video = cv2.VideoWriter('./video/out.mp4', fourcc, 20.0, (img_len, img_len))
