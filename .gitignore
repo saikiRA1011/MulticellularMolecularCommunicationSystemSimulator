@@ -16,3 +16,4 @@ archive*
 *.o
 config.txt
 test-tools
+*Test*
