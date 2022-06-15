@@ -18,6 +18,12 @@ Cell.o: Cell.cpp
 Simulation.o: Simulation.cpp
 	$(CC) -c $(CFLAGS) Simulation.cpp
 
+SegmentTree.o: SegmentTree.cpp
+	$(CC) -c $(CFLAGS) SegmentTree.cpp
+
+seg-test: SegmentTree.o SegTest.cpp
+	$(CC) -o SegTest $(CFLAGS) SegmentTree.o SegTest.cpp
+
 run: SimMain
 	./SimMain
 
