@@ -26,12 +26,14 @@ for file in files:
         cell = cell.split('\t')
         x = float(cell[1])+IMAGE_LEN/2
         y = float(cell[2])+IMAGE_LEN/2
+        z = float(cell[3])+IMAGE_LEN/2
+        r = float(cell[7])
 
         if x < 0 or x > IMAGE_LEN or y < 0 or y > IMAGE_LEN:
             print('out of range')
 
         cv2.circle(img, (math.floor(x), math.floor(y)),
-                   CELL_RADIUS, (0, 200, 0), thickness=1)
+                   math.floor(r), (0, 200, 0), thickness=1)
 
     cv2.imwrite(f'./image/cells_{file[-5:]}.png', img)
 
