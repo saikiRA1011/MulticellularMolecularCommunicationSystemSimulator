@@ -62,7 +62,7 @@ class Simulation
     std::queue<int> cellPool; //!< CellのIDを管理するためのキュー
     std::vector<Cell> cells;  //!< シミュレーションで使うCellのリスト。
 
-    Field<std::vector<int32_t>> cellsInGrid; //!< グリッド内にcellのリスト(ID)を入れる。
+    Field<std::vector<Cell*>> cellsInGrid; //!< グリッド内にcellのリスト(ID)を入れる。
 
     std::streambuf* consoleStream; //!< 標準出力のストリームバッファ
 
@@ -72,7 +72,7 @@ class Simulation
     //  std::vector<std::unordered_set<int32_t>> aroundCellSetList;
     //  周辺のCellのIDを格納する。ただし、vectorは一列分のみしか確保しない。
 
-    std::vector<int32_t> aroundCellList(const Cell&) const;
+    std::vector<Cell*> aroundCellList(const Cell&) const;
     void resetGrid() noexcept;
 
     public:

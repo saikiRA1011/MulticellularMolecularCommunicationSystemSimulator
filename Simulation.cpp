@@ -59,7 +59,7 @@ void Simulation::initCells() noexcept
     for (int32_t y = 0; y < CELL_GRID_LEN_Y; y++) {
         cellsInGrid[y].resize(CELL_GRID_LEN_X);
         for (int32_t x = 0; x < CELL_GRID_LEN_X; x++) {
-            cellsInGrid[y][x] = std::vector<int>();
+            cellsInGrid[y][x] = std::vector<Cell*>();
         }
     }
 }
@@ -102,9 +102,9 @@ void Simulation::printCells(int32_t time) const
  * @return std::vector<int>
  * @note CHECK_WIDTHはcalcRemoteForceのLAMBDAより大きくするのが理想。
  */
-std::vector<int> Simulation::aroundCellList(const Cell& c) const
+std::vector<Cell*> Simulation::aroundCellList(const Cell& c) const
 {
-    std::vector<int> aroundCells;
+    std::vector<Cell*> aroundCells;
     constexpr int32_t CHECK_GRID_WIDTH = (SEARCH_RADIUS + GRID_SIZE_MAGNIFICATION - 1) / GRID_SIZE_MAGNIFICATION; // 切り上げの割り算
 
     Vec3 pos = c.getPosition();
@@ -123,17 +123,17 @@ std::vector<int> Simulation::aroundCellList(const Cell& c) const
             }
 
             for (int i = 0; i < (int32_t)cellsInGrid[y][x].size(); i++) {
-                int32_t id = cellsInGrid[y][x][i];
+                Cell* cell = cellsInGrid[y][x][i];
 
-                const bool isSame    = (id == c.id);
-                const bool isInRange = c.getPosition().dist(cells[id].getPosition()) <= SEARCH_RADIUS;
+                const bool isSame    = (cell->id == c.id);
+                const bool isInRange = c.getPosition().dist(cell->getPosition()) <= SEARCH_RADIUS;
 
                 // 調べるセルが自分自身、あるいは距離がSEARCH_RADIUSより離れている場合はスキップ
                 if (isSame || !isInRange) {
                     continue;
                 }
 
-                aroundCells.push_back(id);
+                aroundCells.push_back(cell);
             }
         }
     }
@@ -159,7 +159,7 @@ void Simulation::resetGrid() noexcept
         const int32_t scaledY = (pos.y + FIELD_Y_LEN / 2) / GRID_SIZE_MAGNIFICATION;
         const int32_t scaledX = (pos.x + FIELD_X_LEN / 2) / GRID_SIZE_MAGNIFICATION;
 
-        cellsInGrid[scaledY][scaledX].push_back(i);
+        cellsInGrid[scaledY][scaledX].push_back(&cells[i]);
     }
 }
 
@@ -174,11 +174,11 @@ Vec3 Simulation::calcCellCellForce(Cell& c) const noexcept
 {
     Vec3 force = Vec3::zero();
 
-    std::vector<int> aroundCells = aroundCellList(c);
+    std::vector<Cell*> aroundCells = aroundCellList(c);
 
     for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
-        int32_t id        = aroundCells[i];
-        const Vec3 diff   = c.getPosition() - cells[id].getPosition();
+        Cell* cell        = aroundCells[i];
+        const Vec3 diff   = c.getPosition() - cell->getPosition();
         const double dist = diff.length();
 
         constexpr double LAMBDA      = 30.0;
@@ -192,14 +192,14 @@ Vec3 Simulation::calcCellCellForce(Cell& c) const noexcept
     force = force.normalize();
 
     for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
-        int32_t id        = aroundCells[i];
-        const Vec3 diff   = c.getPosition() - cells[id].getPosition();
+        Cell* cell        = aroundCells[i];
+        const Vec3 diff   = c.getPosition() - cell->getPosition();
         const double dist = diff.length();
 
         constexpr double ELIMINATION_BIAS = 10.0;
         constexpr double ADHESION_BIAS    = 0.4;
-        const double sumRadius            = c.radius + cells[id].radius;
-        const double overlapDist          = c.radius + cells[id].radius - dist;
+        const double sumRadius            = c.radius + cell->radius;
+        const double overlapDist          = c.radius + cell->radius - dist;
 
         if (dist < sumRadius) {
             // force += diff.normalize().timesScalar(std::pow(1.8, overlapDist)).timesScalar(BIAS);
@@ -227,12 +227,12 @@ Vec3 Simulation::calcRemoteForce(Cell& c) const noexcept
 {
     Vec3 force = Vec3::zero();
 
-    std::vector<int> aroundCells = aroundCellList(c);
+    std::vector<Cell*> aroundCells = aroundCellList(c);
 
     for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
-        int32_t id = aroundCells[i];
+        Cell* cell = aroundCells[i];
 
-        Vec3 diff   = c.getPosition() - cells[id].getPosition();
+        Vec3 diff   = c.getPosition() - cell->getPosition();
         double dist = diff.length();
 
         constexpr double LAMBDA      = 30.0;
@@ -261,19 +261,19 @@ Vec3 Simulation::calcVolumeExclusion(Cell& c) const noexcept
 {
     Vec3 force = Vec3::zero();
 
-    std::vector<int> aroundCells = aroundCellList(c);
+    std::vector<Cell*> aroundCells = aroundCellList(c);
 
     for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
-        int32_t id = aroundCells[i];
+        Cell* cell = aroundCells[i];
 
         constexpr double BIAS = 10.0;
 
-        const Vec3 diff          = c.getPosition() - cells[id].getPosition();
+        const Vec3 diff          = c.getPosition() - cell->getPosition();
         const double dist        = diff.length();
-        const double sumRadius   = c.radius + cells[id].radius;
-        const double overlapDist = c.radius + cells[id].radius - dist;
+        const double sumRadius   = c.radius + cell->radius;
+        const double overlapDist = c.radius + cell->radius - dist;
 
-        if (dist < c.radius + cells[id].radius) {
+        if (dist < c.radius + cell->radius) {
             // force += diff.normalize().timesScalar(std::pow(1.8, overlapDist)).timesScalar(BIAS);
             force += diff.normalize().timesScalar(pow(1.0 - overlapDist / sumRadius, 2)).timesScalar(BIAS);
         }
