@@ -15,7 +15,7 @@
 // #include "UserRule.hpp"
 #include "CellList.hpp"
 #include "SimulationSettings.hpp"
-#include "Util.hpp"
+#include "utils/Util.hpp"
 #include <chrono>
 #include <fstream>
 #include <iomanip>
@@ -42,7 +42,6 @@ class Simulation
     std::mt19937 rand_gen{ 10 };                     //!< 乱数生成器(seedはとりあえず0)
     std::uniform_real_distribution<> randomCellPosX; //!< Cellのx座標の生成器
     std::uniform_real_distribution<> randomCellPosY; //!< Cellのy座標の生成器
-    std::uniform_real_distribution<> randomForce;    //!< Cellのx,y方向の速度の生成器(ランダムウォークモデルで使用)
 
     std::queue<int> cellPool; //!< CellのIDを管理するためのキュー
     std::vector<Cell> cells;  //!< シミュレーションで使うCellのリスト。

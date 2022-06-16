@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "Vec3.hpp"
+#include "utils/Vec3.hpp"
 #include <iostream>
 #include <random>
 

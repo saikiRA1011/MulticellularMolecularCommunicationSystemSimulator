@@ -9,8 +9,8 @@ FULL_ARCHIVE := 1# 0がfalse 1がtrue
 all: SimMain.cpp $(OBJS)
 	$(CC) -o SimMain $(CFLAGS) $(OBJS) SimMain.cpp
 
-Vec3.o: Vec3.cpp
-	$(CC) -c $(CFLAGS) Vec3.cpp
+Vec3.o: utils/Vec3.cpp
+	$(CC) -c $(CFLAGS) utils/Vec3.cpp
 
 Cell.o: Cell.cpp
 	$(CC) -c $(CFLAGS) Cell.cpp

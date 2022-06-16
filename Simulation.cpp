@@ -11,7 +11,6 @@
 Simulation::Simulation()
   : randomCellPosX(-FIELD_X_LEN / 2, FIELD_X_LEN / 2)
   , randomCellPosY(-FIELD_Y_LEN / 2, FIELD_Y_LEN / 2)
-  , randomForce(-10, 10)
   , cellList()
 // , aroundCellSetList(FIELD_Y_LEN, std::unordered_set<int32_t>())
 {

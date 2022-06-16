@@ -1,8 +1,19 @@
+/**
+ * @file CellList.hpp
+ * @author Takanori Saiki
+ * @brief CellListのデータ構造を管理するクラス
+ * @version 0.1
+ * @date 2022-06-16
+ *
+ * @copyright Copyright (c) 2022
+ *
+ */
+
 #pragma once
 
 #include "Cell.hpp"
 #include "SimulationSettings.hpp"
-#include "Util.hpp"
+#include "utils/Util.hpp"
 #include <vector>
 
 class CellList

@@ -1,6 +1,10 @@
 #include "CellList.hpp"
-#include "Vec3.hpp"
+#include "utils/Vec3.hpp"
 
+/**
+ * @brief CellListの初期化を呼びだす。
+ *
+ */
 CellList::CellList()
 {
     init();
@@ -10,6 +14,10 @@ CellList::~CellList()
 {
 }
 
+/**
+ * @brief CellListのサイズを初期化する。
+ *
+ */
 void CellList::init()
 {
     constexpr int32_t CELL_GRID_LEN_X = FIELD_X_LEN / GRID_SIZE_MAGNIFICATION;
@@ -70,6 +78,10 @@ std::vector<Cell*> CellList::aroundCellList(const Cell& c) const
     return aroundCells;
 }
 
+/**
+ * @brief CellListに保存されているCellの配列をすべて削除する。
+ *
+ */
 void CellList::resetGrid() noexcept
 {
     constexpr int32_t GRID_X_WIDTH = FIELD_X_LEN / GRID_SIZE_MAGNIFICATION;
@@ -83,6 +95,11 @@ void CellList::resetGrid() noexcept
     }
 }
 
+/**
+ * @brief CellListのグリッドにCellのポインタを登録する。
+ *
+ * @param cell
+ */
 void CellList::addCell(Cell* cell)
 {
     Vec3 pos = cell->getPosition();
