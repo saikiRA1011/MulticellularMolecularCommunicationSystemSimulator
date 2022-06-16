@@ -24,6 +24,13 @@ void CellList::init()
     }
 }
 
+/**
+ * @brief 指定したCellの周囲にあるCellのIDリストを返す。
+ *
+ * @param c
+ * @return std::vector<int>
+ * @note CHECK_WIDTHはcalcRemoteForceのLAMBDAより大きくするのが理想。
+ */
 std::vector<Cell*> CellList::aroundCellList(const Cell& c) const
 {
     std::vector<Cell*> aroundCells;

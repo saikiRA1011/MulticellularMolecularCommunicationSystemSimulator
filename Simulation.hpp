@@ -57,8 +57,7 @@ class Simulation
     //  std::vector<std::unordered_set<int32_t>> aroundCellSetList;
     //  周辺のCellのIDを格納する。ただし、vectorは一列分のみしか確保しない。
 
-    std::vector<Cell*> aroundCellList(const Cell&) const;
-    void resetGrid() noexcept;
+    void setCellList() noexcept;
 
     public:
     Simulation(/* args */);
