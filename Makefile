@@ -1,6 +1,6 @@
 CC := g++-11
 CFLAGS := -std=c++20 -Wall -Wextra -fopenmp
-OBJS := Vec3.o Cell.o Simulation.o
+OBJS := Vec3.o Cell.o Simulation.o CellList.o
 
 nowdate:=$(shell date +%Y%m%d_%H%M)
 
@@ -20,6 +20,9 @@ Simulation.o: Simulation.cpp
 
 SegmentTree.o: SegmentTree.cpp
 	$(CC) -c $(CFLAGS) SegmentTree.cpp
+
+CellList.o: CellList.cpp
+	$(CC) -c $(CFLAGS) CellList.cpp
 
 seg-test: SegmentTree.o SegTest.cpp
 	$(CC) -o SegTest $(CFLAGS) SegmentTree.o SegTest.cpp
