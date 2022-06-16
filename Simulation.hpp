@@ -13,6 +13,9 @@
 
 #include "Cell.hpp"
 // #include "UserRule.hpp"
+#include "CellList.hpp"
+#include "SimulationSettings.hpp"
+#include "Util.hpp"
 #include <chrono>
 #include <fstream>
 #include <iomanip>
@@ -32,26 +35,8 @@
  */
 class Simulation
 {
-    template<typename T>
-    using FieldLine = std::vector<T>; //!< 2次元フィールドの行
-    template<typename T>
-    using Field = std::vector<FieldLine<T>>; //!< 2次元フィールド
-
     private:
-    /**
-     * @brief
-     * シミュレーションで行うステップの絶対数。シミュレーションの時間はDELTA_TIME*SIM_STEP[単位時間]となる。
-     */
-    static constexpr int32_t SIM_STEP = 500;
-    static constexpr int32_t CELL_NUM = 2000; //!< シミュレーションで生成するCell数
-
-    static constexpr int32_t FIELD_X_LEN = 1024; //!< フィールドのx方向の辺の長さ。長さは2のn乗とする。
-    static constexpr int32_t FIELD_Y_LEN = 1024; //!< フィールドのy方向の辺の長さ。長さは2のn乗とする。
-
-    static constexpr int32_t GRID_SIZE_MAGNIFICATION = 16; //!< フィールドのグリッドサイズの倍率。最小は1、値は2^nである必要がある。
-    static constexpr int32_t SEARCH_RADIUS           = 50; //!< この半径内にあるcellを力の計算の対象とする。
-
-    static constexpr double DELTA_TIME = 0.1; //!< 時間スケール(1が通常時)
+    CellList cellList; //!< CellListのデータ構造を管理するクラス
 
     // random
     std::mt19937 rand_gen{ 10 };                     //!< 乱数生成器(seedはとりあえず0)
@@ -62,7 +47,7 @@ class Simulation
     std::queue<int> cellPool; //!< CellのIDを管理するためのキュー
     std::vector<Cell> cells;  //!< シミュレーションで使うCellのリスト。
 
-    Field<std::vector<Cell*>> cellsInGrid; //!< グリッド内にcellのリスト(ID)を入れる。
+    Field<std::vector<Cell*>> cellsInGrid; //!< グリッド内にcellのポインタを入れる。
 
     std::streambuf* consoleStream; //!< 標準出力のストリームバッファ
 
