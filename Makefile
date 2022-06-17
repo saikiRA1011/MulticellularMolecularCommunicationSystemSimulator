@@ -24,6 +24,9 @@ SegmentTree.o: SegmentTree.cpp
 CellList.o: CellList.cpp
 	$(CC) -c $(CFLAGS) CellList.cpp
 
+VariableRatioCellList.o: VariableRatioCellList.cpp
+	$(CC) -c $(CFLAGS) VariableRatioCellList.cpp
+
 seg-test: SegmentTree.o SegTest.cpp
 	$(CC) -o SegTest $(CFLAGS) SegmentTree.o SegTest.cpp
 
