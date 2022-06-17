@@ -48,7 +48,7 @@ void Simulation::initCells() noexcept
     for (int32_t i = 0; i < CELL_NUM; i++) {
         double xPos = randomCellPosX(rand_gen);
         double yPos = randomCellPosY(rand_gen);
-        Cell c(i, xPos, yPos);
+        Cell c(i, xPos, yPos, 10.0);
         cells.push_back(c);
     }
 }
