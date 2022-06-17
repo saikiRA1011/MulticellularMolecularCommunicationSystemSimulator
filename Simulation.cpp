@@ -9,9 +9,9 @@
  * {[-4, -3), [-3, -2), [-2, -1), [-1, 0), [0, 1), [1, 2), [2, 3), [3, 4)}
  */
 Simulation::Simulation()
-  : randomCellPosX(-FIELD_X_LEN / 2, FIELD_X_LEN / 2)
+  : cellList()
+  , randomCellPosX(-FIELD_X_LEN / 2, FIELD_X_LEN / 2)
   , randomCellPosY(-FIELD_Y_LEN / 2, FIELD_Y_LEN / 2)
-  , cellList()
 // , aroundCellSetList(FIELD_Y_LEN, std::unordered_set<int32_t>())
 {
     consoleStream = std::cout.rdbuf();
@@ -111,10 +111,11 @@ Vec3 Simulation::calcCellCellForce(Cell& c) const noexcept
 
         constexpr double LAMBDA      = 30.0;
         constexpr double COEFFICIENT = 0.5;
+        const double weight          = cell->getWeight() * c.getWeight();
 
         // d = |C1 - C2|
         // F += c (C1 - C2) / d * e^(-d/λ)
-        force += -diff.normalize().timesScalar(COEFFICIENT).timesScalar(std::exp(-dist / LAMBDA));
+        force += -diff.normalize().timesScalar(weight).timesScalar(COEFFICIENT).timesScalar(std::exp(-dist / LAMBDA));
     }
 
     force = force.normalize();
