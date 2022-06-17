@@ -132,8 +132,8 @@ Vec3 Simulation::calcCellCellForce(Cell& c) const noexcept
 
         if (dist < sumRadius) {
             // force += diff.normalize().timesScalar(std::pow(1.8, overlapDist)).timesScalar(BIAS);
-            force += diff.normalize().timesScalar(pow(1.0 - overlapDist / sumRadius, 2)).timesScalar(ELIMINATION_BIAS);
-            force -= diff.normalize().timesScalar(pow(1.0 - overlapDist / sumRadius, 2)).timesScalar(ADHESION_BIAS);
+            force += diff.normalize().timesScalar(pow(1.0 - dist / sumRadius, 2)).timesScalar(ELIMINATION_BIAS);
+            force -= diff.normalize().timesScalar(pow(1.0 - dist / sumRadius, 2)).timesScalar(ADHESION_BIAS);
         }
     }
 
@@ -244,7 +244,6 @@ int32_t Simulation::nextStep() noexcept
     // threadを使うよりもopenMPを利用したほうが速い
     //#pragma omp parallel
     for (int i = 0; i < CELL_NUM; i++) {
-        // std::cout << omp_get_thread_num() << std::endl;
         Vec3 force;
         force = calcForce(cells[i]);
         cells[i].addForce(force);
