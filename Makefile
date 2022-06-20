@@ -6,7 +6,7 @@ nowdate:=$(shell date +%Y%m%d_%H%M)
 
 FULL_ARCHIVE := 1# 0がfalse 1がtrue
 
-all: SimMain.cpp $(OBJS)
+SimMain: SimMain.cpp $(OBJS)
 	$(CC) -o SimMain $(CFLAGS) $(OBJS) SimMain.cpp
 
 Vec3.o: utils/Vec3.cpp
@@ -15,7 +15,7 @@ Vec3.o: utils/Vec3.cpp
 Cell.o: Cell.cpp
 	$(CC) -c $(CFLAGS) Cell.cpp
 
-Simulation.o: Simulation.cpp
+Simulation.o: Simulation.cpp SimulationSettings.hpp
 	$(CC) -c $(CFLAGS) Simulation.cpp
 
 SegmentTree.o: SegmentTree.cpp
@@ -29,6 +29,8 @@ VariableRatioCellList.o: VariableRatioCellList.cpp
 
 seg-test: SegmentTree.o SegTest.cpp
 	$(CC) -o SegTest $(CFLAGS) SegmentTree.o SegTest.cpp
+
+all: clean SimMain run convert open
 
 run: SimMain
 	./SimMain
@@ -101,6 +103,13 @@ archive-restore:
 
 help:
 	@echo "Usage: make [target]"
-	@echo "make : builds the program"
-	@echo "make clean : removes all object files(*.o)"
-	@echo "make data-cleanup : removes all data files(*.txt, *.png, out.mp4)"
+	@echo "make : build the program"
+	@echo "make run : run the program"
+	@echo "make convert : convert to mp4"
+	@echo "make open : open out.mp4"
+	@echo "make all : build and run, convert to, open mp4"
+	@echo "make data-archive : result data to zip archive"
+	@echo "make archive-restore date=[YYYYMMDD_HHMM] : restore archive files"
+	@echo "make clean : remove all object files(*.o)"
+	@echo "make data-cleanup : remove all data files(*.txt, *.png, out.mp4)"
+	@echo "make archive-cleanup : remove all archive files(archive_*)"
