@@ -1,7 +1,7 @@
 /**
  * @file VariableRatioCellList.hpp
  * @author Takanori Saiki
- * @brief
+ * @brief SegmentTreeを用いた放射状の区間計算を行うデータ構造を管理するためのクラス。
  * @version 0.1
  * @date 2022-06-16
  *
@@ -21,7 +21,7 @@ class VariableRatioCellList
 {
     private:
     SegmentTree<int, int> sgTree;
-    std::stack<Cell*> stackCells;
+    std::stack<Cell*> stackCells; //!< aroundCellListで生成した仮想セルを管理するスタック
 
     public:
     VariableRatioCellList(/* args */);

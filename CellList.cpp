@@ -1,3 +1,14 @@
+/**
+ * @file CellList.cpp
+ * @author Takanori Saiki
+ * @brief CellListのデータ構造を管理するクラス
+ * @version 0.1
+ * @date 2022-06-20
+ *
+ * @copyright Copyright (c) 2022
+ *
+ */
+
 #include "CellList.hpp"
 #include "utils/Vec3.hpp"
 

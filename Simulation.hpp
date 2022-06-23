@@ -43,7 +43,7 @@ class Simulation
     std::uniform_real_distribution<> randomCellPosX; //!< Cellのx座標の生成器
     std::uniform_real_distribution<> randomCellPosY; //!< Cellのy座標の生成器
 
-    std::queue<int> cellPool; //!< CellのIDを管理するためのキュー
+    std::queue<int> cellPool; //!< CellのIDを管理するためのキュー。今は使っていない。
     std::vector<Cell> cells;  //!< シミュレーションで使うCellのリスト。
 
     Field<std::vector<Cell*>> cellsInGrid; //!< グリッド内にcellのポインタを入れる。
