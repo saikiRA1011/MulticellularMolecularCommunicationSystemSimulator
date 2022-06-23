@@ -30,7 +30,8 @@ Vec3::Vec3(double x, double y, double z)
  *
  */
 Vec3::~Vec3()
-{}
+{
+}
 
 /**
  * @brief 逆符号のベクトルを返す。
@@ -176,7 +177,7 @@ Vec3 Vec3::normalize() const noexcept
 {
     double length = this->length();
 
-    if (length == 0) {
+    if (length == 0.0) {
         return Vec3(0, 0, 0);
     }
 
