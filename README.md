@@ -15,20 +15,20 @@ Pythonの必要ライブラリは以下のコマンドで一括インストー�
 `pip install -r requirements.txt`
 
 # Usage
-## Step 2
+### Step 1
 シミュレータをmakeします。
 `make`
 
-## Step 3
+### Step 2
 シミュレータを実行します。
 `make run`
 
-## Step 4
+### Step 3
 実行結果を動画に変換します。
 `make convert`
 
-## Step 5
+### Step 4
 変換した動画を確認します。
 `make open`
 
-ただし、Step 2 ~ Step 5は`make all`でまとめて実行することもできます。
+ただし、Step 1 ~ Step 4は`make all`でまとめて実行することもできます。
