@@ -1,5 +1,5 @@
 # CellNetworkShapeSimulation
-![gif](https://github.com/saikiRA1011/CellNetworkShapeSimulation/blob/segtree/readme_img/sim.gif)
+![gif](https://github.com/saikiRA1011/CellNetworkShapeSimulation/blob/main/readme_img/sim.gif)
 
 # Overview
 分子通信シミュレーションのための汎用シミュレータです。ユーザがシミュレーションのパラメータや力学作用を定義することでさまざまなモデルに対応したシミュレーションを実行することができます。
