@@ -9,9 +9,9 @@
  * {[-4, -3), [-3, -2), [-2, -1), [-1, 0), [0, 1), [1, 2), [2, 3), [3, 4)}
  */
 Simulation::Simulation()
-  : randomCellPosX(-FIELD_X_LEN / 2, FIELD_X_LEN / 2)
+  : cellList()
+  , randomCellPosX(-FIELD_X_LEN / 2, FIELD_X_LEN / 2)
   , randomCellPosY(-FIELD_Y_LEN / 2, FIELD_Y_LEN / 2)
-  , randomForce(-10, 10)
 // , aroundCellSetList(FIELD_Y_LEN, std::unordered_set<int32_t>())
 {
     consoleStream = std::cout.rdbuf();
@@ -48,19 +48,8 @@ void Simulation::initCells() noexcept
     for (int32_t i = 0; i < CELL_NUM; i++) {
         double xPos = randomCellPosX(rand_gen);
         double yPos = randomCellPosY(rand_gen);
-        Cell c(i, xPos, yPos);
+        Cell c(i, xPos, yPos, 10.0);
         cells.push_back(c);
-    }
-
-    constexpr int32_t CELL_GRID_LEN_X = FIELD_X_LEN / GRID_SIZE_MAGNIFICATION;
-    constexpr int32_t CELL_GRID_LEN_Y = FIELD_Y_LEN / GRID_SIZE_MAGNIFICATION;
-
-    cellsInGrid.resize(CELL_GRID_LEN_Y);
-    for (int32_t y = 0; y < CELL_GRID_LEN_Y; y++) {
-        cellsInGrid[y].resize(CELL_GRID_LEN_X);
-        for (int32_t x = 0; x < CELL_GRID_LEN_X; x++) {
-            cellsInGrid[y][x] = std::vector<int>();
-        }
     }
 }
 
@@ -95,71 +84,10 @@ void Simulation::printCells(int32_t time) const
     std::cout.rdbuf(consoleStream);
 }
 
-/**
- * @brief 指定したCellの周囲にあるCellのIDリストを返す。
- *
- * @param c
- * @return std::vector<int>
- * @note CHECK_WIDTHはcalcRemoteForceのLAMBDAより大きくするのが理想。
- */
-std::vector<int> Simulation::aroundCellList(const Cell& c) const
+void Simulation::setCellList() noexcept
 {
-    std::vector<int> aroundCells;
-    constexpr int32_t CHECK_GRID_WIDTH = (SEARCH_RADIUS + GRID_SIZE_MAGNIFICATION - 1) / GRID_SIZE_MAGNIFICATION; // 切り上げの割り算
-
-    Vec3 pos = c.getPosition();
-
-    const int32_t scaledY = (pos.y + FIELD_Y_LEN / 2) / GRID_SIZE_MAGNIFICATION;
-    const int32_t scaledX = (pos.x + FIELD_X_LEN / 2) / GRID_SIZE_MAGNIFICATION;
-
-    constexpr int32_t GRID_X_WIDTH = FIELD_X_LEN / GRID_SIZE_MAGNIFICATION;
-    constexpr int32_t GRID_Y_WIDTH = FIELD_Y_LEN / GRID_SIZE_MAGNIFICATION;
-
-    for (int32_t y = scaledY - CHECK_GRID_WIDTH; y <= scaledY + CHECK_GRID_WIDTH; y++) {
-        for (int32_t x = scaledX - CHECK_GRID_WIDTH; x <= scaledX + CHECK_GRID_WIDTH; x++) {
-            // 範囲外の場合はスキップ
-            if (x < 0 || GRID_X_WIDTH <= x || y < 0 || GRID_Y_WIDTH <= y) {
-                continue;
-            }
-
-            for (int i = 0; i < (int32_t)cellsInGrid[y][x].size(); i++) {
-                int32_t id = cellsInGrid[y][x][i];
-
-                const bool isSame    = (id == c.id);
-                const bool isInRange = c.getPosition().dist(cells[id].getPosition()) <= SEARCH_RADIUS;
-
-                // 調べるセルが自分自身、あるいは距離がSEARCH_RADIUSより離れている場合はスキップ
-                if (isSame || !isInRange) {
-                    continue;
-                }
-
-                aroundCells.push_back(id);
-            }
-        }
-    }
-
-    return aroundCells;
-}
-
-void Simulation::resetGrid() noexcept
-{
-    constexpr int32_t GRID_X_WIDTH = FIELD_X_LEN / GRID_SIZE_MAGNIFICATION;
-    constexpr int32_t GRID_Y_WIDTH = FIELD_Y_LEN / GRID_SIZE_MAGNIFICATION;
-
-    // グリッドに保存されているCellのリストを初期化する。O(n^2) nは1辺の長さ
-    for (int32_t y = 0; y < GRID_Y_WIDTH; y++) {
-        for (int32_t x = 0; x < GRID_X_WIDTH; x++) {
-            cellsInGrid[y][x].clear();
-        }
-    }
-
     for (int32_t i = 0; i < (int32_t)cells.size(); i++) {
-        Vec3 pos = cells[i].getPosition();
-
-        const int32_t scaledY = (pos.y + FIELD_Y_LEN / 2) / GRID_SIZE_MAGNIFICATION;
-        const int32_t scaledX = (pos.x + FIELD_X_LEN / 2) / GRID_SIZE_MAGNIFICATION;
-
-        cellsInGrid[scaledY][scaledX].push_back(i);
+        cellList.addCell(&cells[i]);
     }
 }
 
@@ -174,37 +102,38 @@ Vec3 Simulation::calcCellCellForce(Cell& c) const noexcept
 {
     Vec3 force = Vec3::zero();
 
-    std::vector<int> aroundCells = aroundCellList(c);
+    std::vector<Cell*> aroundCells = cellList.aroundCellList(c);
 
     for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
-        int32_t id        = aroundCells[i];
-        const Vec3 diff   = c.getPosition() - cells[id].getPosition();
+        Cell* cell        = aroundCells[i];
+        const Vec3 diff   = c.getPosition() - cell->getPosition();
         const double dist = diff.length();
 
         constexpr double LAMBDA      = 30.0;
         constexpr double COEFFICIENT = 0.5;
+        const double weight          = cell->getWeight() * c.getWeight();
 
         // d = |C1 - C2|
         // F += c (C1 - C2) / d * e^(-d/λ)
-        force += -diff.normalize().timesScalar(COEFFICIENT).timesScalar(std::exp(-dist / LAMBDA));
+        force += -diff.normalize().timesScalar(weight).timesScalar(COEFFICIENT).timesScalar(std::exp(-dist / LAMBDA));
     }
 
     force = force.normalize();
 
     for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
-        int32_t id        = aroundCells[i];
-        const Vec3 diff   = c.getPosition() - cells[id].getPosition();
+        Cell* cell        = aroundCells[i];
+        const Vec3 diff   = c.getPosition() - cell->getPosition();
         const double dist = diff.length();
 
         constexpr double ELIMINATION_BIAS = 10.0;
         constexpr double ADHESION_BIAS    = 0.4;
-        const double sumRadius            = c.radius + cells[id].radius;
-        const double overlapDist          = c.radius + cells[id].radius - dist;
+        const double sumRadius            = c.radius + cell->radius;
+        const double overlapDist          = c.radius + cell->radius - dist;
 
         if (dist < sumRadius) {
             // force += diff.normalize().timesScalar(std::pow(1.8, overlapDist)).timesScalar(BIAS);
-            force += diff.normalize().timesScalar(pow(1.0 - overlapDist / sumRadius, 2)).timesScalar(ELIMINATION_BIAS);
-            force -= diff.normalize().timesScalar(pow(1.0 - overlapDist / sumRadius, 2)).timesScalar(ADHESION_BIAS);
+            force += diff.normalize().timesScalar(pow(1.0 - dist / sumRadius, 2)).timesScalar(ELIMINATION_BIAS);
+            force -= diff.normalize().timesScalar(pow(1.0 - dist / sumRadius, 2)).timesScalar(ADHESION_BIAS);
         }
     }
 
@@ -227,12 +156,12 @@ Vec3 Simulation::calcRemoteForce(Cell& c) const noexcept
 {
     Vec3 force = Vec3::zero();
 
-    std::vector<int> aroundCells = aroundCellList(c);
+    std::vector<Cell*> aroundCells = cellList.aroundCellList(c);
 
     for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
-        int32_t id = aroundCells[i];
+        Cell* cell = aroundCells[i];
 
-        Vec3 diff   = c.getPosition() - cells[id].getPosition();
+        Vec3 diff   = c.getPosition() - cell->getPosition();
         double dist = diff.length();
 
         constexpr double LAMBDA      = 30.0;
@@ -261,19 +190,19 @@ Vec3 Simulation::calcVolumeExclusion(Cell& c) const noexcept
 {
     Vec3 force = Vec3::zero();
 
-    std::vector<int> aroundCells = aroundCellList(c);
+    std::vector<Cell*> aroundCells = cellList.aroundCellList(c);
 
     for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
-        int32_t id = aroundCells[i];
+        Cell* cell = aroundCells[i];
 
         constexpr double BIAS = 10.0;
 
-        const Vec3 diff          = c.getPosition() - cells[id].getPosition();
+        const Vec3 diff          = c.getPosition() - cell->getPosition();
         const double dist        = diff.length();
-        const double sumRadius   = c.radius + cells[id].radius;
-        const double overlapDist = c.radius + cells[id].radius - dist;
+        const double sumRadius   = c.radius + cell->radius;
+        const double overlapDist = c.radius + cell->radius - dist;
 
-        if (dist < c.radius + cells[id].radius) {
+        if (dist < c.radius + cell->radius) {
             // force += diff.normalize().timesScalar(std::pow(1.8, overlapDist)).timesScalar(BIAS);
             force += diff.normalize().timesScalar(pow(1.0 - overlapDist / sumRadius, 2)).timesScalar(BIAS);
         }
@@ -309,12 +238,12 @@ Vec3 Simulation::calcForce(Cell& c) const noexcept
  */
 int32_t Simulation::nextStep() noexcept
 {
-    resetGrid();
+    cellList.resetGrid();
+    setCellList();
 
     // threadを使うよりもopenMPを利用したほうが速い
     //#pragma omp parallel
     for (int i = 0; i < CELL_NUM; i++) {
-        // std::cout << omp_get_thread_num() << std::endl;
         Vec3 force;
         force = calcForce(cells[i]);
         cells[i].addForce(force);

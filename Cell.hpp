@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "Vec3.hpp"
+#include "utils/Vec3.hpp"
 #include <iostream>
 #include <random>
 
@@ -24,6 +24,7 @@ class Cell
     private:
     Vec3 position; //!< Cellの座標(x,y,z)
     Vec3 velocity; //!< Cellの速度(x,y,z)
+    double weight; //!< Cellの質量
 
     double divisionCycleTime;         //!< 細胞の分裂周期
     double divisionCycleGauge;        //!< 細胞の分裂周期のゲージ。divisionCycleTimeを超えたら分裂する。
@@ -31,11 +32,12 @@ class Cell
 
     public:
     Cell(int _id);
-    Cell(int _id, double x, double y, double vx = 0, double vy = 0);
-    Cell(int _id, Vec3 pos, Vec3 v = Vec3::zero());
+    Cell(int _id, double x, double y, double radius = 5.0, double vx = 0, double vy = 0);
+    Cell(int _id, Vec3 pos, double radius = 5.0, Vec3 v = Vec3::zero());
     ~Cell();
 
     Vec3 getPosition() const noexcept;
+    double getWeight() const noexcept;
 
     void addForce(double fx, double fy) noexcept;
     void addForce(Vec3 f) noexcept;

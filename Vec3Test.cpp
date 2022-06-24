@@ -1,4 +1,4 @@
-#include "Vec3.hpp"
+#include "utils/Vec3.hpp"
 #include <iostream>
 
 using namespace std;

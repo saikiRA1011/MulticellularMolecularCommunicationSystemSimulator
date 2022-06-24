@@ -19,6 +19,7 @@
 Cell::Cell(int _id)
   : position(0, 0, 0)
   , velocity(0, 0, 0)
+  , weight(1.0)
   , id(_id)
   , radius(5.0)
 {
@@ -34,11 +35,12 @@ Cell::Cell(int _id)
  * @param vx
  * @param vy
  */
-Cell::Cell(int _id, double x, double y, double vx, double vy)
+Cell::Cell(int _id, double x, double y, double radius, double vx, double vy)
   : position(x, y)
   , velocity(vx, vy)
+  , weight(1.0)
   , id(_id)
-  , radius(5.0)
+  , radius(radius)
 {
 }
 
@@ -50,11 +52,12 @@ Cell::Cell(int _id, double x, double y, double vx, double vy)
  * @param pos
  * @param v
  */
-Cell::Cell(int _id, Vec3 pos, Vec3 v)
+Cell::Cell(int _id, Vec3 pos, double radius, Vec3 v)
   : position(pos)
   , velocity(v)
+  , weight(1.0)
   , id(_id)
-  , radius(5.0)
+  , radius(radius)
 {
 }
 
@@ -74,6 +77,16 @@ Cell::~Cell()
 Vec3 Cell::getPosition() const noexcept
 {
     return position;
+}
+
+/**
+ * @brief Cellの質量を返す。
+ *
+ * @return double
+ */
+double Cell::getWeight() const noexcept
+{
+    return weight;
 }
 
 /**

@@ -1,7 +1,4 @@
-from distutils.log import error
-import sys
 import cv2
-import os
 import glob
 
 # encoder

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 #include <vector>
 
 template<typename T, typename F>
@@ -127,8 +128,13 @@ T SegmentTree<T, F>::_inner_query(int h, int w1, int w2)
 template<typename T, typename F>
 T SegmentTree<T, F>::query(int h1, int w1, int h2, int w2)
 {
+    h1 = std::max(h1, 0);
+    w1 = std::max(w1, 0);
+    h2 = std::min(h2, H);
+    w2 = std::min(w2, W);
     if (h1 >= h2 || w1 >= w2)
         return I;
+
     T res = I;
     h1 += H, h2 += H, w1 += W, w2 += W;
     for (; h1 < h2; h1 >>= 1, h2 >>= 1) {
