@@ -10,10 +10,11 @@
  */
 
 #include "Simulation.hpp"
+#include "UserSimulation.hpp"
 
 int main(void)
 {
-    Simulation sim;
+    UserSimulation sim;
 
     sim.exportConfig();
     sim.initCells();

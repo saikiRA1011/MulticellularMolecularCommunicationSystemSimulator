@@ -35,9 +35,10 @@
  */
 class Simulation
 {
-    private:
+    protected:
     CellList cellList; //!< CellListのデータ構造を管理するクラス
 
+    private:
     // random
     std::mt19937 rand_gen{ 10 };                     //!< 乱数生成器(seedはとりあえず0)
     std::uniform_real_distribution<> randomCellPosX; //!< Cellのx座標の生成器
@@ -66,7 +67,7 @@ class Simulation
 
     void initCells() noexcept;
 
-    Vec3 calcCellCellForce(Cell&) const noexcept;
+    virtual Vec3 calcCellCellForce(Cell&) const noexcept;
     Vec3 calcRemoteForce(Cell&) const noexcept;
     Vec3 calcVolumeExclusion(Cell&) const noexcept;
     Vec3 calcForce(Cell&) const noexcept;
