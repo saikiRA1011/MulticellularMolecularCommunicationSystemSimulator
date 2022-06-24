@@ -1,6 +1,6 @@
 CC := g++-11
 CFLAGS := -std=c++20 -Wall -Wextra -fopenmp
-OBJS := Vec3.o Cell.o Simulation.o CellList.o
+OBJS := Vec3.o Cell.o Simulation.o CellList.o UserSimulation.o
 
 nowdate:=$(shell date +%Y%m%d_%H%M)
 
@@ -17,6 +17,9 @@ Cell.o: Cell.cpp
 
 Simulation.o: Simulation.cpp SimulationSettings.hpp
 	$(CC) -c $(CFLAGS) Simulation.cpp
+
+UserSimulation.o: Simulation.cpp UserSimulation.cpp
+	$(CC) -c $(CFLAGS) UserSimulation.cpp
 
 SegmentTree.o: SegmentTree.cpp
 	$(CC) -c $(CFLAGS) SegmentTree.cpp
