@@ -6,32 +6,32 @@ nowdate:=$(shell date +%Y%m%d_%H%M)
 
 FULL_ARCHIVE := 1# 0がfalse 1がtrue
 
-SimMain: SimMain.cpp $(OBJS)
-	$(CC) -o SimMain $(CFLAGS) $(OBJS) SimMain.cpp
+SimMain: src/SimMain.cpp $(OBJS)
+	$(CC) -o SimMain $(CFLAGS) $(OBJS) src/SimMain.cpp
 
-Vec3.o: utils/Vec3.cpp
-	$(CC) -c $(CFLAGS) utils/Vec3.cpp
+Vec3.o: src/utils/Vec3.cpp
+	$(CC) -c $(CFLAGS) src/utils/Vec3.cpp
 
-Cell.o: Cell.cpp
-	$(CC) -c $(CFLAGS) Cell.cpp
+Cell.o: src/Cell.cpp
+	$(CC) -c $(CFLAGS) src/Cell.cpp
 
-Simulation.o: Simulation.cpp SimulationSettings.hpp
-	$(CC) -c $(CFLAGS) Simulation.cpp
+Simulation.o: src/Simulation.cpp src/SimulationSettings.hpp
+	$(CC) -c $(CFLAGS) src/Simulation.cpp
 
-UserSimulation.o: Simulation.cpp UserSimulation.cpp
-	$(CC) -c $(CFLAGS) UserSimulation.cpp
+UserSimulation.o: src/Simulation.cpp src/UserSimulation.cpp
+	$(CC) -c $(CFLAGS) src/UserSimulation.cpp
 
-SegmentTree.o: SegmentTree.cpp
-	$(CC) -c $(CFLAGS) SegmentTree.cpp
+SegmentTree.o: src/SegmentTree.cpp
+	$(CC) -c $(CFLAGS) src/SegmentTree.cpp
 
-CellList.o: CellList.cpp
-	$(CC) -c $(CFLAGS) CellList.cpp
+CellList.o: src/CellList.cpp
+	$(CC) -c $(CFLAGS) src/CellList.cpp
 
-VariableRatioCellList.o: VariableRatioCellList.cpp
-	$(CC) -c $(CFLAGS) VariableRatioCellList.cpp
+VariableRatioCellList.o: src/VariableRatioCellList.cpp
+	$(CC) -c $(CFLAGS) src/VariableRatioCellList.cpp
 
-seg-test: SegmentTree.o SegTest.cpp
-	$(CC) -o SegTest $(CFLAGS) SegmentTree.o SegTest.cpp
+seg-test: SegmentTree.o src/SegTest.cpp
+	$(CC) -o SegTest $(CFLAGS) SegmentTree.o src/SegTest.cpp
 
 all: clean SimMain run convert open
 
@@ -47,14 +47,14 @@ data-cleanup:
 	rm -f video/out.mp4
 
 png:
-	python3 create_image.py
+	python3 src/convert_tools/create_image.py
 
 video:
-	python3 img2video.py
+	python3 src/convert_tools/img2video.py
 
 convert:
-	python3 create_image.py
-	python3 img2video.py
+	python3 src/convert_tools/create_image.py
+	python3 src/convert_tools/img2video.py
 
 open:
 	open video/out.mp4
