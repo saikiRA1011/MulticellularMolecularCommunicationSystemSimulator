@@ -1,5 +1,5 @@
 CC := g++-11
-CFLAGS := -std=c++20 -Wall -Wextra -fopenmp
+CFLAGS := -std=c++20 -Wall -Wextra -fopenmp -O2
 OBJS := Vec3.o Cell.o Simulation.o CellList.o UserSimulation.o
 
 nowdate:=$(shell date +%Y%m%d_%H%M)
