@@ -36,7 +36,8 @@
 class Simulation
 {
     protected:
-    CellList cellList; //!< CellListのデータ構造を管理するクラス
+    CellList cellList;       //!< CellListのデータ構造を管理するクラス
+    std::vector<Cell> cells; //!< シミュレーションで使うCellのリスト。
 
     private:
     // random
@@ -45,7 +46,6 @@ class Simulation
     std::uniform_real_distribution<> randomCellPosY; //!< Cellのy座標の生成器
 
     std::queue<int> cellPool; //!< CellのIDを管理するためのキュー。今は使っていない。
-    std::vector<Cell> cells;  //!< シミュレーションで使うCellのリスト。
 
     Field<std::vector<Cell*>> cellsInGrid; //!< グリッド内にcellのポインタを入れる。
 
@@ -65,7 +65,7 @@ class Simulation
 
     void exportConfig() const;
 
-    void initCells() noexcept;
+    virtual void initCells() noexcept;
 
     virtual Vec3 calcCellCellForce(Cell&) const noexcept;
     Vec3 calcRemoteForce(Cell&) const noexcept;

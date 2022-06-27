@@ -1,7 +1,7 @@
 /**
  * @file UserSimulation.hpp
- * @author your name (you@domain.com)
- * @brief
+ * @author Takanori Saiki
+ * @brief シミュレーション固有の設計をここに記す。
  * @version 0.1
  * @date 2022-06-24
  *
@@ -20,4 +20,6 @@ class UserSimulation : public Simulation
     public:
     UserSimulation(/* args */);
     ~UserSimulation();
+
+    void initCells() noexcept override;
 };
