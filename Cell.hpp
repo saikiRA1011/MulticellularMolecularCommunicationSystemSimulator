@@ -22,6 +22,7 @@
 class Cell
 {
     private:
+    int typeID;
     Vec3 position; //!< Cellの座標(x,y,z)
     Vec3 velocity; //!< Cellの速度(x,y,z)
     double weight; //!< Cellの質量
@@ -32,8 +33,8 @@ class Cell
 
     public:
     Cell(int _id);
-    Cell(int _id, double x, double y, double radius = 5.0, double vx = 0, double vy = 0);
-    Cell(int _id, Vec3 pos, double radius = 5.0, Vec3 v = Vec3::zero());
+    Cell(int _id, int _typeID, double x, double y, double radius = 5.0, double vx = 0, double vy = 0);
+    Cell(int _id, int _typeID, Vec3 pos, double radius = 5.0, Vec3 v = Vec3::zero());
     ~Cell();
 
     Vec3 getPosition() const noexcept;
