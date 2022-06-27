@@ -5,7 +5,7 @@
 分子通信シミュレーションのための汎用シミュレータであり、ユーザがシミュレーションのパラメータや力学作用を定義することでさまざまなモデルに対応したシミュレーションを実行することができる。
 
 # Requirement
-- gcc
+- gcc(version 11以降)
 - Python3系(必要ライブラリはrequirements.txtから取得可能)
 - pip
 - make
@@ -40,7 +40,7 @@ UserSimulation.cpp(.hpp)にモデルを記述する。現在作成可能なモ�
 シミュレーションのパラメータはSimulationSettings.hppに記述する。ユーザが記述するプログラムは主にこの2つとなる。  
 UserSimulationの親クラスはSimulationであり、ユーザが使用できる変数(つまり、publicかprotectedの変数)はcells(シミュレーション中のすべてのCellを保存したリスト)とcellList(CellListクラスのインスタンス)である。  
 あるCell cの付近のすべてのCell(のポインタ)を取得したい場合は、`cellList.aroundCellList(c)`によって取得可能である。ただし、すべてのCellを力学モデルの計算対象にしたい場合は、cellsの方を利用したほうが良い。  
-サンプルの力学モデルは`Simulation::calcCellCellForce(Cell &c)`
+サンプルの力学モデルは`Simulation::calcCellCellForce(Cell &c)`を参考にすると良い。
 
 # Features
 - CellListのアルゴリズムを利用することによりシミュレーションを高速に実行することが可能となっている。  
