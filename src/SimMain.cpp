@@ -9,8 +9,8 @@
  *
  */
 
-#include "Simulation.hpp"
 #include "UserSimulation.hpp"
+#include "core/Simulation.hpp"
 
 int main(void)
 {

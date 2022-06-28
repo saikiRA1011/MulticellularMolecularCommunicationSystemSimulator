@@ -1,7 +1,7 @@
 #ifndef USER_RULE_H
 #define USER_RULE_H
 
-#include "CellDefinition.hpp"
+#include "core/CellDefinition.hpp"
 
 CellDefinition* cellDefinition = new CellDefinition();
 

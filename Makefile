@@ -6,32 +6,38 @@ nowdate:=$(shell date +%Y%m%d_%H%M)
 
 FULL_ARCHIVE := 1# 0がfalse 1がtrue
 
-SimMain: src/SimMain.cpp $(OBJS)
-	$(CC) -o SimMain $(CFLAGS) $(OBJS) src/SimMain.cpp
+CORE := src/core
+UTIL := src/utils
+MAIN := src
+USER := src
+TEST := src/test
 
-Vec3.o: src/utils/Vec3.cpp
-	$(CC) -c $(CFLAGS) src/utils/Vec3.cpp
+SimMain: $(MAIN)/SimMain.cpp $(OBJS)
+	$(CC) -o SimMain $(CFLAGS) $(OBJS) $(MAIN)/SimMain.cpp
 
-Cell.o: src/Cell.cpp
-	$(CC) -c $(CFLAGS) src/Cell.cpp
+Vec3.o: $(UTIL)/Vec3.cpp
+	$(CC) -c $(CFLAGS) $(UTIL)/Vec3.cpp
 
-Simulation.o: src/Simulation.cpp src/SimulationSettings.hpp
-	$(CC) -c $(CFLAGS) src/Simulation.cpp
+Cell.o: $(CORE)/Cell.cpp
+	$(CC) -c $(CFLAGS) $(CORE)/Cell.cpp
 
-UserSimulation.o: src/Simulation.cpp src/UserSimulation.cpp
-	$(CC) -c $(CFLAGS) src/UserSimulation.cpp
+Simulation.o: $(CORE)/Simulation.cpp $(USER)/SimulationSettings.hpp
+	$(CC) -c $(CFLAGS) $(CORE)/Simulation.cpp
 
-SegmentTree.o: src/SegmentTree.cpp
-	$(CC) -c $(CFLAGS) src/SegmentTree.cpp
+UserSimulation.o: $(CORE)/Simulation.cpp $(USER)/UserSimulation.cpp
+	$(CC) -c $(CFLAGS) $(USER)/UserSimulation.cpp
 
-CellList.o: src/CellList.cpp
-	$(CC) -c $(CFLAGS) src/CellList.cpp
+SegmentTree.o: $(CORE)/SegmentTree.cpp
+	$(CC) -c $(CFLAGS) $(CORE)/SegmentTree.cpp
 
-VariableRatioCellList.o: src/VariableRatioCellList.cpp
-	$(CC) -c $(CFLAGS) src/VariableRatioCellList.cpp
+CellList.o: $(CORE)/CellList.cpp
+	$(CC) -c $(CFLAGS) $(CORE)/CellList.cpp
 
-seg-test: SegmentTree.o src/SegTest.cpp
-	$(CC) -o SegTest $(CFLAGS) SegmentTree.o src/SegTest.cpp
+VariableRatioCellList.o: $(CORE)/VariableRatioCellList.cpp
+	$(CC) -c $(CFLAGS) $(CORE)/VariableRatioCellList.cpp
+
+seg-test: SegmentTree.o $(TEST)/SegTest.cpp
+	$(CC) -o SegTest $(CFLAGS) SegmentTree.o $(TEST)/SegTest.cpp
 
 all: clean SimMain run convert open
 
@@ -47,7 +53,7 @@ data-cleanup:
 	rm -f video/out.mp4
 
 reset:
-	cp src/backup/SimulationSettings.hpp src/backup/UserSimulation.cpp src/backup/UserSimulation.hpp src/
+	cp src/backup/SimulationSettings.hpp src/backup/UserSimulation.cpp src/backup/UserSimulation.hpp $(USER)/
 
 png:
 	python3 src/convert_tools/create_image.py

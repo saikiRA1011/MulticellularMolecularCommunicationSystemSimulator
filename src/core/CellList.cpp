@@ -10,7 +10,6 @@
  */
 
 #include "CellList.hpp"
-#include "utils/Vec3.hpp"
 
 /**
  * @brief CellListの初期化を呼びだす。

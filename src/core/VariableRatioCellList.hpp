@@ -11,9 +11,9 @@
 
 #pragma once
 
+#include "../SimulationSettings.hpp"
 #include "Cell.hpp"
 #include "SegmentTree.hpp"
-#include "SimulationSettings.hpp"
 #include <stack>
 #include <vector>
 
