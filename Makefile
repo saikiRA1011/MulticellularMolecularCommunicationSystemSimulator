@@ -46,6 +46,9 @@ data-cleanup:
 	rm -f image/*
 	rm -f video/out.mp4
 
+reset:
+	cp src/backup/SimulationSettings.hpp src/backup/UserSimulation.cpp src/backup/UserSimulation.hpp src/
+
 png:
 	python3 src/convert_tools/create_image.py
 
@@ -108,11 +111,12 @@ help:
 	@echo "Usage: make [target]"
 	@echo "make : build the program"
 	@echo "make run : run the program"
-	@echo "make convert : convert to mp4"
+	@echo "make convert : convert from simulation's result to mp4"
 	@echo "make open : open out.mp4"
 	@echo "make all : build and run, convert to, open mp4"
 	@echo "make data-archive : result data to zip archive"
 	@echo "make archive-restore date=[YYYYMMDD_HHMM] : restore archive files"
 	@echo "make clean : remove all object files(*.o)"
 	@echo "make data-cleanup : remove all data files(*.txt, *.png, out.mp4)"
+	@echo "make reset : reset SimulationSettings and UserSimulation to default"
 	@echo "make archive-cleanup : remove all archive files(archive_*)"
