@@ -1,5 +1,5 @@
-CC := g++-11
-CFLAGS := -std=c++20 -Wall -Wextra -fopenmp -O2
+CC := g++
+CFLAGS := -std=c++20 -Wall -Wextra -O2
 OBJS := Vec3.o Cell.o Simulation.o CellList.o UserSimulation.o
 
 nowdate:=$(shell date +%Y%m%d_%H%M)
@@ -11,6 +11,7 @@ UTIL := src/utils
 MAIN := src
 USER := src
 TEST := src/test
+BACKUP := src/backup
 
 SimMain: $(MAIN)/SimMain.cpp $(OBJS)
 	$(CC) -o SimMain $(CFLAGS) $(OBJS) $(MAIN)/SimMain.cpp
@@ -53,17 +54,19 @@ data-cleanup:
 	rm -f video/out.mp4
 
 reset:
-	cp src/backup/SimulationSettings.hpp src/backup/UserSimulation.cpp src/backup/UserSimulation.hpp $(USER)/
+	cp $(BACKUP)/SimulationSettings.hpp $(BACKUP)/UserSimulation.cpp $(BACKUP)/UserSimulation.hpp $(USER)/
+
+CONVERT := src/convert_tools
 
 png:
-	python3 src/convert_tools/create_image.py
+	python3 $(CONVERT)/create_image.py
 
 video:
-	python3 src/convert_tools/img2video.py
+	python3 $(CONVERT)/img2video.py
 
 convert:
-	python3 src/convert_tools/create_image.py
-	python3 src/convert_tools/img2video.py
+	python3 $(CONVERT)/create_image.py
+	python3 $(CONVERT)/img2video.py
 
 open:
 	open video/out.mp4
