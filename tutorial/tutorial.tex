@@ -1,0 +1,108 @@
+\documentclass[vipdfmx,a4paper,11pt]{jsarticle}
+\usepackage{hyperref} % ハイパーリンク差し込み用
+\usepackage{pxjahyper} % 目次の文字化け対策
+
+\usepackage[dvipdfmx]{graphicx,xcolor}% ドライバ指定のため
+
+%オートマトン
+\usepackage{tikz}
+\usetikzlibrary{automata,positioning}
+
+% 数式
+\usepackage{amsmath,amsfonts}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{braket}
+\usepackage{multicol}
+
+% 画像
+\usepackage[dvipdfmx]{graphicx}
+
+% SI単位
+\usepackage{siunitx}
+
+%プログラムリスト用
+\usepackage{listings,jvlisting}
+\lstset{
+basicstyle={\ttfamily},
+identifierstyle={\small},
+commentstyle={\smallitshape},
+keywordstyle={\small\bfseries},
+ndkeywordstyle={\small},
+stringstyle={\small\ttfamily},
+frame={tb},
+breaklines=true,
+columns=[l]{fullflexible},
+numbers=left,
+xrightmargin=0zw,
+xleftmargin=3zw,
+numberstyle={\scriptsize},
+stepnumber=1,
+numbersep=1zw,
+lineskip=-0.5ex
+}
+
+\renewcommand{\thesubsection}{\arabic{section}-\arabic{subsection}}
+\renewcommand{\thesubsubsection}{\arabic{section}-\arabic{subsection}.\arabic{subsubsection}}
+\makeatletter
+  \renewcommand{\theequation}{\arabic{subsection}.\arabic{equation}}
+  \@addtoreset{equation}{subsection}
+\makeatother
+\makeatletter
+% sectionの下マージンを小さく
+\renewcommand{\section}{%
+  \@startsection{section}{1}{\z@}%
+  {0.4\Cvs}{0.1\Cvs}%
+  {\normalfont\large\headfont\raggedright}}
+\renewcommand{\subsection}{%
+  \@startsection{subsection}{1}{\z@}%
+  {0.4\Cvs}{0.1\Cvs}%
+  {\normalfont\large\headfont\raggedright}}
+\renewcommand{\subsubsection}{%
+  \@startsection{subsubsection}{1}{\z@}%
+  {0.4\Cvs}{0.1\Cvs}%
+  {\normalfont\large\headfont\raggedright}}
+\makeatother
+
+\begin{document}
+
+\title{CNSS tutorial(jp)}
+\author{Takanori Saiki}
+\date{\today}
+\maketitle
+
+\newpage
+
+\section{はじめに}
+CNSS(Cell Network Shape Simulation)は分子通信のシミュレーションをおこなう汎用シミュレータです。
+シミュレーションにおいて基盤となるプログラムは用意されているので、ユーザはパラメータを変更することで、
+あるいは独自に拡張をおこなうことで自身の考えたシミュレーションモデルを簡単に実装することができます。
+
+\section{導入}
+ここでは、CNSSを導入するための手順を説明します。使用環境はMac OSかLinuxを想定していますが、
+いくつかのツールを揃えることでWindowsでも実行可能となります。
+
+\subsection{ダウンロード}
+GitHubのCNSSのページ(\href{https://github.com/saikiRA1011/CellNetworkShapeSimulation}{https://github.com/saikiRA1011/CellNetworkShapeSimulation})
+からソフトウェアをダウンロードします。ダウンロード先はどこでも良いですが、シミュレーションの実行後に画像ファイルや
+動画ファイルが作成されるため、容量に余裕のあるドライブに配置しましょう。
+
+\subsection{セッティング}
+CNSSではいくつかの外部ツールをシミュレーションの作成、実行に用いています。以下はそのツールとバージョンの一例です。
+\begin{itemize}
+  \item gcc 11.3.0 (clangでも良い)
+  \item clang 13.1.6 (gccでも良い)
+  \item Python 3.9.12
+  \item pip 22.1.2
+  \item make 3.81
+\end{itemize}
+
+Pythonで用いるライブラリは以下のコマンドから一括でインストールできます。
+
+\begin{lstlisting}
+  pip install -r requirements.txt
+\end{lstlisting}
+
+
+
+\end{document}
