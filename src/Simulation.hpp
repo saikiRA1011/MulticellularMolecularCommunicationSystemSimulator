@@ -35,16 +35,17 @@
  */
 class Simulation
 {
-    private:
-    CellList cellList; //!< CellListのデータ構造を管理するクラス
+    protected:
+    CellList cellList;       //!< CellListのデータ構造を管理するクラス
+    std::vector<Cell> cells; //!< シミュレーションで使うCellのリスト。
 
+    private:
     // random
     std::mt19937 rand_gen{ 10 };                     //!< 乱数生成器(seedはとりあえず0)
     std::uniform_real_distribution<> randomCellPosX; //!< Cellのx座標の生成器
     std::uniform_real_distribution<> randomCellPosY; //!< Cellのy座標の生成器
 
     std::queue<int> cellPool; //!< CellのIDを管理するためのキュー。今は使っていない。
-    std::vector<Cell> cells;  //!< シミュレーションで使うCellのリスト。
 
     Field<std::vector<Cell*>> cellsInGrid; //!< グリッド内にcellのポインタを入れる。
 
@@ -64,9 +65,9 @@ class Simulation
 
     void exportConfig() const;
 
-    void initCells() noexcept;
+    virtual void initCells() noexcept;
 
-    Vec3 calcCellCellForce(Cell&) const noexcept;
+    virtual Vec3 calcCellCellForce(Cell&) const noexcept;
     Vec3 calcRemoteForce(Cell&) const noexcept;
     Vec3 calcVolumeExclusion(Cell&) const noexcept;
     Vec3 calcForce(Cell&) const noexcept;
