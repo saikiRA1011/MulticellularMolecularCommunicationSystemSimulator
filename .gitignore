@@ -16,5 +16,6 @@ archive*
 *.o
 config.txt
 test-tools
-*Test*
+src/test
 README_tmp.html
+tutorial/out/*.log

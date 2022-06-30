@@ -1,37 +1,44 @@
-CC := g++-11
-CFLAGS := -std=c++20 -Wall -Wextra -fopenmp -O2
+CC := g++
+CFLAGS := -std=c++11 -Wall -Wextra -O2
 OBJS := Vec3.o Cell.o Simulation.o CellList.o UserSimulation.o
 
 nowdate:=$(shell date +%Y%m%d_%H%M)
 
-FULL_ARCHIVE := 1# 0がfalse 1がtrue
+FULL_ARCHIVE := 0# 0がfalse 1がtrue
 
-SimMain: src/SimMain.cpp $(OBJS)
-	$(CC) -o SimMain $(CFLAGS) $(OBJS) src/SimMain.cpp
+CORE := src/core
+UTIL := src/utils
+MAIN := src
+USER := src
+TEST := src/test
+BACKUP := src/backup
 
-Vec3.o: src/utils/Vec3.cpp
-	$(CC) -c $(CFLAGS) src/utils/Vec3.cpp
+SimMain: $(MAIN)/SimMain.cpp $(OBJS)
+	$(CC) -o SimMain $(CFLAGS) $(OBJS) $(MAIN)/SimMain.cpp
 
-Cell.o: src/Cell.cpp
-	$(CC) -c $(CFLAGS) src/Cell.cpp
+Vec3.o: $(UTIL)/Vec3.cpp
+	$(CC) -c $(CFLAGS) $(UTIL)/Vec3.cpp
 
-Simulation.o: src/Simulation.cpp src/SimulationSettings.hpp
-	$(CC) -c $(CFLAGS) src/Simulation.cpp
+Cell.o: $(CORE)/Cell.cpp
+	$(CC) -c $(CFLAGS) $(CORE)/Cell.cpp
 
-UserSimulation.o: src/Simulation.cpp src/UserSimulation.cpp
-	$(CC) -c $(CFLAGS) src/UserSimulation.cpp
+Simulation.o: $(CORE)/Simulation.cpp $(USER)/SimulationSettings.hpp
+	$(CC) -c $(CFLAGS) $(CORE)/Simulation.cpp
 
-SegmentTree.o: src/SegmentTree.cpp
-	$(CC) -c $(CFLAGS) src/SegmentTree.cpp
+UserSimulation.o: $(CORE)/Simulation.cpp $(USER)/UserSimulation.cpp
+	$(CC) -c $(CFLAGS) $(USER)/UserSimulation.cpp
 
-CellList.o: src/CellList.cpp
-	$(CC) -c $(CFLAGS) src/CellList.cpp
+SegmentTree.o: $(CORE)/SegmentTree.cpp
+	$(CC) -c $(CFLAGS) $(CORE)/SegmentTree.cpp
 
-VariableRatioCellList.o: src/VariableRatioCellList.cpp
-	$(CC) -c $(CFLAGS) src/VariableRatioCellList.cpp
+CellList.o: $(CORE)/CellList.cpp
+	$(CC) -c $(CFLAGS) $(CORE)/CellList.cpp
 
-seg-test: SegmentTree.o src/SegTest.cpp
-	$(CC) -o SegTest $(CFLAGS) SegmentTree.o src/SegTest.cpp
+VariableRatioCellList.o: $(CORE)/VariableRatioCellList.cpp
+	$(CC) -c $(CFLAGS) $(CORE)/VariableRatioCellList.cpp
+
+seg-test: SegmentTree.o $(TEST)/SegTest.cpp
+	$(CC) -o SegTest $(CFLAGS) SegmentTree.o $(TEST)/SegTest.cpp
 
 all: clean SimMain run convert open
 
@@ -47,17 +54,19 @@ data-cleanup:
 	rm -f video/out.mp4
 
 reset:
-	cp src/backup/SimulationSettings.hpp src/backup/UserSimulation.cpp src/backup/UserSimulation.hpp src/
+	cp $(BACKUP)/SimulationSettings.hpp $(BACKUP)/UserSimulation.cpp $(BACKUP)/UserSimulation.hpp $(USER)/
+
+CONVERT := src/convert_tools
 
 png:
-	python3 src/convert_tools/create_image.py
+	python3 $(CONVERT)/create_image.py
 
 video:
-	python3 src/convert_tools/img2video.py
+	python3 $(CONVERT)/img2video.py
 
 convert:
-	python3 src/convert_tools/create_image.py
-	python3 src/convert_tools/img2video.py
+	python3 $(CONVERT)/create_image.py
+	python3 $(CONVERT)/img2video.py
 
 open:
 	open video/out.mp4
@@ -113,9 +122,9 @@ help:
 	@echo "make run : run the program"
 	@echo "make convert : convert from simulation's result to mp4"
 	@echo "make open : open out.mp4"
-	@echo "make all : build and run, convert to, open mp4"
+	@echo "make all : build, run, convert, and open mp4"
 	@echo "make data-archive : result data to zip archive"
-	@echo "make archive-restore date=[YYYYMMDD_HHMM] : restore archive files"
+	@echo "make archive-restore date=YYYYMMDD_HHMM : restore archive files"
 	@echo "make clean : remove all object files(*.o)"
 	@echo "make data-cleanup : remove all data files(*.txt, *.png, out.mp4)"
 	@echo "make reset : reset SimulationSettings and UserSimulation to default"

@@ -13,9 +13,9 @@
 
 #include "Cell.hpp"
 // #include "UserRule.hpp"
+#include "../SimulationSettings.hpp"
+#include "../utils/Util.hpp"
 #include "CellList.hpp"
-#include "SimulationSettings.hpp"
-#include "utils/Util.hpp"
 #include <chrono>
 #include <fstream>
 #include <iomanip>

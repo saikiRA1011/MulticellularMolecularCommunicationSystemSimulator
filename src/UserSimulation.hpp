@@ -10,7 +10,7 @@
  */
 
 #pragma once
-#include "Simulation.hpp"
+#include "core/Simulation.hpp"
 
 class UserSimulation : public Simulation
 {

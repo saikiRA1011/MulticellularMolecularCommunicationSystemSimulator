@@ -11,9 +11,10 @@
 
 #pragma once
 
+#include "../SimulationSettings.hpp"
+#include "../utils/Util.hpp"
+#include "../utils/Vec3.hpp"
 #include "Cell.hpp"
-#include "SimulationSettings.hpp"
-#include "utils/Util.hpp"
 #include <vector>
 
 class CellList

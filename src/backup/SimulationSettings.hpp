@@ -11,6 +11,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 constexpr int32_t SIM_STEP = 500;  //!< シミュレーションで行うステップの絶対数。シミュレーションの時間はDELTA_TIME*SIM_STEP[単位時間]となる。
 constexpr int32_t CELL_NUM = 2000; //!< シミュレーションで生成するCell数
 

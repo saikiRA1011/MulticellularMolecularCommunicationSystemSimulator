@@ -9,6 +9,8 @@
  *
  */
 
+#include <vector>
+
 template<typename T>
 using FieldLine = std::vector<T>; //!< 2次元フィールドの行
 template<typename T>
