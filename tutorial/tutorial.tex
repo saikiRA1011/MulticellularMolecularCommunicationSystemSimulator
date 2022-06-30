@@ -7,6 +7,9 @@
 %オートマトン
 \usepackage{tikz}
 \usetikzlibrary{automata,positioning}
+\usetikzlibrary{calc}
+\usetikzlibrary{decorations.pathreplacing}
+\usetikzlibrary{matrix,backgrounds,fit,positioning}
 
 % 数式
 \usepackage{amsmath,amsfonts}
@@ -40,6 +43,17 @@ numberstyle={\scriptsize},
 stepnumber=1,
 numbersep=1zw,
 lineskip=-0.5ex
+}
+
+\usepackage{tcolorbox}
+\newtcbox{\code}[1][]{
+  colback=gray!10!white,
+  colframe=gray!20!white,
+  boxrule=1pt,
+  left=0mm,right=0mm,top=0mm,bottom=0mm,
+  box align=base,
+  nobeforeafter,
+  fontupper=\ttfamily
 }
 
 \renewcommand{\thesubsection}{\arabic{section}-\arabic{subsection}}
@@ -90,8 +104,8 @@ GitHubのCNSSのページ(\href{https://github.com/saikiRA1011/CellNetworkShapeS
 \subsection{セッティング}
 CNSSではいくつかの外部ツールをシミュレーションの作成、実行に用いています。以下はそのツールとバージョンの一例です。
 \begin{itemize}
-  \item gcc 11.3.0 (clangでも良い)
-  \item clang 13.1.6 (gccでも良い)
+  \item gcc 11.3.0 (clangでも良い。C++11が使用できるバージョン)
+  \item clang 13.1.6 (gccでも良い。C++11が使用できるバージョン)
   \item Python 3.9.12
   \item pip 22.1.2
   \item make 3.81
@@ -103,6 +117,113 @@ Pythonで用いるライブラリは以下のコマンドから一括でイン�
   pip install -r requirements.txt
 \end{lstlisting}
 
+\section{実行}
+ここではシミュレーションの実行方法を説明します。CNSSではmakeを用いてシミュレーションの実行から動画ファイルの生成までを
+おこなうので、makeをコンピュータにインストールしておいてください。
 
+シミュレーションをビルドする際には、\code{make}を実行してください。実行ファイルとして、SimMainが生成されます。
+また、シミュレーションを実行する際には\code{make run}を実行してください。シミュレーション結果はresultディレクトリにステップごとに
+テキストファイルとして出力されます。次に、シミュレーション結果から動画ファイルを生成する際には、\code{make convert}を実行してください。
+最終生成物のout.mp4はvideoディレクトリに、中間生成物の各ステップごとの画像はimageディレクトリに出力されます。最後に、
+生成した動画を確認したい時は、\code{make open}を実行してください。
+
+シミュレーションの設定を変更した際は、そのまま\code{make}すると修正前のオブジェクトファイルを参照してしまうことがあるので、
+事前に\code{make clean}を実行してすべてのオブジェクトファイルを削除してください。
+
+また、これらの一連の処理は\code{make all}でまとめて実行可能です。
+
+\begin{center}
+  \fbox{
+  \begin{tikzpicture}[node distance=1.5cm]
+    \node[](clean){\code{\Large{make clean}}};
+    \node[below of=clean](make){\code{\Large{make}}};
+    \node[below of=make](run){\code{\Large{make run}}};
+    \node[below of=run](convert){\code{\Large{make convert}}};
+    \node[below of=convert](open){\code{\Large{make open}}};
+    \node[right of=run, right=1.4cm](all){\code{\Large{make all}}};
+    \draw[->] (clean)--(make);
+    \draw[->] (make)--(run);
+    \draw[->] (run)--(convert);
+    \draw[->] (convert)--(open);
+    \draw[decorate,decoration={brace,amplitude=5}, right of=run, right=1.5cm]
+    ($(clean)+(2.0cm,0.5cm)$)--($(open)+(2.0cm,-0.5cm)$);
+  \end{tikzpicture}
+  }
+
+  Fig 3-1 : make コマンドによる一連の流れ
+\end{center}
+
+\section{シミュレーションの自作}
+ユーザは自身でプログラムを書くことで(あるいはパラメータを変更することで)、シミュレーションを自作することができます。
+また、ファイルの内容をデフォルトに戻したい場合は、\ref{make}で解説している\code{make reset}を実行することで初期化できます。
+ここでは、シミュレーションの自作に必要な説明をユーザが編集するファイルごとにおこなっていきます。
+
+\subsection{SimulationSettings.hpp}
+SimulationSettings.hppにはシミュレーションに必要となるパラメータを定義します。例えば、シミュレーションのステップ数や、
+Cellの個数(初期値)、シミュレーションのstepあたりの単位時間です。
+それぞれのパラメータの説明は当該ファイルにコメントとして記述されているので、それらを参考にしてください。
+
+また、必要であればパラメータを増やすことも可能です。自身で必要だと思ったシミュレーションのパラメータ(例えば、Cellの種類が
+複数ある場合はそれぞれのCellの個数など)をここに定義すると簡単に拡張できます。
+
+ただし、デフォルトで用意されているパラメータを削除することはできません。
+
+\subsection{UserSimulation.hpp(.cpp)}
+UserSimulation.hpp(.cpp)にはシミュレーションのモデルや初期条件(Cellの分布など)を定義することができます。
+現在定義可能なモデルは、細胞間に働く力学モデル(calcCellCellForce)のみです。
+
+このファイルもSimulationSettings.hppと同様、ユーザが独自に変数、メソッドを定義することができるので、
+Cellの種類ごとに力学モデルを定義したい場合は、それぞれのモデルを別のメソッドに分けて記述することができます。
+ただし、シミュレーション時に読み込まれるメソッドはcalcCellCellForceであるため、このメソッドから定義したそれぞれのメソッドを
+呼び出す必要があります。
+
+
+\newpage
+\section{付録}
+\subsection{シミュレーションの結果のファイル}
+シミュレーションを実行すると、resultディレクトリに cells\_step番号 のファイル名で複数のテキストファイルが出力される。
+これがシミュレーションの結果を出力したものである。
+
+テキストファイルの中身はタブ文字区切りで、以下の形式でシミュレーション結果が記されている。
+
+\begin{lstlisting}
+  ヘッダ行
+  ID typeID X Y Z Vx Vy Vz R N_contact Contact_ID_1 Contact_ID_2 ...
+\end{lstlisting}
+
+それぞれのデータの説明は以下の通りである。
+
+\begin{itemize}
+  \item ID : Cellの識別子。唯一無二のものが割り当てられる。
+  \item typeID : Cellの種類の識別子。種類ごとに異なる動作を定義できる。
+  \item X : CellのX座標の位置
+  \item Y : CellのY座標の位置
+  \item Z : CellのZ座標の位置
+  \item Vx : CellのX方向の速度
+  \item Vy : CellのY方向の速度
+  \item Vz : CellのZ方向の速度
+  \item R : Cellの半径
+  \item N\_contact : 接触しているCellの数
+  \item Contact\_ID : 接触しているCellのID
+\end{itemize}
+
+\subsection{makeコマンド}\label{make}
+CNSSではシミュレーションの実行から結果の確認に関わるmakeコマンド以外にも、いくつかのコマンドを用意しています。
+以下はそれらの解説です。
+
+\begin{itemize}
+  \item \code{make} : プログラムをビルドする。
+  \item \code{make run} : シミュレーションを実行する。
+  \item \code{make convert} : シミュレーション結果を動画ファイルに変換する。
+  \item \code{make open} : シミュレーション結果の動画ファイルを確認する。
+  \item \code{make clean} : オブジェクトファイルをすべて削除する。
+  \item \code{make all} : オブジェクトファイルをすべて削除してから、シミュレーションのビルド、実行、動画の生成、確認を一通りおこなう。
+  \item \code{make reset} : シミュレーションのユーザ設定ファイルをデフォルトに戻す。
+  \item \code{make data-cleanup} : シミュレーションの生成物(テキスト、画像、動画)をすべて削除する。
+  \item \code{make data-archive} : 現在保存されてあるシミュレーション結果をzipアーカイブする。
+  \item \code{make archive-restore date=YYYYMMDD\_HHmm} : アーカイブファイルの日時を指定することで、アーカイブの内容を復元する。
+  \item \code{make archive-cleanup} : すべてのアーカイブファイルを削除する。
+  \item \code{make help} : Makefileに登録されているコマンドの使用方法と説明を表示する。
+\end{itemize}
 
 \end{document}
