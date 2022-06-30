@@ -1,10 +1,10 @@
 CC := g++
-CFLAGS := -std=c++20 -Wall -Wextra -O2
+CFLAGS := -std=c++11 -Wall -Wextra -O2
 OBJS := Vec3.o Cell.o Simulation.o CellList.o UserSimulation.o
 
 nowdate:=$(shell date +%Y%m%d_%H%M)
 
-FULL_ARCHIVE := 1# 0がfalse 1がtrue
+FULL_ARCHIVE := 0# 0がfalse 1がtrue
 
 CORE := src/core
 UTIL := src/utils
@@ -122,9 +122,9 @@ help:
 	@echo "make run : run the program"
 	@echo "make convert : convert from simulation's result to mp4"
 	@echo "make open : open out.mp4"
-	@echo "make all : build and run, convert to, open mp4"
+	@echo "make all : build, run, convert, and open mp4"
 	@echo "make data-archive : result data to zip archive"
-	@echo "make archive-restore date=[YYYYMMDD_HHMM] : restore archive files"
+	@echo "make archive-restore date=YYYYMMDD_HHMM : restore archive files"
 	@echo "make clean : remove all object files(*.o)"
 	@echo "make data-cleanup : remove all data files(*.txt, *.png, out.mp4)"
 	@echo "make reset : reset SimulationSettings and UserSimulation to default"
