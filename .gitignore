@@ -18,4 +18,4 @@ config.txt
 test-tools
 src/test
 README_tmp.html
-tutorial/out/tutorial.log
+tutorial/out/*.log
