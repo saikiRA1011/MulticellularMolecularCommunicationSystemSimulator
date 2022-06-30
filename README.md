@@ -4,6 +4,9 @@
 # Overview
 分子通信シミュレーションのための汎用シミュレータであり、ユーザがシミュレーションのパラメータや力学作用を定義することでさまざまなモデルに対応したシミュレーションを実行することができます。
 
+tutorial
+jp -> https://github.com/saikiRA1011/CellNetworkShapeSimulation/blob/main/tutorial/out/tutorial.pdf
+
 # Requirement
 - gcc(version 11以降)
 - Python3系(必要ライブラリはrequirements.txtから取得可能)
