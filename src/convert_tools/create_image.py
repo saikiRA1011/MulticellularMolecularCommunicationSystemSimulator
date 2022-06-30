@@ -22,12 +22,13 @@ for file in files:
     with open(file, 'r') as f:
         cells = f.read().split('\n')
 
+    # cell[id, typeID, x, y, z, vx, vy, vz, r, contact num, contact id...]
     for cell in cells[1:-1]:
         cell = cell.split('\t')
-        x = float(cell[1])+IMAGE_LEN/2
-        y = float(cell[2])+IMAGE_LEN/2
-        z = float(cell[3])+IMAGE_LEN/2
-        r = float(cell[7])
+        x = float(cell[2])+IMAGE_LEN/2
+        y = float(cell[3])+IMAGE_LEN/2
+        z = float(cell[4])+IMAGE_LEN/2
+        r = float(cell[8])
 
         if x < 0 or x > IMAGE_LEN or y < 0 or y > IMAGE_LEN:
             print('out of range')

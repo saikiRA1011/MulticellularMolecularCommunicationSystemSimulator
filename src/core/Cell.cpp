@@ -156,7 +156,7 @@ void Cell::emitMolecule(int moleculeId) noexcept
  */
 void Cell::printCell() const noexcept
 {
-    std::cout << id << "\t";
+    std::cout << id << "\t" << typeID << "\t";
     std::cout << position.x << "\t" << position.y << "\t" << position.z << "\t" << velocity.x << "\t" << velocity.y << "\t" << velocity.z << "\t" << radius << std::endl;
 }
 
