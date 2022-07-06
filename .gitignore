@@ -1,14 +1,14 @@
 .vscode
 html
-image
+image/*
 latex
 out_mac
 out_win
-result
+result/*
 SimMain.dSYM
 Doxifile.bak
 out.mp4
-video
+video/*
 SimMain
 *.mp4
 .DS_store
