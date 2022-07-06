@@ -1,6 +1,7 @@
 CC := g++
 CFLAGS := -std=c++11 -Wall -Wextra -O2
 OBJS := Vec3.o Cell.o Simulation.o CellList.o UserSimulation.o
+DIR := result image video
 
 nowdate:=$(shell date +%Y%m%d_%H%M)
 
@@ -13,7 +14,7 @@ USER := src
 TEST := src/test
 BACKUP := src/backup
 
-SimMain: $(MAIN)/SimMain.cpp $(OBJS)
+SimMain: $(MAIN)/SimMain.cpp $(OBJS) result
 	$(CC) -o SimMain $(CFLAGS) $(OBJS) $(MAIN)/SimMain.cpp
 
 Vec3.o: $(UTIL)/Vec3.cpp
@@ -40,9 +41,18 @@ VariableRatioCellList.o: $(CORE)/VariableRatioCellList.cpp
 seg-test: SegmentTree.o $(TEST)/SegTest.cpp
 	$(CC) -o SegTest $(CFLAGS) SegmentTree.o $(TEST)/SegTest.cpp
 
-all: clean SimMain run convert open
+all: clean $(DIR) SimMain run convert open
 
-run: SimMain
+result:
+	mkdir result
+
+image:
+	mkdir image
+
+video:
+	mkdir video
+
+run: SimMain result
 	./SimMain
 
 clean: 
@@ -58,13 +68,13 @@ reset:
 
 CONVERT := src/convert_tools
 
-png:
+png: result image
 	python3 $(CONVERT)/create_image.py
 
-video:
+img2video: image video
 	python3 $(CONVERT)/img2video.py
 
-convert:
+convert: $(DIR)
 	python3 $(CONVERT)/create_image.py
 	python3 $(CONVERT)/img2video.py
 
