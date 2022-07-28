@@ -53,6 +53,7 @@ video:
 	mkdir video
 
 run: SimMain result
+	rm -f result/*
 	./SimMain
 
 clean: 
@@ -75,6 +76,8 @@ img2video: image video
 	python3 $(CONVERT)/img2video.py
 
 convert: $(DIR)
+	rm -f image/*
+	rm -f video/out.mp4
 	python3 $(CONVERT)/create_image.py
 	python3 $(CONVERT)/img2video.py
 
