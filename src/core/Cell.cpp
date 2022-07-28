@@ -127,7 +127,7 @@ void Cell::nextStep() noexcept
 {
     position += velocity;
 
-    const int32_t FIELD_WIDTH = 1024;
+    const int32_t FIELD_WIDTH = FIELD_X_LEN;
 
     // 座標が画面外に出たら、一周回して画面内に戻す
     if (position.x < -(FIELD_WIDTH / 2)) {

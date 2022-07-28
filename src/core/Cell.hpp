@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include "../SimulationSettings.hpp"
 #include "../utils/Vec3.hpp"
 #include <iostream>
 #include <random>
