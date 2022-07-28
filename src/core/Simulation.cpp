@@ -104,21 +104,23 @@ Vec3 Simulation::calcCellCellForce(Cell& c) const noexcept
 
     std::vector<Cell*> aroundCells = cellList.aroundCellList(c);
 
+    constexpr double COEFFICIENT = 1.0;
+
     for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
         Cell* cell        = aroundCells[i];
         const Vec3 diff   = c.getPosition() - cell->getPosition();
         const double dist = diff.length();
 
-        constexpr double LAMBDA      = 30.0;
-        constexpr double COEFFICIENT = 0.5;
-        const double weight          = cell->getWeight() * c.getWeight();
+        constexpr double LAMBDA = 30.0;
+
+        const double weight = cell->getWeight() * c.getWeight();
 
         // d = |C1 - C2|
         // F += c (C1 - C2) / d * e^(-d/λ)
         force += -diff.normalize().timesScalar(weight).timesScalar(COEFFICIENT).timesScalar(std::exp(-dist / LAMBDA));
     }
 
-    force = force.normalize();
+    force = force.normalize().timesScalar(COEFFICIENT);
 
     for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
         Cell* cell        = aroundCells[i];
