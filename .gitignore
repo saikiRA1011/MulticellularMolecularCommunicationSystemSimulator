@@ -10,6 +10,7 @@ Doxifile.bak
 out.mp4
 video/*
 SimMain
+SimMain.exe
 *.mp4
 .DS_store
 archive*
