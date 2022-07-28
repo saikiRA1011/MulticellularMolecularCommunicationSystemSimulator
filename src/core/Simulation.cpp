@@ -289,7 +289,9 @@ int32_t Simulation::run()
     for (int32_t step = 1; step < SIM_STEP; step++) {
         auto start = std::chrono::system_clock::now();
         nextStep();
-        printCells(step);
+        if (step % OUTPUT_INTERVAL_STEP == 0) {
+            printCells(step / OUTPUT_INTERVAL_STEP);
+        }
         auto end = std::chrono::system_clock::now();
 
         auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
