@@ -36,6 +36,10 @@ void Simulation::exportConfig() const
     outputfile << FIELD_Y_LEN << std::endl;
     outputfile << SIM_STEP << std::endl;
 
+    constexpr double TIME_PER_FILE = DELTA_TIME * (double)OUTPUT_INTERVAL_STEP;
+
+    outputfile << TIME_PER_FILE << std::endl;
+
     outputfile.close();
 }
 
