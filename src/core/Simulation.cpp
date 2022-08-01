@@ -289,19 +289,26 @@ int32_t Simulation::nextStep() noexcept
 int32_t Simulation::run()
 {
     printCells(0);
+    auto sumTime = 0;
 
     for (int32_t step = 1; step < SIM_STEP; step++) {
         auto start = std::chrono::system_clock::now();
+
         nextStep();
+
         if (step % OUTPUT_INTERVAL_STEP == 0) {
             printCells(step / OUTPUT_INTERVAL_STEP);
         }
-        auto end = std::chrono::system_clock::now();
 
+        auto end  = std::chrono::system_clock::now();
         auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
         std::cout << "step: " << step << "  " << msec << "msec" << std::endl;
+        sumTime += msec;
     }
+
+    const double averageTime = (double)sumTime / (double)SIM_STEP;
+    std::cout << "Cell count : " << CELL_NUM << "    average processing time : " << averageTime << std::endl;
 
     return 0;
 }
