@@ -244,8 +244,10 @@ Vec3 Simulation::calcForce(Cell& c) const noexcept
  */
 int32_t Simulation::nextStep() noexcept
 {
-    cellList.resetGrid();
-    setCellList();
+    if (USE_CELL_LIST) {
+        cellList.resetGrid();
+        setCellList();
+    }
 
     // threadを使うよりもopenMPを利用したほうが速い
     //#pragma omp parallel

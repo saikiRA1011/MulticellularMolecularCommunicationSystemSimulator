@@ -13,10 +13,12 @@
 
 #include <cstdint>
 
-constexpr int32_t SIM_STEP             = 500; //!< シミュレーションで行うステップの絶対数。シミュレーションの時間はDELTA_TIME*SIM_STEP[単位時間]となる。
+constexpr bool USE_CELL_LIST = false;
+
+constexpr int32_t SIM_STEP             = 100; //!< シミュレーションで行うステップの絶対数。シミュレーションの時間はDELTA_TIME*SIM_STEP[単位時間]となる。
 constexpr int32_t OUTPUT_INTERVAL_STEP = 1;   //!< シミュレーション結果を出力するステップ間隔。
 
-constexpr int32_t CELL_NUM = 2000; //!< シミュレーションで生成するCell数
+constexpr int32_t CELL_NUM = 5000; //!< シミュレーションで生成するCell数
 
 constexpr int32_t GRID_SIZE_MAGNIFICATION = 64; //!< CellListで使用するグリッドサイズの倍率。最小は1、値は2^nである必要がある。
 constexpr int32_t SEARCH_RADIUS           = 50; //!< この半径内(positionの差)にあるcellを力の計算の対象とする。
