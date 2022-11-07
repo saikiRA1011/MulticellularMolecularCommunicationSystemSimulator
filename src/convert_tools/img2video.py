@@ -8,7 +8,7 @@ with open('config.txt', 'r') as f:
     img_w_len = int(f.readline())
     img_h_len = int(f.readline())
 
-img_len = img_w_len
+img_len = 1024
 
 # output
 video = cv2.VideoWriter('./video/out.mp4', fourcc, 20.0, (img_len, img_len))
