@@ -219,6 +219,14 @@ Vec3 Simulation::calcVolumeExclusion(Cell& c) const noexcept
     return force;
 }
 
+void Simulation::step_preprocess() noexcept
+{
+}
+
+void Simulation::step_end_process() noexcept
+{
+}
+
 /**
  * @brief 指定したCellにかかるすべての力を計算する。O(n^2)
  *
@@ -250,7 +258,7 @@ int32_t Simulation::nextStep() noexcept
     }
 
     // threadを使うよりもopenMPを利用したほうが速い
-    //#pragma omp parallel
+    // #pragma omp parallel
     for (int i = 0; i < CELL_NUM; i++) {
         Vec3 force;
         force = calcForce(cells[i]);
@@ -296,7 +304,9 @@ int32_t Simulation::run()
     for (int32_t step = 1; step < SIM_STEP; step++) {
         auto start = std::chrono::system_clock::now();
 
+        step_preprocess();
         nextStep();
+        step_end_process();
 
         if (step % OUTPUT_INTERVAL_STEP == 0) {
             printCells(step / OUTPUT_INTERVAL_STEP);
