@@ -86,6 +86,11 @@ Vec3 Cell::getPosition() const noexcept
     return position;
 }
 
+Vec3 Cell::getVelocity() const noexcept
+{
+    return velocity;
+}
+
 /**
  * @brief Cellの質量を返す。
  *

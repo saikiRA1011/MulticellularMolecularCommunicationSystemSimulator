@@ -39,6 +39,7 @@ class Cell
     ~Cell();
 
     Vec3 getPosition() const noexcept;
+    Vec3 getVelocity() const noexcept;
     double getWeight() const noexcept;
 
     void addForce(double fx, double fy) noexcept;
