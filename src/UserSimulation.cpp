@@ -24,7 +24,15 @@ void UserSimulation::initCells() noexcept
     Simulation::initCells();
 }
 
-Vec3 UserSimulation::calcCellCellForce(Cell &c) const noexcept
+void UserSimulation::step_preprocess() noexcept
+{
+}
+
+void UserSimulation::step_end_process() noexcept
+{
+}
+
+Vec3 UserSimulation::calcCellCellForce(Cell& c) const noexcept
 {
     return Simulation::calcCellCellForce(c);
 }

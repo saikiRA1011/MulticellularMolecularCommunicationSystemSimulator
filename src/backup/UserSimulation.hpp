@@ -11,11 +11,16 @@
 
 #pragma once
 #include "core/Simulation.hpp"
+#include <algorithm>
+#include <cmath>
+#include <set>
 
 class UserSimulation : public Simulation
 {
     private:
     Vec3 calcCellCellForce(Cell &c) const noexcept override;
+    void step_preprocess() noexcept override;
+    void step_end_process() noexcept override;
 
     public:
     UserSimulation(/* args */);
