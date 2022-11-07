@@ -13,6 +13,7 @@
 
 #include <cstdint>
 
+constexpr bool USE_CELL_LIST           = true;
 constexpr int32_t SIM_STEP             = 500; //!< シミュレーションで行うステップの絶対数。シミュレーションの時間はDELTA_TIME*SIM_STEP[単位時間]となる。
 constexpr int32_t OUTPUT_INTERVAL_STEP = 1;   //!< シミュレーション結果を出力するステップ間隔。
 
