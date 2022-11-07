@@ -1,5 +1,6 @@
 CC := g++
-CFLAGS := -std=c++11 -Wall -Wextra -O2
+PYTHON := python
+CFLAGS := -std=c++11 -Wall -Wextra -O2 
 OBJS := Vec3.o Cell.o Simulation.o CellList.o UserSimulation.o
 DIR := result image video
 
@@ -70,16 +71,16 @@ reset:
 CONVERT := src/convert_tools
 
 png: result image
-	python3 $(CONVERT)/create_image.py
+	$(PYTHON) $(CONVERT)/create_image.py
 
 img2video: image video
-	python3 $(CONVERT)/img2video.py
+	$(PYTHON) $(CONVERT)/img2video.py
 
 convert: $(DIR)
 	rm -f image/*
 	rm -f video/out.mp4
-	python3 $(CONVERT)/create_image.py
-	python3 $(CONVERT)/img2video.py
+	$(PYTHON) $(CONVERT)/create_image.py
+	$(PYTHON) $(CONVERT)/img2video.py
 
 open:
 	open video/out.mp4
@@ -102,6 +103,13 @@ data-archive:
 	zip -r archive_$(nowdate).zip archive_$(nowdate)
 
 	rm -rf archive_$(nowdate)
+
+PACKAGE_LIST := src/SimMain.cpp src/SimulationSettings.hpp src/UserSimulation.hpp src/UserSimulation.cpp src/UserRule.hpp
+
+packaging:
+	mkdir package/$(name)
+
+	cp $(PACKAGE_LIST) package/$(name)
 
 archive-cleanup:
 	rm -r archive_*
@@ -136,6 +144,7 @@ help:
 	@echo "make convert : convert from simulation's result to mp4"
 	@echo "make open : open out.mp4"
 	@echo "make all : build, run, convert, and open mp4"
+	@echo "make packaging name=NAME : packaging user program"
 	@echo "make data-archive : result data to zip archive"
 	@echo "make archive-restore date=YYYYMMDD_HHMM : restore archive files"
 	@echo "make clean : remove all object files(*.o)"

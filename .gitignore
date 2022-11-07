@@ -20,3 +20,4 @@ test-tools
 src/test
 README_tmp.html
 tutorial/out/*.log
+package
