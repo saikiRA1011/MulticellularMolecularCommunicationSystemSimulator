@@ -36,8 +36,9 @@
 class Simulation
 {
     protected:
-    CellList cellList;       //!< CellListのデータ構造を管理するクラス
-    std::vector<Cell> cells; //!< シミュレーションで使うCellのリスト。
+    CellList cellList;             //!< CellListのデータ構造を管理するクラス
+    std::vector<Cell> cells;       //!< シミュレーションで使うCellのリスト。
+    std::streambuf* consoleStream; //!< 標準出力のストリームバッファ
 
     private:
     // random
@@ -48,8 +49,6 @@ class Simulation
     std::queue<int> cellPool; //!< CellのIDを管理するためのキュー。今は使っていない。
 
     Field<std::vector<Cell*>> cellsInGrid; //!< グリッド内にcellのポインタを入れる。
-
-    std::streambuf* consoleStream; //!< 標準出力のストリームバッファ
 
     void printHeader() const noexcept;
     void printCells(int32_t) const;
@@ -68,6 +67,8 @@ class Simulation
     virtual void initCells() noexcept;
 
     virtual Vec3 calcCellCellForce(Cell&) const noexcept;
+    virtual void step_preprocess() noexcept;
+    virtual void step_end_process() noexcept;
     Vec3 calcRemoteForce(Cell&) const noexcept;
     Vec3 calcVolumeExclusion(Cell&) const noexcept;
     Vec3 calcForce(Cell&) const noexcept;
