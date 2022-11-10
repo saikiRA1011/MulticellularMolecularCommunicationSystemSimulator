@@ -65,10 +65,11 @@ data-cleanup:
 	rm -f image/*
 	rm -f video/out.mp4
 
+CONVERT := src/convert_tools
+
 reset:
 	cp $(BACKUP)/SimulationSettings.hpp $(BACKUP)/UserSimulation.cpp $(BACKUP)/UserSimulation.hpp $(USER)/
-
-CONVERT := src/convert_tools
+	cp $(BACKUP)/create_image.py $(CONVERT)/
 
 png: result image
 	$(PYTHON) $(CONVERT)/create_image.py
