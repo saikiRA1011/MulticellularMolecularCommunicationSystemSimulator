@@ -42,7 +42,7 @@ class Simulation
 
     private:
     // random
-    std::mt19937 rand_gen{ 10 };                     //!< 乱数生成器(seedはとりあえず0)
+    std::mt19937 rand_gen{ CELL_SEED };              //!< 乱数生成器(seedはとりあえず0)
     std::uniform_real_distribution<> randomCellPosX; //!< Cellのx座標の生成器
     std::uniform_real_distribution<> randomCellPosY; //!< Cellのy座標の生成器
 
@@ -67,8 +67,8 @@ class Simulation
     virtual void initCells() noexcept;
 
     virtual Vec3 calcCellCellForce(Cell&) const noexcept;
-    virtual void step_preprocess() noexcept;
-    virtual void step_end_process() noexcept;
+    virtual void stepPreprocess() noexcept;
+    virtual void stepEndProcess() noexcept;
     Vec3 calcRemoteForce(Cell&) const noexcept;
     Vec3 calcVolumeExclusion(Cell&) const noexcept;
     Vec3 calcForce(Cell&) const noexcept;
