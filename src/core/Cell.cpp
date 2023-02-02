@@ -15,13 +15,15 @@
  * @brief 基本となるコンストラクタ。
  *
  * @param _id
+ * @param _arrayIndex
  */
-Cell::Cell(int _id)
+Cell::Cell(int _id, int _arrayIndex)
   : typeID(0)
   , position(0, 0, 0)
   , velocity(0, 0, 0)
   , weight(1.0)
   , id(_id)
+  , arrayIndex(_arrayIndex)
   , radius(5.0)
 {
 }
@@ -31,6 +33,8 @@ Cell::Cell(int _id)
  *
  *
  * @param _id
+ * @param _arrayIndex
+ * @param _index
  * @param _typeID
  * @param x
  * @param y
@@ -38,12 +42,13 @@ Cell::Cell(int _id)
  * @param vx
  * @param vy
  */
-Cell::Cell(int _id, int _typeID, double x, double y, double radius, double vx, double vy)
+Cell::Cell(int _id, int _arrayIndex, int _typeID, double x, double y, double radius, double vx, double vy)
   : typeID(_typeID)
   , position(x, y)
   , velocity(vx, vy)
   , weight(1.0)
   , id(_id)
+  , arrayIndex(_arrayIndex)
   , radius(radius)
 {
 }
@@ -53,17 +58,19 @@ Cell::Cell(int _id, int _typeID, double x, double y, double radius, double vx, d
  * 座標と速度をVec3型で指定して初期化するコンストラクタ。呼び出し毎にcellNumをインクリメントする。
  *
  * @param _id
+ * @param _arrayIndex
  * @param _typeID
  * @param pos
  * @param radius
  * @param v
  */
-Cell::Cell(int _id, int _typeID, Vec3 pos, double radius, Vec3 v)
+Cell::Cell(int _id, int _arrayIndex, int _typeID, Vec3 pos, double radius, Vec3 v)
   : typeID(_typeID)
   , position(pos)
   , velocity(v)
   , weight(1.0)
   , id(_id)
+  , arrayIndex(_arrayIndex)
   , radius(radius)
 {
 }
@@ -162,7 +169,16 @@ void Cell::emitMolecule(int moleculeId) noexcept
 void Cell::printCell() const noexcept
 {
     std::cout << id << "\t" << typeID << "\t";
-    std::cout << position.x << "\t" << position.y << "\t" << position.z << "\t" << velocity.x << "\t" << velocity.y << "\t" << velocity.z << "\t" << radius << std::endl;
+    std::cout << position.x << "\t" << position.y << "\t" << position.z << "\t" << velocity.x << "\t" << velocity.y << "\t" << velocity.z << "\t" << radius << "\t" << adhereCells.size();
+
+    for (int i = 0; i < adhereCells.size(); i++) {
+        std::cout << adhereCells[i];
+
+        if (i != adhereCells.size() - 1) {
+            std::cout << ",";
+        }
+    }
+    std::cout << std::endl;
 }
 
 /**

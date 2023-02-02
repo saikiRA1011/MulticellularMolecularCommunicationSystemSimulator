@@ -52,7 +52,7 @@ void Simulation::initCells() noexcept
     for (int32_t i = 0; i < CELL_NUM; i++) {
         double xPos = randomCellPosX(rand_gen);
         double yPos = randomCellPosY(rand_gen);
-        Cell c(i, 0, xPos, yPos, 10.0);
+        Cell c(i, i, 0, xPos, yPos, 10.0);
         cells.emplace_back(c);
     }
 }
@@ -219,11 +219,11 @@ Vec3 Simulation::calcVolumeExclusion(Cell& c) const noexcept
     return force;
 }
 
-void Simulation::step_preprocess() noexcept
+void Simulation::stepPreprocess() noexcept
 {
 }
 
-void Simulation::step_end_process() noexcept
+void Simulation::stepEndProcess() noexcept
 {
 }
 

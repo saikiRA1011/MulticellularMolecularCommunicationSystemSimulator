@@ -28,14 +28,16 @@ class Cell
     Vec3 velocity; //!< Cellの速度(x,y,z)
     double weight; //!< Cellの質量
 
+    std::vector<Cell*> adhereCells;
+
     double divisionCycleTime;         //!< 細胞の分裂周期
     double divisionCycleGauge;        //!< 細胞の分裂周期のゲージ。divisionCycleTimeを超えたら分裂する。
     std::vector<int> molecularStocks; //!< 細胞の保持している分子数。配列の添字は分子の種類。
 
     public:
-    Cell(int _id);
-    Cell(int _id, int _typeID, double x, double y, double radius = 5.0, double vx = 0, double vy = 0);
-    Cell(int _id, int _typeID, Vec3 pos, double radius = 5.0, Vec3 v = Vec3::zero());
+    Cell(int _id, int _arrayIndex);
+    Cell(int _id, int _arrayIndex, int _typeID, double x, double y, double radius = 5.0, double vx = 0, double vy = 0);
+    Cell(int _id, int _arrayIndex, int _typeID, Vec3 pos, double radius = 5.0, Vec3 v = Vec3::zero());
     ~Cell();
 
     Vec3 getPosition() const noexcept;
@@ -53,6 +55,7 @@ class Cell
     // デバッグ用
     void printDebug() const noexcept;
 
-    const int id;        //!< CellのID
-    const double radius; //!< Cellの半径
+    const int id;         //!< CellのID
+    const int arrayIndex; //!< 配列のどこに入るか
+    const double radius;  //!< Cellの半径
 };
