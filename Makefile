@@ -1,6 +1,6 @@
-CC := g++
-PYTHON := python
-CFLAGS := -std=c++11 -Wall -Wextra -O2 
+CC := g++-12
+PYTHON := python3.10
+CFLAGS := -std=c++11 -Wall -Wextra -O2  -fopenmp
 OBJS := Vec3.o Cell.o Simulation.o CellList.o UserSimulation.o
 DIR := result image video
 
@@ -42,7 +42,7 @@ VariableRatioCellList.o: $(CORE)/VariableRatioCellList.cpp
 seg-test: SegmentTree.o $(TEST)/SegTest.cpp
 	$(CC) -o SegTest $(CFLAGS) SegmentTree.o $(TEST)/SegTest.cpp
 
-all: clean $(DIR) SimMain run convert open
+all: clean data-cleanup $(DIR) SimMain run convert open
 
 result:
 	mkdir result

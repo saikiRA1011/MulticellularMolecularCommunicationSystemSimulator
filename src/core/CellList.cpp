@@ -80,7 +80,7 @@ std::vector<Cell*> CellList::aroundCellList(const Cell& c) const
                     continue;
                 }
 
-                aroundCells.push_back(cell);
+                aroundCells.emplace_back(cell);
             }
         }
     }
@@ -117,5 +117,5 @@ void CellList::addCell(Cell* cell)
     const int32_t scaledY = (pos.y + FIELD_Y_LEN / 2) / GRID_SIZE_MAGNIFICATION;
     const int32_t scaledX = (pos.x + FIELD_X_LEN / 2) / GRID_SIZE_MAGNIFICATION;
 
-    cellsInGrid[scaledY][scaledX].push_back(cell);
+    cellsInGrid[scaledY][scaledX].emplace_back(cell);
 }
