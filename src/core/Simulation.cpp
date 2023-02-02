@@ -53,7 +53,7 @@ void Simulation::initCells() noexcept
         double xPos = randomCellPosX(rand_gen);
         double yPos = randomCellPosY(rand_gen);
         Cell c(i, 0, xPos, yPos, 10.0);
-        cells.push_back(c);
+        cells.emplace_back(c);
     }
 }
 
@@ -257,8 +257,10 @@ int32_t Simulation::nextStep() noexcept
         setCellList();
     }
 
-    // threadを使うよりもopenMPを利用したほうが速い
-    // #pragma omp parallel
+// std::cout << omp_get_max_threads() << std::endl;
+
+// threadを使うよりもopenMPを利用したほうが速い
+#pragma omp parallel for
     for (int i = 0; i < CELL_NUM; i++) {
         Vec3 force;
         force = calcForce(cells[i]);
@@ -304,18 +306,20 @@ int32_t Simulation::run()
     for (int32_t step = 1; step < SIM_STEP; step++) {
         auto start = std::chrono::system_clock::now();
 
-        step_preprocess();
+        stepPreprocess();
         nextStep();
-        step_end_process();
+        stepEndProcess();
 
-        if (step % OUTPUT_INTERVAL_STEP == 0) {
+        const bool willOut = (step % OUTPUT_INTERVAL_STEP) == 0;
+        if (willOut) {
             printCells(step / OUTPUT_INTERVAL_STEP);
         }
+        const bool wasOut = willOut;
 
         auto end  = std::chrono::system_clock::now();
         auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
-        std::cout << "step: " << step << "  " << msec << "msec" << std::endl;
+        std::cout << "step: " << step << "  " << msec << "msec" << (wasOut ? " Outputed" : "") << std::endl;
         sumTime += msec;
     }
 
