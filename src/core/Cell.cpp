@@ -143,29 +143,56 @@ void Cell::nextStep() noexcept
 
     // 座標が画面外に出たら、一周回して画面内に戻す
     if (position.x < -(FIELD_WIDTH / 2)) {
-        position.x = -(FIELD_WIDTH / 2);
+        position.x = (FIELD_WIDTH / 2) - 1;
     }
     if (FIELD_WIDTH / 2 <= position.x) {
-        position.x = FIELD_WIDTH / 2 - 1;
+        position.x = -FIELD_WIDTH / 2;
     }
     if (position.y < -(FIELD_WIDTH / 2)) {
-        position.y = -(FIELD_WIDTH / 2);
+        position.y = (FIELD_WIDTH / 2) - 1;
     }
     if (FIELD_WIDTH / 2 <= position.y) {
-        position.y = FIELD_WIDTH / 2 - 1;
+        position.y = -FIELD_WIDTH / 2;
     }
 }
 
+/**
+ * @brief 接着しているCellのリストを初期化する。初期化は遅いので注意が必要。必要ならSimulation::stepPreprocessで呼び出す。
+ *
+ */
 void Cell::clearAdhereCells() noexcept
 {
     adhereCells.clear();
 }
 
+/**
+ * @brief Cell cと接着する。内部的には配列に追加するだけ。接着のタイミングは今の所ユーザ定義
+ *
+ * @param c
+ */
 void Cell::adhere(const Cell& c) noexcept
 {
+
     adhereCells.emplace_back(&c);
 }
 
+/**
+ * @brief 細胞死。死亡した細胞にtypeを変え、Cellのインデックスを返却する。
+ *
+ * @return int32_t
+ */
+int32_t Cell::die() noexcept
+{
+    typeID = -1;
+    return arrayIndex;
+}
+
+// TODO: 実装する。
+/**
+ * @brief moleculeId の分子を周囲環境に放出する。
+ *
+ * @param moleculeId
+ */
 void Cell::emitMolecule(int moleculeId) noexcept
 {
     std::cout << moleculeId << std::endl;
@@ -182,7 +209,7 @@ void Cell::printCell() const noexcept
     std::cout << position.x << "\t" << position.y << "\t" << position.z << "\t" << velocity.x << "\t" << velocity.y << "\t" << velocity.z << "\t" << radius << "\t" << adhereCells.size();
 
     for (int i = 0; i < adhereCells.size(); i++) {
-        std::cout << adhereCells[i];
+        std::cout << adhereCells[i]->id;
 
         if (i != adhereCells.size() - 1) {
             std::cout << ",";

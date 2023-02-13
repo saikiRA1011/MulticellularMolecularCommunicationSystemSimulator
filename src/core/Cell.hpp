@@ -28,11 +28,13 @@ class Cell
     Vec3 velocity; //!< Cellの速度(x,y,z)
     double weight; //!< Cellの質量
 
-    std::vector<Cell *> adhereCells;
+    std::vector<const Cell*> adhereCells;
 
     double divisionCycleTime;         //!< 細胞の分裂周期
     double divisionCycleGauge;        //!< 細胞の分裂周期のゲージ。divisionCycleTimeを超えたら分裂する。
     std::vector<int> molecularStocks; //!< 細胞の保持している分子数。配列の添字は分子の種類。
+
+    // Simulation *sim; //!< Cellの呼び出し元になるSimulationインスタンスのポインタ
 
     public:
     Cell(int _id, int _arrayIndex);
@@ -49,7 +51,9 @@ class Cell
     void nextStep() noexcept;
 
     void clearAdhereCells() noexcept;
-    void adhere(const Cell &c) noexcept;
+    void adhere(const Cell& c) noexcept;
+
+    int32_t die() noexcept;
 
     void emitMolecule(int moleculeId) noexcept;
 
