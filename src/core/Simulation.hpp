@@ -42,11 +42,11 @@ class Simulation
 
     private:
     // random
-    std::mt19937 rand_gen{ CELL_SEED };              //!< 乱数生成器(seedはとりあえず0)
+    std::mt19937 rand_gen{ CELL_SEED };              //!< 乱数生成器(生成器はとりあえずメルセンヌ・ツイスタ)
     std::uniform_real_distribution<> randomCellPosX; //!< Cellのx座標の生成器
     std::uniform_real_distribution<> randomCellPosY; //!< Cellのy座標の生成器
 
-    std::queue<int> cellPool; //!< CellのIDを管理するためのキュー。今は使っていない。
+    std::queue<int> cellPool; //!< CellのIDを管理するためのキュー
 
     Field<std::vector<Cell*>> cellsInGrid; //!< グリッド内にcellのポインタを入れる。
 
@@ -54,8 +54,8 @@ class Simulation
     void printCells(int32_t) const;
 
     //  std::vector<std::unordered_set<int32_t>> aroundCellSetList;
-    //  周辺のCellのIDを格納する。ただし、vectorは一列分のみしか確保しない。
 
+    //  周辺のCellのIDを格納する。ただし、vectorは一列分のみしか確保しない。
     void setCellList() noexcept;
 
     public:
@@ -75,6 +75,8 @@ class Simulation
 
     int32_t nextStep() noexcept;
     int32_t run();
+
+    int32_t getNewCellIndex() noexcept;
 
     // pythonにパラメタを渡す都合上必要になった。
     int32_t getFieldLen();

@@ -111,13 +111,11 @@ Vec3 Simulation::calcCellCellForce(Cell& c) const noexcept
     constexpr double COEFFICIENT = 1.0;
 
     for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
-        Cell* cell        = aroundCells[i];
-        const Vec3 diff   = c.getPosition() - cell->getPosition();
-        const double dist = diff.length();
-
+        Cell* cell              = aroundCells[i];
+        const Vec3 diff         = c.getPosition() - cell->getPosition();
+        const double dist       = diff.length();
         constexpr double LAMBDA = 30.0;
-
-        const double weight = cell->getWeight() * c.getWeight();
+        const double weight     = cell->getWeight() * c.getWeight();
 
         // d = |C1 - C2|
         // F += c (C1 - C2) / d * e^(-d/λ)
@@ -127,14 +125,13 @@ Vec3 Simulation::calcCellCellForce(Cell& c) const noexcept
     force = force.normalize().timesScalar(COEFFICIENT);
 
     for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
-        Cell* cell        = aroundCells[i];
-        const Vec3 diff   = c.getPosition() - cell->getPosition();
-        const double dist = diff.length();
-
-        constexpr double ELIMINATION_BIAS = 10.0;
-        constexpr double ADHESION_BIAS    = 0.4;
+        Cell* cell                        = aroundCells[i];
+        const Vec3 diff                   = c.getPosition() - cell->getPosition();
+        const double dist                 = diff.length();
         const double sumRadius            = c.radius + cell->radius;
         const double overlapDist          = c.radius + cell->radius - dist;
+        constexpr double ELIMINATION_BIAS = 10.0;
+        constexpr double ADHESION_BIAS    = 0.4;
 
         if (dist < sumRadius) {
             // force += diff.normalize().timesScalar(std::pow(1.8, overlapDist)).timesScalar(BIAS);
@@ -327,6 +324,24 @@ int32_t Simulation::run()
     std::cout << "Cell count : " << CELL_NUM << "    average processing time : " << averageTime << std::endl;
 
     return 0;
+}
+
+/**
+ * @brief 余っているCellのインデックスを返す。プールが空になっていれば新しいインデックスを生成する。
+ *
+ * @return int32_t
+ * @note 例えば、Cellが分裂したときなどに用いる。cellPoolはCellが死滅した際などに補充される。
+ */
+int32_t Simulation::getNewCellIndex() noexcept
+{
+    if (cellPool.empty()) {
+        int32_t newIndex = cells.size();
+        return newIndex;
+    }
+
+    int32_t newIndex = cellPool.front();
+    cellPool.pop();
+    return newIndex;
 }
 
 /**
