@@ -156,6 +156,16 @@ void Cell::nextStep() noexcept
     }
 }
 
+void Cell::clearAdhereCells() noexcept
+{
+    adhereCells.clear();
+}
+
+void Cell::adhere(const Cell& c) noexcept
+{
+    adhereCells.emplace_back(&c);
+}
+
 void Cell::emitMolecule(int moleculeId) noexcept
 {
     std::cout << moleculeId << std::endl;

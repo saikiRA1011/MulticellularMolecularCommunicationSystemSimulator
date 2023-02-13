@@ -28,7 +28,7 @@ class Cell
     Vec3 velocity; //!< Cellの速度(x,y,z)
     double weight; //!< Cellの質量
 
-    std::vector<Cell*> adhereCells;
+    std::vector<Cell *> adhereCells;
 
     double divisionCycleTime;         //!< 細胞の分裂周期
     double divisionCycleGauge;        //!< 細胞の分裂周期のゲージ。divisionCycleTimeを超えたら分裂する。
@@ -47,6 +47,9 @@ class Cell
     void addForce(double fx, double fy) noexcept;
     void addForce(Vec3 f) noexcept;
     void nextStep() noexcept;
+
+    void clearAdhereCells() noexcept;
+    void adhere(const Cell &c) noexcept;
 
     void emitMolecule(int moleculeId) noexcept;
 
