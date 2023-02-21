@@ -1,6 +1,7 @@
-CC := g++-12
+CC := g++
 PYTHON := python3.10
-CFLAGS := -std=c++11 -Wall -Wextra -O2  -fopenmp
+CFLAGS := -std=c++14 -Wall -Wextra -O2  -fopenmp
+TESTFLAGS := -std=c++14 -Wall -Wextra -lgtest -lgtest_main -I/usr/local/include -L/usr/local/lib
 OBJS := Vec3.o Cell.o Simulation.o CellList.o UserSimulation.o
 DIR := result image video
 
@@ -18,8 +19,18 @@ BACKUP := src/backup
 SimMain: $(MAIN)/SimMain.cpp $(OBJS) result
 	$(CC) -o SimMain $(CFLAGS) $(OBJS) $(MAIN)/SimMain.cpp
 
+version:
+	@$(CC) --version
+	@$(PYTHON) --version
+
 Vec3.o: $(UTIL)/Vec3.cpp
 	$(CC) -c $(CFLAGS) $(UTIL)/Vec3.cpp
+
+Vec3Test: $(UTIL)/Vec3.cpp $(TEST)/Vec3Test.cpp Vec3.o
+	$(CC) -o Vec3Test $(TESTFLAGS) Vec3.o $(TEST)/Vec3Test.cpp
+	
+test: Vec3Test
+	./Vec3Test
 
 Cell.o: $(CORE)/Cell.cpp
 	$(CC) -c $(CFLAGS) $(CORE)/Cell.cpp
