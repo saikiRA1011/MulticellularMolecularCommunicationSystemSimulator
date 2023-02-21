@@ -1,5 +1,4 @@
 #include "Vec3.hpp"
-
 /**
  * @brief 基本となるコンストラクタ。すべての成分を0に設定する。
  *
@@ -102,6 +101,33 @@ Vec3 &Vec3::operator-=(const Vec3 &obj) noexcept
     z -= obj.z;
 
     return *this;
+}
+
+/**
+ * @brief 単純に、ベクトルのすべての成分が一致しているかどうかを返す。==は完全一致のときのみtrue。
+ *
+ * @param obj
+ * @return true
+ * @return false
+ *
+ * @note 実際には、ベクトルの要素はdouble型で実装されているため数学的には一致する値も内部的には一致しないことがある。
+ */
+bool Vec3::operator==(const Vec3 &obj) const noexcept
+{
+    return (x == obj.x && y == obj.y && z == obj.z);
+}
+
+/**
+ * @brief 単純に、ベクトルのすべての成分が一致しているかどうかを返す。!=はいずれかでも不一致なときにtrue。
+ *
+ * @param obj
+ * @return true
+ * @return false
+ * @note 実際には、ベクトルの要素はdouble型で実装されているため数学的には一致する値も内部的には一致しないことがある。
+ */
+bool Vec3::operator!=(const Vec3 &obj) const noexcept
+{
+    return (x != obj.x || y != obj.y || z != obj.z);
 }
 
 /**

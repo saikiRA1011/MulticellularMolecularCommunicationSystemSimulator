@@ -31,6 +31,9 @@ class Vec3
     Vec3 &operator+=(const Vec3 &obj) noexcept;
     Vec3 &operator-=(const Vec3 &obj) noexcept;
 
+    bool operator==(const Vec3 &obj) const noexcept;
+    bool operator!=(const Vec3 &obj) const noexcept;
+
     Vec3 timesScalar(double num) const noexcept; // スカラー倍
     double dot(Vec3 vec) const noexcept;         // 内積
     Vec3 rotate(double theta,
