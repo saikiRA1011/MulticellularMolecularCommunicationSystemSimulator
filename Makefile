@@ -1,7 +1,7 @@
 CC := g++
 PYTHON := python3.10
-CFLAGS := -std=c++14 -Wall -Wextra -O2  -fopenmp
-TESTFLAGS := -std=c++14 -Wall -Wextra -lgtest -lgtest_main -I/usr/local/include -L/usr/local/lib
+CFLAGS := -std=c++20 -Wall -Wextra -O2  -fopenmp
+TESTFLAGS := -std=c++20 -Wall -Wextra -lgtest -lgtest_main -I/usr/local/include -L/usr/local/lib
 OBJS := Vec3.o Cell.o Simulation.o CellList.o UserSimulation.o
 DIR := result image video
 
