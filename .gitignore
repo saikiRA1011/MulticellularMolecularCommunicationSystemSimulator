@@ -21,3 +21,5 @@ README_tmp.html
 tutorial/out/*.log
 package
 src/convert_tools/__pycache__
+*Test
+!/src/test/
