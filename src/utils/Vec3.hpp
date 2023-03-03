@@ -20,7 +20,7 @@
  */
 class Vec3
 {
-    public:
+  public:
     Vec3();
     Vec3(double x, double y, double z = 0);
     ~Vec3();
@@ -34,14 +34,13 @@ class Vec3
     bool operator==(const Vec3 &obj) const noexcept;
     bool operator!=(const Vec3 &obj) const noexcept;
 
-    Vec3 timesScalar(double num) const noexcept; // スカラー倍
-    double dot(Vec3 vec) const noexcept;         // 内積
-    Vec3 rotate(double theta,
-                double phi) const noexcept; // theta, phi = Rad で回転
-    Vec3 cross(Vec3 vec) const noexcept;    // 外積
-    Vec3 normalize() const noexcept;        // 正規化
-    double length() const noexcept;         // 長さ
-    double dist(Vec3 vec) const noexcept;   // 距離
+    Vec3 timesScalar(double num) const noexcept;          // スカラー倍
+    double dot(Vec3 vec) const noexcept;                  // 内積
+    Vec3 rotate(double theta, double phi) const noexcept; // theta, phi = Rad で回転
+    Vec3 cross(Vec3 vec) const noexcept;                  // 外積
+    Vec3 normalize() const noexcept;                      // 正規化
+    double length() const noexcept;                       // 長さ
+    double dist(Vec3 vec) const noexcept;                 // 距離
 
     void print() const noexcept;
 

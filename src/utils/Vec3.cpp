@@ -148,30 +148,22 @@ double Vec3::dot(Vec3 vec) const noexcept
  * @param theta
  * @param phi
  * @return Vec3
+ * @note これ未完成なところがあるので注意。使う必要もない気がする。
  */
 Vec3 Vec3::rotate(double theta, double phi) const noexcept
 {
     double rotatedPos[3] = { x, y, z };
 
-    double rotateZ[3][3] = { { std::cos(theta), -std::sin(theta), 0 }, { std::sin(theta), std::cos(theta), 0 }, { 0, 0, 1 } };
-    double rotateY[3][3] = { { std::cos(phi), 0, std::sin(phi) }, { 0, 1, 0 }, { -std::sin(phi), 0, std::cos(phi) } };
+    double rotate[3][3] = { { std::cos(theta) * std::cos(phi), std::sin(theta) * std::cos(phi), -std::sin(phi) },
+                            { -std::sin(theta), std::cos(theta), 0 },
+                            { std::cos(theta) * std::sin(phi), std::sin(theta) * std::sin(phi), std::cos(phi) } };
 
+    double v[3] = { rotatedPos[0], rotatedPos[1], rotatedPos[2] };
     for (int y_i = 0; y_i < 3; y_i++) {
-        double sum    = 0;
-        double tmp[3] = { rotatedPos[0], rotatedPos[1], rotatedPos[2] };
+        double sum = 0;
 
         for (int x_i = 0; x_i < 3; x_i++) {
-            sum = rotateZ[y_i][x_i] * tmp[x_i];
-        }
-        rotatedPos[y_i] = sum;
-    }
-
-    for (int y_i = 0; y_i < 3; y_i++) {
-        double sum    = 0;
-        double tmp[3] = { rotatedPos[0], rotatedPos[1], rotatedPos[2] };
-
-        for (int x_i = 0; x_i < 3; x_i++) {
-            sum = rotateY[y_i][x_i] * tmp[x_i];
+            sum += rotate[y_i][x_i] * v[x_i];
         }
         rotatedPos[y_i] = sum;
     }
