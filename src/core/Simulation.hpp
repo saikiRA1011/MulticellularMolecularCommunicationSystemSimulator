@@ -35,18 +35,16 @@
  */
 class Simulation
 {
-    protected:
+  protected:
     CellList cellList;             //!< CellListのデータ構造を管理するクラス
     std::vector<Cell> cells;       //!< シミュレーションで使うCellのリスト。
     std::streambuf* consoleStream; //!< 標準出力のストリームバッファ
 
-    private:
+  private:
     // random
     std::mt19937 rand_gen{ CELL_SEED };              //!< 乱数生成器(生成器はとりあえずメルセンヌ・ツイスタ)
     std::uniform_real_distribution<> randomCellPosX; //!< Cellのx座標の生成器
     std::uniform_real_distribution<> randomCellPosY; //!< Cellのy座標の生成器
-
-    std::queue<int> cellPool; //!< CellのIDを管理するためのキュー
 
     Field<std::vector<Cell*>> cellsInGrid; //!< グリッド内にcellのポインタを入れる。
 
@@ -58,7 +56,7 @@ class Simulation
     //  周辺のCellのIDを格納する。ただし、vectorは一列分のみしか確保しない。
     void setCellList() noexcept;
 
-    public:
+  public:
     Simulation(/* args */);
     ~Simulation();
 
@@ -75,8 +73,6 @@ class Simulation
 
     int32_t nextStep() noexcept;
     int32_t run();
-
-    int32_t getNewCellIndex() noexcept;
 
     // pythonにパラメタを渡す都合上必要になった。
     int32_t getFieldLen();

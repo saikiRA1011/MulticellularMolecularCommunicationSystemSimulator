@@ -11,29 +11,24 @@
 
 #include "Cell.hpp"
 
+int32_t Cell::upperOfCellCount  = 0;
+int32_t Cell::numberOfCellsBorn = 0;
+std::queue<int> Cell::cellPool  = std::queue<int>();
+
 /**
- * @brief 基本となるコンストラクタ。
+ * @brief たぶん使わないけど一応作っておく
  *
  * @param _id
- * @param _arrayIndex
  */
-Cell::Cell(int _id, int _arrayIndex)
-  : typeID(0)
-  , position(0, 0, 0)
-  , velocity(0, 0, 0)
-  , weight(1.0)
-  , id(_id)
-  , arrayIndex(_arrayIndex)
-  , radius(5.0)
+Cell::Cell()
+  : Cell(0, Vec3(0, 0, 0))
 {
 }
 
 /**
  * @brief 座標と速度をdouble型で指定して初期化するコンストラクタ。
  *
- *
  * @param _id
- * @param _arrayIndex
  * @param _index
  * @param _typeID
  * @param x
@@ -42,14 +37,8 @@ Cell::Cell(int _id, int _arrayIndex)
  * @param vx
  * @param vy
  */
-Cell::Cell(int _id, int _arrayIndex, int _typeID, double x, double y, double radius, double vx, double vy)
-  : typeID(_typeID)
-  , position(x, y)
-  , velocity(vx, vy)
-  , weight(1.0)
-  , id(_id)
-  , arrayIndex(_arrayIndex)
-  , radius(radius)
+Cell::Cell(int _typeID, double x, double y, double radius, double vx, double vy)
+  : Cell(_typeID, Vec3(x, y, 0), radius, Vec3(vx, vy, 0))
 {
 }
 
@@ -58,21 +47,26 @@ Cell::Cell(int _id, int _arrayIndex, int _typeID, double x, double y, double rad
  * 座標と速度をVec3型で指定して初期化するコンストラクタ。呼び出し毎にcellNumをインクリメントする。
  *
  * @param _id
- * @param _arrayIndex
  * @param _typeID
  * @param pos
  * @param radius
  * @param v
  */
-Cell::Cell(int _id, int _arrayIndex, int _typeID, Vec3 pos, double radius, Vec3 v)
+Cell::Cell(int _typeID, Vec3 pos, double radius, Vec3 v)
   : typeID(_typeID)
   , position(pos)
   , velocity(v)
   , weight(1.0)
-  , id(_id)
-  , arrayIndex(_arrayIndex)
+  , willDivide(false)
+  , id(numberOfCellsBorn)
+  , arrayIndex(getNewCellIndex())
   , radius(radius)
+  , divisionCycleTime(10)
+  , divisionCycleGauge(0)
 {
+    if (typeID != -1) { // 死んだ細胞じゃなかったら
+        numberOfCellsBorn++;
+    }
 }
 
 /**
@@ -81,6 +75,17 @@ Cell::Cell(int _id, int _arrayIndex, int _typeID, Vec3 pos, double radius, Vec3 
  */
 Cell::~Cell()
 {
+    cellPool.push(this->arrayIndex);
+}
+
+/**
+ * @brief Cellの種類をIDで返す。
+ *
+ * @return int32_t
+ */
+int32_t Cell::getCellType() const noexcept
+{
+    return typeID;
 }
 
 /**
@@ -172,8 +177,16 @@ void Cell::clearAdhereCells() noexcept
  */
 void Cell::adhere(const Cell& c) noexcept
 {
-
     adhereCells.emplace_back(&c);
+}
+
+void Cell::metabolize() noexcept
+{
+    divisionCycleGauge += 0.1;
+
+    if (divisionCycleGauge >= divisionCycleTime) {
+        willDivide = true;
+    }
 }
 
 /**
@@ -187,6 +200,29 @@ int32_t Cell::die() noexcept
     return arrayIndex;
 }
 
+// TODO: 分裂後の移動方向は適当に決めているので後でランダムにする。
+/**
+ * @brief 細胞分裂を起こす。
+ *
+ * @return Cell
+ */
+Cell Cell::divide() noexcept
+{
+    if (!willDivide)
+        return Cell(-1, -1, -1);
+
+    willDivide         = false;
+    divisionCycleGauge = 0;
+
+    Vec3 pos = this->getPosition();
+
+    Cell c(this->typeID, this->getPosition().x + 5, this->getPosition().y, 10);
+    c.addForce(Vec3(-5, 0, 0));
+    this->addForce(Vec3(5, 0, 0));
+
+    return c;
+}
+
 // TODO: 実装する。
 /**
  * @brief moleculeId の分子を周囲環境に放出する。
@@ -197,6 +233,25 @@ void Cell::emitMolecule(int moleculeId) noexcept
 {
     std::cout << moleculeId << std::endl;
     return;
+}
+
+/**
+ * @brief 余っているCellのインデックスを返す。プールが空になっていれば新しいインデックスを生成する。
+ *
+ * @return int32_t
+ * @note 例えば、Cellが分裂したときなどに用いる。cellPoolはCellが死滅した際などに補充される。
+ */
+int32_t Cell::getNewCellIndex() noexcept
+{
+    if (Cell::cellPool.empty()) {
+        upperOfCellCount++;
+        int32_t newIndex = upperOfCellCount;
+        return newIndex;
+    }
+
+    int32_t newIndex = cellPool.front();
+    Cell::cellPool.pop();
+    return newIndex;
 }
 
 /**
@@ -229,4 +284,17 @@ void Cell::printDebug() const noexcept
     std::cout << "vx = " << velocity.x << std::endl;
     std::cout << "vy = " << velocity.y << std::endl;
     std::cout << std::endl;
+}
+
+/**
+ * @brief Cellに割り当てられたIndexをcellPoolに戻す。細胞が完全に消滅した場合に呼び出す。
+ *
+ * @return int32_t
+ */
+int32_t Cell::releaseIndex() noexcept
+{
+    int32_t idx = this->arrayIndex;
+    cellPool.push(idx);
+
+    return idx;
 }

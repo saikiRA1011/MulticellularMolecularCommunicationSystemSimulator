@@ -26,6 +26,17 @@ void UserSimulation::initCells() noexcept
 
 void UserSimulation::stepPreprocess() noexcept
 {
+    int32_t preCellCount = cells.size();
+
+    for (int i = 0; i < preCellCount; i++) {
+        cells[i].metabolize();
+
+        Cell c = cells[i].divide();
+
+        if (c.getCellType() == -1)
+            continue;
+        cells.push_back(c);
+    }
 }
 
 void UserSimulation::stepEndProcess() noexcept

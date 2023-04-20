@@ -14,6 +14,7 @@
 #include "../SimulationSettings.hpp"
 #include "../utils/Vec3.hpp"
 #include <iostream>
+#include <queue>
 #include <random>
 
 /**
@@ -22,11 +23,16 @@
  */
 class Cell
 {
-    private:
-    int typeID;
+  private:
+    int32_t typeID;
     Vec3 position; //!< Cellの座標(x,y,z)
     Vec3 velocity; //!< Cellの速度(x,y,z)
     double weight; //!< Cellの質量
+
+    bool willDivide;
+
+    static int32_t upperOfCellCount;
+    static int32_t numberOfCellsBorn;
 
     std::vector<const Cell*> adhereCells;
 
@@ -34,14 +40,19 @@ class Cell
     double divisionCycleGauge;        //!< 細胞の分裂周期のゲージ。divisionCycleTimeを超えたら分裂する。
     std::vector<int> molecularStocks; //!< 細胞の保持している分子数。配列の添字は分子の種類。
 
+    int32_t releaseIndex() noexcept;
+
     // Simulation *sim; //!< Cellの呼び出し元になるSimulationインスタンスのポインタ
 
-    public:
-    Cell(int _id, int _arrayIndex);
-    Cell(int _id, int _arrayIndex, int _typeID, double x, double y, double radius = 5.0, double vx = 0, double vy = 0);
-    Cell(int _id, int _arrayIndex, int _typeID, Vec3 pos, double radius = 5.0, Vec3 v = Vec3::zero());
+  public:
+    static std::queue<int> cellPool; //!< CellのIDを管理するためのキュー
+
+    Cell();
+    Cell(int _typeID, double x, double y, double radius = 5.0, double vx = 0, double vy = 0);
+    Cell(int _typeID, Vec3 pos, double radius = 5.0, Vec3 v = Vec3::zero());
     ~Cell();
 
+    int32_t getCellType() const noexcept;
     Vec3 getPosition() const noexcept;
     Vec3 getVelocity() const noexcept;
     double getWeight() const noexcept;
@@ -53,9 +64,13 @@ class Cell
     void clearAdhereCells() noexcept;
     void adhere(const Cell& c) noexcept;
 
+    void metabolize() noexcept;
     int32_t die() noexcept;
+    Cell divide() noexcept;
 
     void emitMolecule(int moleculeId) noexcept;
+
+    static int32_t getNewCellIndex() noexcept;
 
     void printCell() const noexcept;
 

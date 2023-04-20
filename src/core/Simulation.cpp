@@ -52,7 +52,7 @@ void Simulation::initCells() noexcept
     for (int32_t i = 0; i < CELL_NUM; i++) {
         double xPos = randomCellPosX(rand_gen);
         double yPos = randomCellPosY(rand_gen);
-        Cell c(i, i, 0, xPos, yPos, 10.0);
+        Cell c(0, xPos, yPos, 10.0);
         cells.emplace_back(c);
     }
 }
@@ -258,7 +258,7 @@ int32_t Simulation::nextStep() noexcept
 
 // threadを使うよりもopenMPを利用したほうが速い
 #pragma omp parallel for
-    for (int i = 0; i < CELL_NUM; i++) {
+    for (int32_t i = 0; i < (int32_t)cells.size(); i++) {
         Vec3 force;
         force = calcForce(cells[i]);
         cells[i].addForce(force);
@@ -282,7 +282,7 @@ int32_t Simulation::nextStep() noexcept
     //     t.join();
     // }
 
-    for (int32_t cellID = 0; cellID < CELL_NUM; cellID++) {
+    for (int32_t cellID = 0; cellID < (int32_t)cells.size(); cellID++) {
         cells[cellID].nextStep();
     }
 
@@ -321,27 +321,9 @@ int32_t Simulation::run()
     }
 
     const double averageTime = (double)sumTime / (double)SIM_STEP;
-    std::cout << "Cell count : " << CELL_NUM << "    average processing time : " << averageTime << std::endl;
+    std::cout << "Initial cell count : " << CELL_NUM << "    average processing time : " << averageTime << std::endl;
 
     return 0;
-}
-
-/**
- * @brief 余っているCellのインデックスを返す。プールが空になっていれば新しいインデックスを生成する。
- *
- * @return int32_t
- * @note 例えば、Cellが分裂したときなどに用いる。cellPoolはCellが死滅した際などに補充される。
- */
-int32_t Simulation::getNewCellIndex() noexcept
-{
-    if (cellPool.empty()) {
-        int32_t newIndex = cells.size();
-        return newIndex;
-    }
-
-    int32_t newIndex = cellPool.front();
-    cellPool.pop();
-    return newIndex;
 }
 
 /**
