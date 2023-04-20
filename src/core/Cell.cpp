@@ -18,7 +18,6 @@ std::queue<int> Cell::cellPool  = std::queue<int>();
 /**
  * @brief たぶん使わないけど一応作っておく
  *
- * @param _id
  */
 Cell::Cell()
   : Cell(0, Vec3(0, 0, 0))
@@ -28,8 +27,6 @@ Cell::Cell()
 /**
  * @brief 座標と速度をdouble型で指定して初期化するコンストラクタ。
  *
- * @param _id
- * @param _index
  * @param _typeID
  * @param x
  * @param y
@@ -46,7 +43,6 @@ Cell::Cell(int _typeID, double x, double y, double radius, double vx, double vy)
  * @brief
  * 座標と速度をVec3型で指定して初期化するコンストラクタ。呼び出し毎にcellNumをインクリメントする。
  *
- * @param _id
  * @param _typeID
  * @param pos
  * @param radius
