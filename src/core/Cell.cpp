@@ -66,95 +66,12 @@ Cell::Cell(int _typeID, Vec3 pos, double radius, Vec3 v)
 }
 
 /**
- * @brief デストラクタは定義していない。
+ * @brief プールにインデックスを返す。
  *
  */
 Cell::~Cell()
 {
     cellPool.push(this->arrayIndex);
-}
-
-/**
- * @brief Cellの種類をIDで返す。
- *
- * @return int32_t
- */
-int32_t Cell::getCellType() const noexcept
-{
-    return typeID;
-}
-
-/**
- * @brief Cellの座標を返す。必ず副作用を付けない点に注意。
- *
- * @return Vec3
- */
-Vec3 Cell::getPosition() const noexcept
-{
-    return position;
-}
-
-Vec3 Cell::getVelocity() const noexcept
-{
-    return velocity;
-}
-
-/**
- * @brief Cellの質量を返す。
- *
- * @return double
- */
-double Cell::getWeight() const noexcept
-{
-    return weight;
-}
-
-/**
- * @brief Cellに力を加える(double型)。このモデルでは力はそのまま速度になる。
- *
- * @param fx
- * @param fy
- */
-void Cell::addForce(double fx, double fy) noexcept
-{
-    velocity.x = fx;
-    velocity.y = fy;
-}
-
-/**
- * @brief Cellに力を加える(Vec3型)。このモデルでは力はそのまま速度になる。
- *
- * @param f
- */
-void Cell::addForce(Vec3 f) noexcept
-{
-    velocity = f;
-}
-
-/**
- * @brief
- * Cellの位置を更新し、次の時間に進める。このメソッドはすべてのセルにaddForceした後に呼び出すことを想定している。
- *  もしすべてのCellにaddForceしていなかった場合、Cellを呼び出す順番によって挙動が変わってしまう。
- */
-void Cell::nextStep() noexcept
-{
-    position += velocity;
-
-    const int32_t FIELD_WIDTH = FIELD_X_LEN;
-
-    // 座標が画面外に出たら、一周回して画面内に戻す
-    if (position.x < -(FIELD_WIDTH / 2)) {
-        position.x = (FIELD_WIDTH / 2) - 1;
-    }
-    if (FIELD_WIDTH / 2 <= position.x) {
-        position.x = -FIELD_WIDTH / 2;
-    }
-    if (position.y < -(FIELD_WIDTH / 2)) {
-        position.y = (FIELD_WIDTH / 2) - 1;
-    }
-    if (FIELD_WIDTH / 2 <= position.y) {
-        position.y = -FIELD_WIDTH / 2;
-    }
 }
 
 /**
@@ -178,7 +95,7 @@ void Cell::adhere(const Cell& c) noexcept
 
 void Cell::metabolize() noexcept
 {
-    divisionCycleGauge += 0.1;
+    divisionCycleGauge += 0.1 * DELTA_TIME; // DELTA_TIMEをかけて時間スケールを合わせる
 
     if (divisionCycleGauge >= divisionCycleTime) {
         willDivide = true;
@@ -212,9 +129,11 @@ Cell Cell::divide() noexcept
 
     Vec3 pos = this->getPosition();
 
-    Cell c(this->typeID, this->getPosition().x + 5, this->getPosition().y, 10);
-    c.addForce(Vec3(-5, 0, 0));
-    this->addForce(Vec3(5, 0, 0));
+    Vec3 childDirection = Vec3::randomDirection2();
+
+    Cell c(this->typeID, this->getPosition() + childDirection, 10);
+    c.addForce(childDirection);
+    this->addForce(-childDirection);
 
     return c;
 }

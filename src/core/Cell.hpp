@@ -81,3 +81,91 @@ class Cell
     const int arrayIndex; //!< 配列のどこに入るか
     const double radius;  //!< Cellの半径
 };
+
+/**
+ * @brief CellのIDを返す。必ず副作用をつけない点に注意。
+ *
+ * @return int CellのID
+ */
+inline int32_t Cell::getCellType() const noexcept
+{
+    return typeID;
+}
+
+/**
+ * @brief Cellの座標を返す。必ず副作用をつけない点に注意。
+ *
+ * @return Vec3 Cellの座標
+ */
+inline Vec3 Cell::getPosition() const noexcept
+{
+    return position;
+}
+
+/**
+ * @brief Cellの速度を返す。必ず副作用をつけない点に注意。
+ *
+ * @return Vec3 Cellの速度
+ */
+inline Vec3 Cell::getVelocity() const noexcept
+{
+    return velocity;
+}
+
+/**
+ * @brief Cellの質量を返す。必ず副作用をつけない点に注意。
+ *
+ * @return double Cellの質量
+ */
+inline double Cell::getWeight() const noexcept
+{
+    return weight;
+}
+
+/**
+ * @brief Cellに力を加える(double型)。このモデルでは力はそのまま速度になる。
+ *
+ * @param fx x方向の力
+ * @param fy y方向の力
+ */
+inline void Cell::addForce(double fx, double fy) noexcept
+{
+    velocity.x += fx / weight;
+    velocity.y += fy / weight;
+}
+
+/**
+ * @brief Cellに力を加える(Vec3型)。このモデルでは力はそのまま速度になる。
+ *
+ * @param f
+ */
+inline void Cell::addForce(Vec3 f) noexcept
+{
+    velocity = f;
+}
+
+/**
+ * @brief
+ * Cellの位置を更新し、次の時間に進める。このメソッドはすべてのセルにaddForceした後に呼び出すことを想定している。
+ *  もしすべてのCellにaddForceしていなかった場合、Cellを呼び出す順番によって挙動が変わってしまう。
+ */
+inline void Cell::nextStep() noexcept
+{
+    position += velocity;
+
+    const int32_t FIELD_WIDTH = FIELD_X_LEN;
+
+    // 座標が画面外に出たら、一周回して画面内に戻す
+    if (position.x < -(FIELD_WIDTH / 2)) {
+        position.x = (FIELD_WIDTH / 2) - 1;
+    }
+    if (FIELD_WIDTH / 2 <= position.x) {
+        position.x = -FIELD_WIDTH / 2;
+    }
+    if (position.y < -(FIELD_WIDTH / 2)) {
+        position.y = (FIELD_WIDTH / 2) - 1;
+    }
+    if (FIELD_WIDTH / 2 <= position.y) {
+        position.y = -FIELD_WIDTH / 2;
+    }
+}

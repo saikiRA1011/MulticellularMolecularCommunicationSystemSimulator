@@ -1,4 +1,5 @@
 #include "Vec3.hpp"
+
 /**
  * @brief 基本となるコンストラクタ。すべての成分を0に設定する。
  *
@@ -68,19 +69,6 @@ Vec3 Vec3::operator-(Vec3 obj) const noexcept
 {
     Vec3 tmp(x, y, z);
     tmp -= obj;
-
-    return tmp;
-}
-
-/**
- * @brief ベクトルを定数倍する。
- *
- * @param num
- * @return Vec3
- */
-Vec3 Vec3::timesScalar(const double num) const noexcept
-{
-    const Vec3 tmp(x * num, y * num, z * num);
 
     return tmp;
 }
@@ -187,47 +175,6 @@ Vec3 Vec3::cross(Vec3 vec) const noexcept
 }
 
 /**
- * @brief ベクトルを正規化する。ただし、長さが0の場合は0を返す。
- *
- * @return Vec3
- */
-Vec3 Vec3::normalize() const noexcept
-{
-    double length = this->length();
-
-    if (length == 0.0) {
-        return Vec3(0, 0, 0);
-    }
-
-    Vec3 tmp(x / length, y / length, z / length);
-
-    return tmp;
-}
-
-/**
- * @brief ベクトルの長さを返す。
- *
- * @return double
- */
-double Vec3::length() const noexcept
-{
-    return std::sqrt(x * x + y * y + z * z);
-}
-
-/**
- * @brief ベクトル同士の距離を返す。
- *
- * @param vec
- * @return double
- */
-double Vec3::dist(Vec3 vec) const noexcept
-{
-    Vec3 diff = *this - vec;
-
-    return diff.length();
-}
-
-/**
  * @brief ベクトルの成分を出力する。デバッグ用途。
  *
  */
@@ -246,13 +193,31 @@ Vec3 Vec3::zero() noexcept
     return Vec3(0, 0, 0);
 }
 
-// TODO: 腹痛いから帰る。また今度
 /**
- * @brief ランダムの方向(単位ベクトル)を返す
+ * @brief ランダムの方向(二次元単位ベクトル)を返す。
  *
  */
-Vec3 Vec3::randomDirection() noexcept
+Vec3 Vec3::randomDirection2() noexcept
 {
+    static std::mt19937 rand_gen(0);                          //!< 乱数生成器(生成器はとりあえずメルセンヌ・ツイスタ)
     std::uniform_real_distribution<double> angle_ratio(0, 1); //!< 方向の割合
-    double angle = 2.0 * M_PI angle_ratio(rand_gen);
+    double angle = 2.0 * M_PI * angle_ratio(rand_gen);
+
+    return Vec3(std::cos(angle), std::sin(angle), 0);
+}
+
+// TODO: 動作未確認！テスト作るべし!
+/**
+ * @brief ランダムの方向(三次元単位ベクトル)を返す。
+ *
+ * @return Vec3
+ */
+Vec3 Vec3::randomDirection3() noexcept
+{
+    static std::mt19937 rand_gen(0);                          //!< 乱数生成器(生成器はとりあえずメルセンヌ・ツイスタ)
+    std::uniform_real_distribution<double> angle_ratio(0, 1); //!< 方向の割合
+    double theta = 2.0 * M_PI * angle_ratio(rand_gen);
+    double phi   = 2.0 * M_PI * angle_ratio(rand_gen);
+
+    return Vec3(std::cos(theta) * std::sin(phi), std::sin(theta) * std::sin(phi), std::cos(phi));
 }
