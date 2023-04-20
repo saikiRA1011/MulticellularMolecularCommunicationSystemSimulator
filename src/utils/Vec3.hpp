@@ -34,6 +34,9 @@ class Vec3
     bool operator==(const Vec3 &obj) const noexcept;
     bool operator!=(const Vec3 &obj) const noexcept;
 
+    // TODO: ランダム方向生成を後で作る
+    static std::mt19937 rand_gen{ 0 }; //!< 乱数生成器(生成器はとりあえずメルセンヌ・ツイスタ)
+
     Vec3 timesScalar(double num) const noexcept;          // スカラー倍
     double dot(Vec3 vec) const noexcept;                  // 内積
     Vec3 rotate(double theta, double phi) const noexcept; // theta, phi = Rad で回転
@@ -45,6 +48,8 @@ class Vec3
     void print() const noexcept;
 
     static Vec3 zero() noexcept;
+    // TODO: 後で作る
+    static Vec3 randomDirection() noexcept; // 方向のみを表すランダムな正規化されたベクトルを返す。
 
     double x, y, z; //!< x, y, z座標
 };

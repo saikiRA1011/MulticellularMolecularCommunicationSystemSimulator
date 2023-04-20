@@ -245,3 +245,14 @@ Vec3 Vec3::zero() noexcept
 {
     return Vec3(0, 0, 0);
 }
+
+// TODO: 腹痛いから帰る。また今度
+/**
+ * @brief ランダムの方向(単位ベクトル)を返す
+ *
+ */
+Vec3 Vec3::randomDirection() noexcept
+{
+    std::uniform_real_distribution<double> angle_ratio(0, 1); //!< 方向の割合
+    double angle = 2.0 * M_PI angle_ratio(rand_gen);
+}
