@@ -16,6 +16,8 @@ IMAGE_LEN = 1024
 
 time_delta_sec = time_per_file * 60
 
+scale = IMAGE_LEN/img_w_len
+
 for file in files:
     img = np.full((IMAGE_LEN, IMAGE_LEN, 3), 255, dtype=np.uint8)
     cv2.circle(img, (IMAGE_LEN//2, IMAGE_LEN//2), IMAGE_LEN//2, (0, 0, 0))
@@ -26,7 +28,6 @@ for file in files:
         cells = f.read().split('\n')
 
     # cell[id, typeID, x, y, z, vx, vy, vz, r, contact num, contact id...]
-    scale = IMAGE_LEN/img_w_len
     for cell in cells[1:-1]:
         cell = cell.split('\t')
         x = float(cell[2])*scale+IMAGE_LEN/2
