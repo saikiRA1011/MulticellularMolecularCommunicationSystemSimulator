@@ -1,6 +1,7 @@
 CC := g++
 PYTHON := python3.10
-CFLAGS := -std=c++20 -Wall -Wextra -O2  -fopenmp
+CFLAGS := -std=c++20 -Wall -Wextra -O2 -mtune=native -march=native -fopenmp
+DEBUGF := -std=c++20 -Wall -Wextra -fopenmp -g
 TESTFLAGS := -std=c++20 -Wall -Wextra -lgtest -lgtest_main -I/usr/local/include -L/usr/local/lib
 OBJS := Vec3.o Cell.o Simulation.o CellList.o UserSimulation.o
 DIR := result image video
@@ -15,6 +16,9 @@ MAIN := src
 USER := src
 TEST := src/test
 BACKUP := src/backup
+
+# こうすると動かない。なんで？
+DEBUGOBJS := $(UTIL)/Vec3.cpp $(CORE)/Cell.o $(CORE)/Simulation.o $(CORE)/CellList.o $(USER)/UserSimulation.o
 
 SimMain: $(MAIN)/SimMain.cpp $(OBJS) result
 	$(CC) -o SimMain $(CFLAGS) $(OBJS) $(MAIN)/SimMain.cpp
