@@ -110,6 +110,8 @@ void Cell::metabolize() noexcept
 int32_t Cell::die() noexcept
 {
     typeID = -1;
+    cellPool.push(arrayIndex);
+
     return arrayIndex;
 }
 
