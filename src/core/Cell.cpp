@@ -20,7 +20,7 @@ std::queue<int> Cell::cellPool  = std::queue<int>();
  *
  */
 Cell::Cell()
-  : Cell(0, Vec3(0, 0, 0))
+  : Cell(CellType::WORKER, Vec3(0, 0, 0))
 {
 }
 
@@ -34,7 +34,7 @@ Cell::Cell()
  * @param vx
  * @param vy
  */
-Cell::Cell(int _typeID, double x, double y, double radius, double vx, double vy)
+Cell::Cell(CellType _typeID, double x, double y, double radius, double vx, double vy)
   : Cell(_typeID, Vec3(x, y, 0), radius, Vec3(vx, vy, 0))
 {
 }
@@ -48,7 +48,7 @@ Cell::Cell(int _typeID, double x, double y, double radius, double vx, double vy)
  * @param radius
  * @param v
  */
-Cell::Cell(int _typeID, Vec3 pos, double radius, Vec3 v)
+Cell::Cell(CellType _typeID, Vec3 pos, double radius, Vec3 v)
   : typeID(_typeID)
   , position(pos)
   , velocity(v)
@@ -60,7 +60,7 @@ Cell::Cell(int _typeID, Vec3 pos, double radius, Vec3 v)
   , divisionCycleTime(10)
   , divisionCycleGauge(0)
 {
-    if (typeID != -1) { // 死んだ細胞じゃなかったら
+    if (!(typeID == CellType::TMP || typeID == CellType::NONE)) { // TMP細胞、NONE細胞はカウントしない
         numberOfCellsBorn++;
     }
 }
@@ -93,13 +93,33 @@ void Cell::adhere(const Cell& c) noexcept
     adhereCells.emplace_back(&c);
 }
 
+bool Cell::checkWillDie() const noexcept
+{
+    if (divisionCycleGauge >= divisionCycleTime) {
+        return true;
+    }
+    return false;
+}
+
+/**
+ * @brief Cellが分裂できるかどうかを返す。
+ *
+ * @return true
+ * @return false
+ */
+bool Cell::checkWillDivide() const noexcept
+{
+    // アホみたいなモデル。単純に時間経過で分裂する。
+    return (divisionCycleGauge >= divisionCycleTime);
+}
+
+/**
+ * @brief Cellを代謝する。今の所は分裂サイクルゲージを増やすだけ。分裂ゲージが溜まった場合、willDivideをtrueにする。
+ *
+ */
 void Cell::metabolize() noexcept
 {
     divisionCycleGauge += 0.1 * DELTA_TIME; // DELTA_TIMEをかけて時間スケールを合わせる
-
-    if (divisionCycleGauge >= divisionCycleTime) {
-        willDivide = true;
-    }
 }
 
 /**
@@ -109,13 +129,12 @@ void Cell::metabolize() noexcept
  */
 int32_t Cell::die() noexcept
 {
-    typeID = -1;
-    cellPool.push(arrayIndex);
+    typeID = CellType::DEAD;
 
-    return arrayIndex;
+    return releaseIndex();
 }
 
-// TODO: 分裂後の移動方向は適当に決めているので後でランダムにする。
+// TODO: 分裂後のサイズを等分する。
 /**
  * @brief 細胞分裂を起こす。
  *
@@ -123,16 +142,13 @@ int32_t Cell::die() noexcept
  */
 Cell Cell::divide() noexcept
 {
-    if (!willDivide)
-        return Cell(-1, -1, -1);
-
-    willDivide         = false;
     divisionCycleGauge = 0;
 
     Vec3 pos = this->getPosition();
 
     Vec3 childDirection = Vec3::randomDirection2();
 
+    // Cellのtypeはとりあえず継承する形にする
     Cell c(this->typeID, this->getPosition() + childDirection, 10);
     c.addForce(childDirection);
     this->addForce(-childDirection);
@@ -177,7 +193,7 @@ int32_t Cell::getNewCellIndex() noexcept
  */
 void Cell::printCell() const noexcept
 {
-    std::cout << id << "\t" << typeID << "\t";
+    std::cout << id << "\t" << NAMEOF_ENUM(typeID) << "\t";
     std::cout << position.x << "\t" << position.y << "\t" << position.z << "\t" << velocity.x << "\t" << velocity.y << "\t" << velocity.z << "\t" << radius << "\t" << adhereCells.size();
 
     for (int i = 0; i < adhereCells.size(); i++) {

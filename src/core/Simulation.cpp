@@ -52,7 +52,7 @@ void Simulation::initCells() noexcept
     for (int32_t i = 0; i < CELL_NUM; i++) {
         double xPos = randomCellPosX(rand_gen);
         double yPos = randomCellPosY(rand_gen);
-        Cell c(0, xPos, yPos, 10.0);
+        Cell c(CellType::WORKER, xPos, yPos, 10.0);
         cells.emplace_back(c);
     }
 }

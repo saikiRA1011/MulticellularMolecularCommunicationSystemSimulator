@@ -31,11 +31,10 @@ void UserSimulation::stepPreprocess() noexcept
     for (int i = 0; i < preCellCount; i++) {
         cells[i].metabolize();
 
-        Cell c = cells[i].divide();
-
-        if (c.getCellType() == -1)
-            continue;
-        cells.push_back(c);
+        if (cells[i].checkWillDivide()) {
+            Cell c = cells[i].divide();
+            cells.push_back(c); // 分裂した場合は新しいCellを追加する
+        }
     }
 }
 

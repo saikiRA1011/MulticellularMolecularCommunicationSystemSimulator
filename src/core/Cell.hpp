@@ -11,7 +11,9 @@
 
 #pragma once
 
+#include "../CellType.hpp"
 #include "../SimulationSettings.hpp"
+#include "../thirdparty/nameof.hpp"
 #include "../utils/Vec3.hpp"
 #include <iostream>
 #include <queue>
@@ -24,7 +26,7 @@
 class Cell
 {
   private:
-    int32_t typeID;
+    CellType typeID;
     Vec3 position; //!< Cellの座標(x,y,z)
     Vec3 velocity; //!< Cellの速度(x,y,z)
     double weight; //!< Cellの質量
@@ -48,11 +50,11 @@ class Cell
     static std::queue<int> cellPool; //!< CellのIDを管理するためのキュー
 
     Cell();
-    Cell(int _typeID, double x, double y, double radius = 5.0, double vx = 0, double vy = 0);
-    Cell(int _typeID, Vec3 pos, double radius = 5.0, Vec3 v = Vec3::zero());
+    Cell(CellType _typeID, double x, double y, double radius = 5.0, double vx = 0, double vy = 0);
+    Cell(CellType _typeID, Vec3 pos, double radius = 5.0, Vec3 v = Vec3::zero());
     ~Cell();
 
-    int32_t getCellType() const noexcept;
+    CellType getCellType() const noexcept;
     Vec3 getPosition() const noexcept;
     Vec3 getVelocity() const noexcept;
     double getWeight() const noexcept;
@@ -64,7 +66,9 @@ class Cell
     void clearAdhereCells() noexcept;
     void adhere(const Cell& c) noexcept;
 
-    void metabolize() noexcept;
+    virtual bool checkWillDie() const noexcept;    // ユーザが定義
+    virtual bool checkWillDivide() const noexcept; // ユーザが定義
+    virtual void metabolize() noexcept;            // ユーザが定義
     int32_t die() noexcept;
     Cell divide() noexcept;
 
@@ -87,7 +91,7 @@ class Cell
  *
  * @return int CellのID
  */
-inline int32_t Cell::getCellType() const noexcept
+inline CellType Cell::getCellType() const noexcept
 {
     return typeID;
 }
