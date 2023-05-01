@@ -128,8 +128,8 @@ Vec3 Simulation::calcCellCellForce(Cell& c) const noexcept
         Cell* cell                        = aroundCells[i];
         const Vec3 diff                   = c.getPosition() - cell->getPosition();
         const double dist                 = diff.length();
-        const double sumRadius            = c.radius + cell->radius;
-        const double overlapDist          = c.radius + cell->radius - dist;
+        const double sumRadius            = c.getRadius() + cell->getRadius();
+        const double overlapDist          = c.getRadius() + cell->getRadius() - dist;
         constexpr double ELIMINATION_BIAS = 10.0;
         constexpr double ADHESION_BIAS    = 0.4;
 
@@ -202,10 +202,10 @@ Vec3 Simulation::calcVolumeExclusion(Cell& c) const noexcept
 
         const Vec3 diff          = c.getPosition() - cell->getPosition();
         const double dist        = diff.length();
-        const double sumRadius   = c.radius + cell->radius;
-        const double overlapDist = c.radius + cell->radius - dist;
+        const double sumRadius   = c.getRadius() + cell->getRadius();
+        const double overlapDist = c.getRadius() + cell->getRadius() - dist;
 
-        if (dist < c.radius + cell->radius) {
+        if (dist < c.getRadius() + cell->getRadius()) {
             // force += diff.normalize().timesScalar(std::pow(1.8, overlapDist)).timesScalar(BIAS);
             force += diff.normalize().timesScalar(pow(1.0 - overlapDist / sumRadius, 2)).timesScalar(BIAS);
         }

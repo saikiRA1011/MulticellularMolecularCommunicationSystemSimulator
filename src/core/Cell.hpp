@@ -30,6 +30,7 @@ class Cell
     Vec3 position; //!< Cellの座標(x,y,z)
     Vec3 velocity; //!< Cellの速度(x,y,z)
     double weight; //!< Cellの質量
+    double radius; //!< Cellの半径
 
     bool willDivide;
 
@@ -58,6 +59,8 @@ class Cell
     Vec3 getPosition() const noexcept;
     Vec3 getVelocity() const noexcept;
     double getWeight() const noexcept;
+    double getRadius() const noexcept;
+    double setRadius(double r) noexcept;
 
     void addForce(double fx, double fy) noexcept;
     void addForce(Vec3 f) noexcept;
@@ -69,7 +72,7 @@ class Cell
     virtual bool checkWillDie() const noexcept;    // ユーザが定義
     virtual bool checkWillDivide() const noexcept; // ユーザが定義
     virtual void metabolize() noexcept;            // ユーザが定義
-    int32_t die() noexcept;
+    virtual int32_t die() noexcept;                // ユーザが定義
     Cell divide() noexcept;
 
     void emitMolecule(int moleculeId) noexcept;
@@ -77,13 +80,10 @@ class Cell
     static int32_t getNewCellIndex() noexcept;
 
     void printCell() const noexcept;
-
-    // デバッグ用
-    void printDebug() const noexcept;
+    void printDebug() const noexcept; // デバッグ用
 
     const int id;         //!< CellのID
     const int arrayIndex; //!< 配列のどこに入るか
-    const double radius;  //!< Cellの半径
 };
 
 /**
@@ -127,6 +127,32 @@ inline double Cell::getWeight() const noexcept
 }
 
 /**
+ * @brief Cellの半径を返す。必ず副作用をつけない点に注意。
+ *
+ * @return double Cellの半径
+ */
+inline double Cell::getRadius() const noexcept
+{
+    return radius;
+}
+
+/**
+ * @brief Cellの半径を設定する。
+ *
+ * @param r Cellの半径
+ * @return double Cellの半径
+ */
+inline double Cell::setRadius(double r) noexcept
+{
+    if (r < 0.0) {
+        throw std::invalid_argument("Cell::setRadius() : radius must be positive.");
+    }
+    radius = r;
+
+    return radius;
+}
+
+/**
  * @brief Cellに力を加える(double型)。このモデルでは力はそのまま速度になる。
  *
  * @param fx x方向の力
@@ -145,7 +171,7 @@ inline void Cell::addForce(double fx, double fy) noexcept
  */
 inline void Cell::addForce(Vec3 f) noexcept
 {
-    velocity = f;
+    velocity = f.timesScalar(1.0 / weight);
 }
 
 /**
