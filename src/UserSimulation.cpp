@@ -29,11 +29,19 @@ void UserSimulation::stepPreprocess() noexcept
     int32_t preCellCount = cells.size();
 
     for (int i = 0; i < preCellCount; i++) {
+        if (cells[i].getCellType() == CellType::DEAD) {
+            continue;
+        }
+
         cells[i].metabolize();
 
         if (cells[i].checkWillDivide()) {
-            Cell c = cells[i].divide();
+            Cell c        = cells[i].divide();
+            int32_t index = Cell::getNewCellIndex();
             cells.push_back(c); // 分裂した場合は新しいCellを追加する
+        }
+        if (cells[i].checkWillDie()) {
+            cells[i].die();
         }
     }
 }
@@ -87,5 +95,13 @@ Vec3 UserSimulation::calcCellCellForce(Cell& c) const noexcept
 
     // return force;
 
-    return Simulation::calcCellCellForce(c);
+    switch (c.getCellType()) {
+        case CellType::WORKER:
+            return Simulation::calcCellCellForce(c);
+
+        case CellType::DEAD:
+            return Simulation::calcVolumeExclusion(c);
+        default:
+            break;
+    }
 }
