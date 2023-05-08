@@ -39,8 +39,12 @@ class Cell
 
     std::vector<const Cell*> adhereCells;
 
-    double divisionCycleTime;         //!< 細胞の分裂周期
-    double divisionCycleGauge;        //!< 細胞の分裂周期のゲージ。divisionCycleTimeを超えたら分裂する。
+    double divisionCycleTime;  //!< 細胞の分裂周期
+    double divisionCycleGauge; //!< 細胞の分裂周期のゲージ。divisionCycleTimeを超えたら分裂する。
+
+    double dieCycleTime;  //!< 細胞の死滅周期
+    double dieCycleGauge; //!< 細胞の死滅周期のゲージ。dieCycleTimeを超えたら死滅する。
+
     std::vector<int> molecularStocks; //!< 細胞の保持している分子数。配列の添字は分子の種類。
 
     int32_t releaseIndex() noexcept;

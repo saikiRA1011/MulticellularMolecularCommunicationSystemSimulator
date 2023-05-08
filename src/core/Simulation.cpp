@@ -113,7 +113,12 @@ Vec3 Simulation::calcCellCellForce(Cell& c) const noexcept
     constexpr double COEFFICIENT = 1.0;
 
     for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
-        Cell* cell              = aroundCells[i];
+        Cell* cell = aroundCells[i];
+
+        if (cell->getCellType() == CellType::DEAD) {
+            continue;
+        }
+
         const Vec3 diff         = c.getPosition() - cell->getPosition();
         const double dist       = diff.length();
         constexpr double LAMBDA = 30.0;
@@ -123,7 +128,6 @@ Vec3 Simulation::calcCellCellForce(Cell& c) const noexcept
         // F += c (C1 - C2) / d * e^(-d/λ)
         force += -diff.normalize().timesScalar(weight).timesScalar(COEFFICIENT).timesScalar(std::exp(-dist / LAMBDA));
     }
-
     force = force.normalize().timesScalar(COEFFICIENT);
 
     for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
@@ -198,18 +202,16 @@ Vec3 Simulation::calcVolumeExclusion(Cell& c) const noexcept
     std::vector<Cell*> aroundCells = cellList.aroundCellList(c);
 
     for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
-        Cell* cell = aroundCells[i];
+        Cell* cell                        = aroundCells[i];
+        const Vec3 diff                   = c.getPosition() - cell->getPosition();
+        const double dist                 = diff.length();
+        const double sumRadius            = c.getRadius() + cell->getRadius();
+        const double overlapDist          = c.getRadius() + cell->getRadius() - dist;
+        constexpr double ELIMINATION_BIAS = 10.0;
+        constexpr double ADHESION_BIAS    = 0.4;
 
-        constexpr double BIAS = 10.0;
-
-        const Vec3 diff          = c.getPosition() - cell->getPosition();
-        const double dist        = diff.length();
-        const double sumRadius   = c.getRadius() + cell->getRadius();
-        const double overlapDist = c.getRadius() + cell->getRadius() - dist;
-
-        if (dist < c.getRadius() + cell->getRadius()) {
-            // force += diff.normalize().timesScalar(std::pow(1.8, overlapDist)).timesScalar(BIAS);
-            force += diff.normalize().timesScalar(pow(1.0 - overlapDist / sumRadius, 2)).timesScalar(BIAS);
+        if (dist < sumRadius) {
+            force += diff.normalize().timesScalar(pow(1.0 - dist / sumRadius, 2)).timesScalar(ELIMINATION_BIAS);
         }
     }
 

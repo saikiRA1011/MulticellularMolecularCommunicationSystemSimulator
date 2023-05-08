@@ -59,6 +59,8 @@ Cell::Cell(CellType _typeID, Vec3 pos, double radius, Vec3 v)
   , radius(radius)
   , divisionCycleTime(10)
   , divisionCycleGauge(0)
+  , dieCycleTime(15)
+  , dieCycleGauge(0)
 {
     if (!(typeID == CellType::TMP || typeID == CellType::NONE)) { // TMP細胞、NONE細胞はカウントしない
         numberOfCellsBorn++;
@@ -95,10 +97,7 @@ void Cell::adhere(const Cell& c) noexcept
 
 bool Cell::checkWillDie() const noexcept
 {
-    if (divisionCycleGauge >= divisionCycleTime) {
-        return true;
-    }
-    return false;
+    return (dieCycleGauge >= dieCycleTime);
 }
 
 /**
@@ -121,6 +120,7 @@ bool Cell::checkWillDivide() const noexcept
 void Cell::metabolize() noexcept
 {
     divisionCycleGauge += 0.1 * DELTA_TIME; // DELTA_TIMEをかけて時間スケールを合わせる
+    dieCycleGauge += 0.1 * DELTA_TIME;      // DELTA_TIMEをかけて時間スケールを合わせる
 
     double r = this->getRadius();
     this->setRadius(r + 0.03 * DELTA_TIME);
