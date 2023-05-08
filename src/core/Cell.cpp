@@ -113,17 +113,21 @@ bool Cell::checkWillDivide() const noexcept
     return (divisionCycleGauge >= divisionCycleTime);
 }
 
+// TODO: あとでUserCellに移し替える
 /**
- * @brief Cellを代謝する。今の所は分裂サイクルゲージを増やすだけ。分裂ゲージが溜まった場合、willDivideをtrueにする。
+ * @brief Cellを代謝する。今の所は分裂サイクルゲージを増やすだけ。
  *
  */
 void Cell::metabolize() noexcept
 {
     divisionCycleGauge += 0.1 * DELTA_TIME; // DELTA_TIMEをかけて時間スケールを合わせる
+
+    double r = this->getRadius();
+    this->setRadius(r + 0.03 * DELTA_TIME);
 }
 
 /**
- * @brief 細胞死。死亡した細胞にtypeを変え、Cellのインデックスを返却する。
+ * @brief 細胞死。死亡時の処理(細胞を残すのか、消滅させるのか、あるいは分解されるのか)はユーザが定義する。
  *
  * @return int32_t
  */
@@ -143,13 +147,18 @@ int32_t Cell::die() noexcept
 Cell Cell::divide() noexcept
 {
     divisionCycleGauge = 0;
+    willDivide         = false;
 
-    Vec3 pos = this->getPosition();
-
-    Vec3 childDirection = Vec3::randomDirection2();
+    Vec3 pos            = this->getPosition();
+    Vec3 childDirection = Vec3::randomDirection2(); // どの方向に分裂するかを決める。分裂元は逆方向に動く。
+    // 体積を二分割したときの半径を求める。
+    double halfVolumeRadius = this->radius / std::pow(2, 1.0 / 3.0);
 
     // Cellのtypeはとりあえず継承する形にする
-    Cell c(this->typeID, this->getPosition() + childDirection, 10);
+    Cell c(this->typeID, this->getPosition() + childDirection, halfVolumeRadius);
+
+    this->setRadius(halfVolumeRadius); // 分裂元も体積を半分にする
+
     c.addForce(childDirection);
     this->addForce(-childDirection);
 
