@@ -1,5 +1,7 @@
 #include "Simulation.hpp"
 
+// TODO: cellsをスマートポインタの配列にする。
+
 /**
  * @brief 基本となるコンストラクタ。
  * @details

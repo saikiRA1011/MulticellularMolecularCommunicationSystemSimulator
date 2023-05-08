@@ -60,7 +60,7 @@ class Cell
     Vec3 getVelocity() const noexcept;
     double getWeight() const noexcept;
     double getRadius() const noexcept;
-    double setRadius(double r) noexcept;
+    double setRadius(double r);
 
     void addForce(double fx, double fy) noexcept;
     void addForce(Vec3 f) noexcept;
@@ -142,7 +142,7 @@ inline double Cell::getRadius() const noexcept
  * @param r Cellの半径
  * @return double Cellの半径
  */
-inline double Cell::setRadius(double r) noexcept
+inline double Cell::setRadius(double r)
 {
     if (r < 0.0) {
         throw std::invalid_argument("Cell::setRadius() : radius must be positive.");
