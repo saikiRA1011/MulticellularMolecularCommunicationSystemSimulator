@@ -30,6 +30,7 @@ for file in files:
     # cell[id, typeID, x, y, z, vx, vy, vz, r, contact num, contact id...]
     for cell in cells[1:-1]:
         cell = cell.split('\t')
+        cell_type = cell[1]
         x = float(cell[2])*scale+IMAGE_LEN/2
         y = float(cell[3])*scale+IMAGE_LEN/2
         z = float(cell[4])*scale+IMAGE_LEN/2
@@ -38,8 +39,13 @@ for file in files:
         if x < 0 or x > IMAGE_LEN or y < 0 or y > IMAGE_LEN:
             print('out of range')
 
+        if cell_type == 'WORKER':
+            cell_color = (0,200,0)
+        elif cell_type == 'DEAD':
+            cell_color = (0,0,0)
+            
         cv2.circle(img, (math.floor(x), math.floor(y)),
-                   math.floor(r), (0, 200, 0), thickness=1)
+                   math.floor(r), cell_color, thickness=1)
 
     cv2.imwrite(f'./image/cells_{file[-5:]}.png', img)
 
