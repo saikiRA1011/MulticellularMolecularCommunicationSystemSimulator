@@ -43,6 +43,8 @@ for file in files:
             cell_color = (0,200,0)
         elif cell_type == 'DEAD':
             cell_color = (0,0,0)
+        elif cell_type == 'NONE':
+            continue
             
         cv2.circle(img, (math.floor(x), math.floor(y)),
                    math.floor(r), cell_color, thickness=1)

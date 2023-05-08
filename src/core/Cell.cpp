@@ -133,7 +133,7 @@ void Cell::metabolize() noexcept
  */
 int32_t Cell::die() noexcept
 {
-    typeID = CellType::DEAD;
+    typeID = CellType::NONE;
 
     return releaseIndex();
 }

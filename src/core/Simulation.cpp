@@ -84,6 +84,8 @@ void Simulation::printCells(int32_t time) const
 
     printHeader();
     for (int32_t i = 0; i < (int32_t)cells.size(); i++) {
+        if (cells[i].getCellType() == CellType::NONE)
+            continue;
         cells[i].printCell();
     }
 
@@ -115,7 +117,7 @@ Vec3 Simulation::calcCellCellForce(Cell& c) const noexcept
     for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
         Cell* cell = aroundCells[i];
 
-        if (cell->getCellType() == CellType::DEAD) {
+        if (cell->getCellType() == CellType::DEAD || cell->getCellType() == CellType::NONE) {
             continue;
         }
 
@@ -131,7 +133,12 @@ Vec3 Simulation::calcCellCellForce(Cell& c) const noexcept
     force = force.normalize().timesScalar(COEFFICIENT);
 
     for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
-        Cell* cell                        = aroundCells[i];
+        Cell* cell = aroundCells[i];
+
+        if (cell->getCellType() == CellType::NONE) {
+            continue;
+        }
+
         const Vec3 diff                   = c.getPosition() - cell->getPosition();
         const double dist                 = diff.length();
         const double sumRadius            = c.getRadius() + cell->getRadius();

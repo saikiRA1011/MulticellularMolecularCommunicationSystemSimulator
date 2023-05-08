@@ -29,7 +29,7 @@ void UserSimulation::stepPreprocess() noexcept
     int32_t preCellCount = cells.size();
 
     for (int i = 0; i < preCellCount; i++) {
-        if (cells[i].getCellType() == CellType::DEAD) {
+        if (cells[i].getCellType() == CellType::DEAD || cells[i].getCellType() == CellType::NONE) {
             continue;
         }
 
@@ -101,6 +101,9 @@ Vec3 UserSimulation::calcCellCellForce(Cell& c) const noexcept
 
         case CellType::DEAD:
             return Simulation::calcVolumeExclusion(c);
+
+        case CellType::NONE:
+            return Vec3::zero();
         default:
             break;
     }
