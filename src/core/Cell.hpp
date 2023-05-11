@@ -16,6 +16,7 @@
 #include "../thirdparty/nameof.hpp"
 #include "../utils/Vec3.hpp"
 #include <iostream>
+#include <memory>
 #include <queue>
 #include <random>
 
@@ -35,7 +36,6 @@ class Cell
     bool willDivide;
 
     static int32_t upperOfCellCount;
-    static int32_t numberOfCellsBorn;
 
     std::vector<const Cell*> adhereCells;
 
@@ -58,6 +58,8 @@ class Cell
     Cell(CellType _typeID, double x, double y, double radius = 5.0, double vx = 0, double vy = 0);
     Cell(CellType _typeID, Vec3 pos, double radius = 5.0, Vec3 v = Vec3::zero());
     ~Cell();
+
+    static int32_t numberOfCellsBorn;
 
     CellType getCellType() const noexcept;
     Vec3 getPosition() const noexcept;

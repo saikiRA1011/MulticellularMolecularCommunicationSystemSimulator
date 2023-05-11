@@ -29,19 +29,36 @@ void UserSimulation::stepPreprocess() noexcept
     int32_t preCellCount = cells.size();
 
     for (int i = 0; i < preCellCount; i++) {
-        if (cells[i].getCellType() == CellType::DEAD || cells[i].getCellType() == CellType::NONE) {
+        if (cells[i]->getCellType() == CellType::DEAD || cells[i]->getCellType() == CellType::NONE) {
             continue;
         }
 
-        cells[i].metabolize();
-
-        if (cells[i].checkWillDivide()) {
-            Cell c        = cells[i].divide();
-            int32_t index = Cell::getNewCellIndex();
-            cells.push_back(c); // 分裂した場合は新しいCellを追加する
+        cells[i]->metabolize();
+    }
+    for (int i = 0; i < preCellCount; i++) {
+        if (cells[i]->getCellType() == CellType::DEAD || cells[i]->getCellType() == CellType::NONE) {
+            continue;
         }
-        if (cells[i].checkWillDie()) {
-            cells[i].die();
+        if (cells[i]->checkWillDie()) {
+            cells[i]->die();
+            continue;
+        }
+    }
+
+    for (int i = 0; i < preCellCount; i++) {
+        if (cells[i]->getCellType() == CellType::DEAD || cells[i]->getCellType() == CellType::NONE) {
+            continue;
+        }
+
+        if (cells[i]->checkWillDivide()) {
+            auto c = std::make_shared<Cell>(cells[i]->divide());
+
+            // 分裂した場合は配列に新しいCellを上書き(あるいは追加)する。
+            if (c->arrayIndex >= cells.size()) {
+                cells.push_back(c);
+            } else {
+                cells[c->arrayIndex] = c;
+            }
         }
     }
 }
@@ -50,7 +67,7 @@ void UserSimulation::stepEndProcess() noexcept
 {
 }
 
-Vec3 UserSimulation::calcCellCellForce(Cell& c) const noexcept
+Vec3 UserSimulation::calcCellCellForce(std::shared_ptr<Cell> c) const noexcept
 {
     // Vec3 force = Vec3::zero();
 
@@ -95,7 +112,7 @@ Vec3 UserSimulation::calcCellCellForce(Cell& c) const noexcept
 
     // return force;
 
-    switch (c.getCellType()) {
+    switch (c->getCellType()) {
         case CellType::WORKER:
             return Simulation::calcCellCellForce(c);
 

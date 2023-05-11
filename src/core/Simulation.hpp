@@ -19,6 +19,7 @@
 #include <chrono>
 #include <fstream>
 #include <iomanip>
+#include <memory>
 #include <numbers>
 #include <omp.h>
 #include <queue>
@@ -36,9 +37,9 @@
 class Simulation
 {
   protected:
-    CellList cellList;             //!< CellListのデータ構造を管理するクラス
-    std::vector<Cell> cells;       //!< シミュレーションで使うCellのリスト。
-    std::streambuf* consoleStream; //!< 標準出力のストリームバッファ
+    CellList cellList;                        //!< CellListのデータ構造を管理するクラス
+    std::vector<std::shared_ptr<Cell>> cells; //!< シミュレーションで使うCellのリスト。
+    std::streambuf* consoleStream;            //!< 標準出力のストリームバッファ
 
   private:
     // random
@@ -46,7 +47,7 @@ class Simulation
     std::uniform_real_distribution<> randomCellPosX; //!< Cellのx座標の生成器
     std::uniform_real_distribution<> randomCellPosY; //!< Cellのy座標の生成器
 
-    Field<std::vector<Cell*>> cellsInGrid; //!< グリッド内にcellのポインタを入れる。
+    Field<std::vector<std::shared_ptr<Cell>>> cellsInGrid; //!< グリッド内にcellのポインタを入れる。
 
     void printHeader() const noexcept;
     void printCells(int32_t) const;
@@ -64,12 +65,12 @@ class Simulation
 
     virtual void initCells() noexcept;
 
-    virtual Vec3 calcCellCellForce(Cell&) const noexcept;
+    virtual Vec3 calcCellCellForce(std::shared_ptr<Cell>) const noexcept;
     virtual void stepPreprocess() noexcept;
     virtual void stepEndProcess() noexcept;
-    Vec3 calcRemoteForce(Cell&) const noexcept;
-    Vec3 calcVolumeExclusion(Cell&) const noexcept;
-    Vec3 calcForce(Cell&) const noexcept;
+    Vec3 calcRemoteForce(std::shared_ptr<Cell>) const noexcept;
+    Vec3 calcVolumeExclusion(std::shared_ptr<Cell>) const noexcept;
+    Vec3 calcForce(std::shared_ptr<Cell>) const noexcept;
 
     int32_t nextStep() noexcept;
     int32_t run();
