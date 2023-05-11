@@ -36,19 +36,19 @@ Vec3Test: $(UTIL)/Vec3.cpp $(TEST)/Vec3Test.cpp Vec3.o
 test: Vec3Test
 	./Vec3Test
 
-Cell.o: $(CORE)/Cell.cpp
+Cell.o: $(UTIL)/Vec3.cpp $(UTIL)/Vec3.hpp $(CORE)/Cell.cpp $(CORE)/Cell.hpp
 	$(CC) -c $(CFLAGS) $(CORE)/Cell.cpp
 
-Simulation.o: $(CORE)/Simulation.cpp $(USER)/SimulationSettings.hpp
+Simulation.o: $(CORE)/Simulation.cpp $(USER)/SimulationSettings.hpp $(CORE)/Simulation.hpp $(CORE)/Cell.hpp $(CORE)/Cell.cpp $(CORE)/CellList.hpp $(CORE)/CellList.cpp
 	$(CC) -c $(CFLAGS) $(CORE)/Simulation.cpp
 
-UserSimulation.o: $(CORE)/Simulation.cpp $(USER)/UserSimulation.cpp
+UserSimulation.o: $(CORE)/Simulation.cpp $(CORE)/Simulation.hpp $(USER)/UserSimulation.cpp $(USER)/UserSimulation.hpp 
 	$(CC) -c $(CFLAGS) $(USER)/UserSimulation.cpp
 
 SegmentTree.o: $(CORE)/SegmentTree.cpp
 	$(CC) -c $(CFLAGS) $(CORE)/SegmentTree.cpp
 
-CellList.o: $(CORE)/CellList.cpp
+CellList.o: $(CORE)/CellList.cpp $(CORE)/CellList.hpp $(CORE)/Cell.hpp $(CORE)/Cell.cpp
 	$(CC) -c $(CFLAGS) $(CORE)/CellList.cpp
 
 VariableRatioCellList.o: $(CORE)/VariableRatioCellList.cpp
