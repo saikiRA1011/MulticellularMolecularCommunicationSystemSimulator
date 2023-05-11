@@ -265,33 +265,12 @@ int32_t Simulation::nextStep() noexcept
         setCellList();
     }
 
-// std::cout << omp_get_max_threads() << std::endl;
-
-// threadを使うよりもopenMPを利用したほうが速い
-#pragma omp parallel for
+#pragma omp parallel for num_threads(omp_get_max_threads())
     for (int32_t i = 0; i < (int32_t)cells.size(); i++) {
         Vec3 force;
         force = calcForce(cells[i]);
         cells[i]->addForce(force);
     }
-
-    // std::vector<std::thread> threads;
-    // for (int i = 0; i < CELL_NUM; i++) {
-    //     Vec3 force;
-
-    //     // force = calcRemoteForce(cells[i]);
-    //     // cells[i].addForce(force);
-
-    //     threads.emplace_back([&, i] {
-    //         force = calcForce(cells[i]);
-    //         cells[i].addForce(force);
-    //     });
-    // }
-
-    // // すべてのスレッドが終了するのを待つ
-    // for (auto& t : threads) {
-    //     t.join();
-    // }
 
     for (int32_t cellID = 0; cellID < (int32_t)cells.size(); cellID++) {
         cells[cellID]->nextStep();
@@ -308,6 +287,8 @@ int32_t Simulation::nextStep() noexcept
  */
 int32_t Simulation::run()
 {
+    std::cout << "Open MP max threads: " << omp_get_max_threads() << std::endl;
+
     printCells(0);
     auto sumTime = 0;
 
