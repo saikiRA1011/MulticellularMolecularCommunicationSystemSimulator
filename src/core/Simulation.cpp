@@ -265,7 +265,7 @@ int32_t Simulation::nextStep() noexcept
         setCellList();
     }
 
-#pragma omp parallel for num_threads(omp_get_max_threads())
+#pragma omp parallel for num_threads(omp_get_max_threads()) schedule(dynamic)
     for (int32_t i = 0; i < (int32_t)cells.size(); i++) {
         Vec3 force;
         force = calcForce(cells[i]);
