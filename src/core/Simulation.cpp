@@ -55,7 +55,7 @@ void Simulation::initCells() noexcept
         double xPos = randomCellPosX(rand_gen);
         double yPos = randomCellPosY(rand_gen);
         Cell c(CellType::WORKER, xPos, yPos, 10.0);
-        cells.emplace_back(c);
+        cells.push_back(std::make_shared<Cell>(c));
     }
 }
 
@@ -84,9 +84,9 @@ void Simulation::printCells(int32_t time) const
 
     printHeader();
     for (int32_t i = 0; i < (int32_t)cells.size(); i++) {
-        if (cells[i].getCellType() == CellType::NONE)
+        if (cells[i]->getCellType() == CellType::NONE)
             continue;
-        cells[i].printCell();
+        cells[i]->printCell();
     }
 
     std::cout.rdbuf(consoleStream);
@@ -95,7 +95,7 @@ void Simulation::printCells(int32_t time) const
 void Simulation::setCellList() noexcept
 {
     for (int32_t i = 0; i < (int32_t)cells.size(); i++) {
-        cellList.addCell(&cells[i]);
+        cellList.addCell(cells[i]);
     }
 }
 
@@ -106,25 +106,25 @@ void Simulation::setCellList() noexcept
  * @return Vec3
  * @details Cellから働く力は遠隔力と近隣力の2つで構成される。さらに、近接力は体積排除効果と接着力の2つに分類される。
  */
-Vec3 Simulation::calcCellCellForce(Cell& c) const noexcept
+Vec3 Simulation::calcCellCellForce(std::shared_ptr<Cell> c) const noexcept
 {
     Vec3 force = Vec3::zero();
 
-    std::vector<Cell*> aroundCells = cellList.aroundCellList(c);
+    std::vector<std::shared_ptr<Cell>> aroundCells = cellList.aroundCellList(c);
 
     constexpr double COEFFICIENT = 1.0;
 
     for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
-        Cell* cell = aroundCells[i];
+        auto cell = aroundCells[i];
 
         if (cell->getCellType() == CellType::DEAD || cell->getCellType() == CellType::NONE) {
             continue;
         }
 
-        const Vec3 diff         = c.getPosition() - cell->getPosition();
+        const Vec3 diff         = c->getPosition() - cell->getPosition();
         const double dist       = diff.length();
         constexpr double LAMBDA = 30.0;
-        const double weight     = cell->getWeight() * c.getWeight();
+        const double weight     = cell->getWeight() * c->getWeight();
 
         // d = |C1 - C2|
         // F += c (C1 - C2) / d * e^(-d/λ)
@@ -133,16 +133,16 @@ Vec3 Simulation::calcCellCellForce(Cell& c) const noexcept
     force = force.normalize().timesScalar(COEFFICIENT);
 
     for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
-        Cell* cell = aroundCells[i];
+        auto cell = aroundCells[i];
 
         if (cell->getCellType() == CellType::NONE) {
             continue;
         }
 
-        const Vec3 diff                   = c.getPosition() - cell->getPosition();
+        const Vec3 diff                   = c->getPosition() - cell->getPosition();
         const double dist                 = diff.length();
-        const double sumRadius            = c.getRadius() + cell->getRadius();
-        const double overlapDist          = c.getRadius() + cell->getRadius() - dist;
+        const double sumRadius            = c->getRadius() + cell->getRadius();
+        const double overlapDist          = c->getRadius() + cell->getRadius() - dist;
         constexpr double ELIMINATION_BIAS = 10.0;
         constexpr double ADHESION_BIAS    = 0.4;
 
@@ -168,16 +168,16 @@ Vec3 Simulation::calcCellCellForce(Cell& c) const noexcept
  * e^{(-|C-C_i|/\lambda)}
  * @f}
  */
-Vec3 Simulation::calcRemoteForce(Cell& c) const noexcept
+Vec3 Simulation::calcRemoteForce(std::shared_ptr<Cell> c) const noexcept
 {
     Vec3 force = Vec3::zero();
 
-    std::vector<Cell*> aroundCells = cellList.aroundCellList(c);
+    std::vector<std::shared_ptr<Cell>> aroundCells = cellList.aroundCellList(c);
 
     for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
-        Cell* cell = aroundCells[i];
+        auto cell = aroundCells[i];
 
-        Vec3 diff   = c.getPosition() - cell->getPosition();
+        Vec3 diff   = c->getPosition() - cell->getPosition();
         double dist = diff.length();
 
         constexpr double LAMBDA      = 30.0;
@@ -202,18 +202,18 @@ Vec3 Simulation::calcRemoteForce(Cell& c) const noexcept
  * F = \sum_i
  * @f}
  */
-Vec3 Simulation::calcVolumeExclusion(Cell& c) const noexcept
+Vec3 Simulation::calcVolumeExclusion(std::shared_ptr<Cell> c) const noexcept
 {
     Vec3 force = Vec3::zero();
 
-    std::vector<Cell*> aroundCells = cellList.aroundCellList(c);
+    std::vector<std::shared_ptr<Cell>> aroundCells = cellList.aroundCellList(c);
 
     for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
-        Cell* cell                        = aroundCells[i];
-        const Vec3 diff                   = c.getPosition() - cell->getPosition();
+        auto cell                         = aroundCells[i];
+        const Vec3 diff                   = c->getPosition() - cell->getPosition();
         const double dist                 = diff.length();
-        const double sumRadius            = c.getRadius() + cell->getRadius();
-        const double overlapDist          = c.getRadius() + cell->getRadius() - dist;
+        const double sumRadius            = c->getRadius() + cell->getRadius();
+        const double overlapDist          = c->getRadius() + cell->getRadius() - dist;
         constexpr double ELIMINATION_BIAS = 10.0;
         constexpr double ADHESION_BIAS    = 0.4;
 
@@ -241,7 +241,7 @@ void Simulation::stepEndProcess() noexcept
  * @param c
  * @return Vec3
  */
-Vec3 Simulation::calcForce(Cell& c) const noexcept
+Vec3 Simulation::calcForce(std::shared_ptr<Cell> c) const noexcept
 {
     Vec3 force = Vec3::zero();
 
@@ -272,7 +272,7 @@ int32_t Simulation::nextStep() noexcept
     for (int32_t i = 0; i < (int32_t)cells.size(); i++) {
         Vec3 force;
         force = calcForce(cells[i]);
-        cells[i].addForce(force);
+        cells[i]->addForce(force);
     }
 
     // std::vector<std::thread> threads;
@@ -294,7 +294,7 @@ int32_t Simulation::nextStep() noexcept
     // }
 
     for (int32_t cellID = 0; cellID < (int32_t)cells.size(); cellID++) {
-        cells[cellID].nextStep();
+        cells[cellID]->nextStep();
     }
 
     return 0;
@@ -310,6 +310,8 @@ int32_t Simulation::run()
 {
     printCells(0);
     auto sumTime = 0;
+
+    std::cout << "initialized." << std::endl;
 
     for (int32_t step = 1; step < SIM_STEP; step++) {
         auto start = std::chrono::system_clock::now();

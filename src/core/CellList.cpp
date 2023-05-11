@@ -37,7 +37,7 @@ void CellList::init()
     for (int32_t y = 0; y < CELL_GRID_LEN_Y; y++) {
         cellField[y].resize(CELL_GRID_LEN_X);
         for (int32_t x = 0; x < CELL_GRID_LEN_X; x++) {
-            cellField[y][x] = std::vector<Cell*>();
+            cellField[y][x] = std::vector<std::shared_ptr<Cell>>();
         }
     }
 }
@@ -48,9 +48,9 @@ void CellList::init()
  * @param c
  * @return std::tuple<int32_t, int32_t>
  */
-std::tuple<int32_t, int32_t> CellList::getGridCoordinateByCellPos(const Cell& c) const
+std::tuple<int32_t, int32_t> CellList::getGridCoordinateByCellPos(const std::shared_ptr<Cell> c) const
 {
-    Vec3 pos = c.getPosition();
+    Vec3 pos = c->getPosition();
 
     const int32_t gridX = (pos.x + FIELD_X_LEN / 2) / GRID_SIZE_MAGNIFICATION;
     const int32_t gridY = (pos.y + FIELD_Y_LEN / 2) / GRID_SIZE_MAGNIFICATION;
@@ -65,16 +65,16 @@ std::tuple<int32_t, int32_t> CellList::getGridCoordinateByCellPos(const Cell& c)
  * @return std::vector<int>
  * @note CHECK_WIDTHはcalcRemoteForceのLAMBDAより大きくするのが理想。
  */
-std::vector<Cell*> CellList::aroundCellList(const Cell& c) const
+std::vector<std::shared_ptr<Cell>> CellList::aroundCellList(const std::shared_ptr<Cell> c) const
 {
-    std::vector<Cell*> aroundCells;
+    std::vector<std::shared_ptr<Cell>> aroundCells;
     constexpr int32_t CHECK_GRID_WIDTH = (SEARCH_RADIUS + GRID_SIZE_MAGNIFICATION - 1) / GRID_SIZE_MAGNIFICATION; // 切り上げの割り算
 
     auto [gridX, gridY] = getGridCoordinateByCellPos(c);
 
     for (int32_t y = gridY - CHECK_GRID_WIDTH; y <= gridY + CHECK_GRID_WIDTH; y++) {
         for (int32_t x = gridX - CHECK_GRID_WIDTH; x <= gridX + CHECK_GRID_WIDTH; x++) {
-            std::vector<Cell*> cellInGrid = std::move(getCellInGrid(x, y));
+            std::vector<std::shared_ptr<Cell>> cellInGrid = std::move(getCellInGrid(x, y));
 
             // グリッド内にCellが存在していない(あるいはグリッド外を参照していれば)ここで飛ばす
             if (cellInGrid.empty()) {
@@ -82,7 +82,7 @@ std::vector<Cell*> CellList::aroundCellList(const Cell& c) const
             }
 
             for (int i = 0; i < (int32_t)cellInGrid.size(); i++) {
-                if (checkInSearchRadius(&c, cellInGrid[i])) {
+                if (checkInSearchRadius(c, cellInGrid[i])) {
                     aroundCells.emplace_back(cellInGrid[i]);
                 }
             }
@@ -99,13 +99,13 @@ std::vector<Cell*> CellList::aroundCellList(const Cell& c) const
  * @param y
  * @return std::vector<Cell*>
  */
-std::vector<Cell*> CellList::getCellInGrid(const int32_t x, const int32_t y) const
+std::vector<std::shared_ptr<Cell>> CellList::getCellInGrid(const int32_t x, const int32_t y) const
 {
     constexpr int32_t GRID_X_WIDTH = FIELD_X_LEN / GRID_SIZE_MAGNIFICATION;
     constexpr int32_t GRID_Y_WIDTH = FIELD_Y_LEN / GRID_SIZE_MAGNIFICATION;
     // 範囲外の場合は空のvectorを返す
     if (x < 0 || GRID_X_WIDTH <= x || y < 0 || GRID_Y_WIDTH <= y) {
-        return std::vector<Cell*>();
+        return std::vector<std::shared_ptr<Cell>>();
     }
 
     return cellField[y][x];
@@ -119,7 +119,7 @@ std::vector<Cell*> CellList::getCellInGrid(const int32_t x, const int32_t y) con
  * @return true
  * @return false
  */
-bool CellList::checkInSearchRadius(const Cell* c, const Cell* d) const
+bool CellList::checkInSearchRadius(const std::shared_ptr<Cell> c, const std::shared_ptr<Cell> d) const
 {
     const bool isSame    = (c->id == d->id);
     const bool isInRange = c->getPosition().dist(d->getPosition()) <= SEARCH_RADIUS;
@@ -154,7 +154,7 @@ void CellList::resetGrid() noexcept
  *
  * @param cell
  */
-void CellList::addCell(Cell* cell)
+void CellList::addCell(std::shared_ptr<Cell> cell)
 {
     Vec3 pos = cell->getPosition();
 

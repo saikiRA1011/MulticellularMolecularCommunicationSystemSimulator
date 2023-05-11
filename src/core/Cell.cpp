@@ -68,12 +68,11 @@ Cell::Cell(CellType _typeID, Vec3 pos, double radius, Vec3 v)
 }
 
 /**
- * @brief プールにインデックスを返す。
+ * @brief デストラクタは今の所特に何もしない
  *
  */
 Cell::~Cell()
 {
-    cellPool.push(this->arrayIndex);
 }
 
 /**
@@ -177,6 +176,7 @@ void Cell::emitMolecule(int moleculeId) noexcept
     return;
 }
 
+// TODO: 変な数値が返ってきている！しかもCellのIDもなんかおかしい。
 /**
  * @brief 余っているCellのインデックスを返す。プールが空になっていれば新しいインデックスを生成する。
  *
@@ -186,8 +186,9 @@ void Cell::emitMolecule(int moleculeId) noexcept
 int32_t Cell::getNewCellIndex() noexcept
 {
     if (Cell::cellPool.empty()) {
-        upperOfCellCount++;
         int32_t newIndex = upperOfCellCount;
+        upperOfCellCount++;
+
         return newIndex;
     }
 
