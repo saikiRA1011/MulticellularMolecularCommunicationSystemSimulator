@@ -137,7 +137,6 @@ int32_t Cell::die() noexcept
     return releaseIndex();
 }
 
-// TODO: 分裂後のサイズを等分する。
 /**
  * @brief 細胞分裂を起こす。
  *
@@ -176,7 +175,6 @@ void Cell::emitMolecule(int moleculeId) noexcept
     return;
 }
 
-// TODO: 変な数値が返ってきている！しかもCellのIDもなんかおかしい。
 /**
  * @brief 余っているCellのインデックスを返す。プールが空になっていれば新しいインデックスを生成する。
  *

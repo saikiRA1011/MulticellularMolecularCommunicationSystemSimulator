@@ -46,7 +46,6 @@ class Vec3
     void print() const noexcept;
 
     static Vec3 zero() noexcept;
-    // TODO: 後で作る
     static Vec3 randomDirection2() noexcept; // 方向のみを表すランダムな正規化されたベクトル(z=0で固定)を返す。
     static Vec3 randomDirection3() noexcept; // 方向のみを表すランダムな正規化されたベクトルを返す。
 
