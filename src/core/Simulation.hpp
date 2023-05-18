@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include "../UserCell.hpp"
 #include "Cell.hpp"
 // #include "UserRule.hpp"
 #include "../SimulationSettings.hpp"
@@ -37,9 +38,9 @@
 class Simulation
 {
   protected:
-    CellList cellList;                        //!< CellListのデータ構造を管理するクラス
-    std::vector<std::shared_ptr<Cell>> cells; //!< シミュレーションで使うCellのリスト。
-    std::streambuf* consoleStream;            //!< 標準出力のストリームバッファ
+    CellList cellList;                            //!< CellListのデータ構造を管理するクラス
+    std::vector<std::shared_ptr<UserCell>> cells; //!< シミュレーションで使うCellのリスト。
+    std::streambuf* consoleStream;                //!< 標準出力のストリームバッファ
 
   private:
     // random
@@ -57,6 +58,8 @@ class Simulation
     //  周辺のCellのIDを格納する。ただし、vectorは一列分のみしか確保しない。
     void setCellList() noexcept;
 
+    int32_t debugCounter = 0;
+
   public:
     Simulation(/* args */);
     ~Simulation();
@@ -65,12 +68,12 @@ class Simulation
 
     virtual void initCells() noexcept;
 
-    virtual Vec3 calcCellCellForce(std::shared_ptr<Cell>) const noexcept;
+    virtual Vec3 calcCellCellForce(std::shared_ptr<UserCell>) const noexcept;
     virtual void stepPreprocess() noexcept;
     virtual void stepEndProcess() noexcept;
-    Vec3 calcRemoteForce(std::shared_ptr<Cell>) const noexcept;
-    Vec3 calcVolumeExclusion(std::shared_ptr<Cell>) const noexcept;
-    Vec3 calcForce(std::shared_ptr<Cell>) const noexcept;
+    Vec3 calcRemoteForce(std::shared_ptr<UserCell>, std::shared_ptr<UserCell>) const noexcept;
+    Vec3 calcVolumeExclusion(std::shared_ptr<UserCell>, std::shared_ptr<UserCell>) const noexcept;
+    Vec3 calcForce(std::shared_ptr<UserCell>) const noexcept;
 
     int32_t nextStep() noexcept;
     int32_t run();

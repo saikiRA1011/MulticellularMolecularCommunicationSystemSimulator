@@ -26,28 +26,23 @@
  */
 class Cell
 {
-  private:
+  protected:
     CellType typeID;
     Vec3 position; //!< Cellの座標(x,y,z)
     Vec3 velocity; //!< Cellの速度(x,y,z)
     double weight; //!< Cellの質量
     double radius; //!< Cellの半径
 
-    bool willDivide;
-
-    static int32_t upperOfCellCount;
-
     std::vector<const Cell*> adhereCells;
-
-    double divisionCycleTime;  //!< 細胞の分裂周期
-    double divisionCycleGauge; //!< 細胞の分裂周期のゲージ。divisionCycleTimeを超えたら分裂する。
-
-    double dieCycleTime;  //!< 細胞の死滅周期
-    double dieCycleGauge; //!< 細胞の死滅周期のゲージ。dieCycleTimeを超えたら死滅する。
 
     std::vector<int> molecularStocks; //!< 細胞の保持している分子数。配列の添字は分子の種類。
 
     int32_t releaseIndex() noexcept;
+
+    void adjustPosInField() noexcept;
+
+  private:
+    static int32_t upperOfCellCount;
 
     // Simulation *sim; //!< Cellの呼び出し元になるSimulationインスタンスのポインタ
 
@@ -79,7 +74,7 @@ class Cell
     virtual bool checkWillDivide() const noexcept; // ユーザが定義
     virtual void metabolize() noexcept;            // ユーザが定義
     virtual int32_t die() noexcept;                // ユーザが定義
-    Cell divide() noexcept;
+    Cell divide() noexcept;                        // オーバーロードして使う。
 
     void emitMolecule(int moleculeId) noexcept;
 
@@ -188,20 +183,5 @@ inline void Cell::addForce(Vec3 f) noexcept
 inline void Cell::nextStep() noexcept
 {
     position += velocity;
-
-    const int32_t FIELD_WIDTH = FIELD_X_LEN;
-
-    // 座標が画面外に出たら、一周回して画面内に戻す
-    if (position.x < -(FIELD_WIDTH / 2)) {
-        position.x = (FIELD_WIDTH / 2) - 1;
-    }
-    if (FIELD_WIDTH / 2 <= position.x) {
-        position.x = -FIELD_WIDTH / 2;
-    }
-    if (position.y < -(FIELD_WIDTH / 2)) {
-        position.y = (FIELD_WIDTH / 2) - 1;
-    }
-    if (FIELD_WIDTH / 2 <= position.y) {
-        position.y = -FIELD_WIDTH / 2;
-    }
+    adjustPosInField();
 }

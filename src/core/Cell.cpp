@@ -53,14 +53,9 @@ Cell::Cell(CellType _typeID, Vec3 pos, double radius, Vec3 v)
   , position(pos)
   , velocity(v)
   , weight(1.0)
-  , willDivide(false)
+  , radius(radius)
   , id(numberOfCellsBorn)
   , arrayIndex(getNewCellIndex())
-  , radius(radius)
-  , divisionCycleTime(10)
-  , divisionCycleGauge(0)
-  , dieCycleTime(15)
-  , dieCycleGauge(0)
 {
     if (!(typeID == CellType::TMP || typeID == CellType::NONE)) { // TMP細胞、NONE細胞はカウントしない
         numberOfCellsBorn++;
@@ -96,7 +91,7 @@ void Cell::adhere(const Cell& c) noexcept
 
 bool Cell::checkWillDie() const noexcept
 {
-    return (dieCycleGauge >= dieCycleTime);
+    return false;
 }
 
 /**
@@ -107,8 +102,7 @@ bool Cell::checkWillDie() const noexcept
  */
 bool Cell::checkWillDivide() const noexcept
 {
-    // アホみたいなモデル。単純に時間経過で分裂する。
-    return (divisionCycleGauge >= divisionCycleTime);
+    return false;
 }
 
 // TODO: あとでUserCellに移し替える
@@ -118,9 +112,6 @@ bool Cell::checkWillDivide() const noexcept
  */
 void Cell::metabolize() noexcept
 {
-    divisionCycleGauge += 0.1 * DELTA_TIME; // DELTA_TIMEをかけて時間スケールを合わせる
-    dieCycleGauge += 0.1 * DELTA_TIME;      // DELTA_TIMEをかけて時間スケールを合わせる
-
     double r = this->getRadius();
     this->setRadius(r + 0.03 * DELTA_TIME);
 }
@@ -144,9 +135,6 @@ int32_t Cell::die() noexcept
  */
 Cell Cell::divide() noexcept
 {
-    divisionCycleGauge = 0;
-    willDivide         = false;
-
     Vec3 pos            = this->getPosition();
     Vec3 childDirection = Vec3::randomDirection2(); // どの方向に分裂するかを決める。分裂元は逆方向に動く。
     // 体積を二分割したときの半径を求める。
@@ -204,10 +192,10 @@ void Cell::printCell() const noexcept
     std::cout << id << "\t" << NAMEOF_ENUM(typeID) << "\t";
     std::cout << position.x << "\t" << position.y << "\t" << position.z << "\t" << velocity.x << "\t" << velocity.y << "\t" << velocity.z << "\t" << radius << "\t" << adhereCells.size();
 
-    for (int i = 0; i < adhereCells.size(); i++) {
+    for (int i = 0; i < (int)adhereCells.size(); i++) {
         std::cout << adhereCells[i]->id;
 
-        if (i != adhereCells.size() - 1) {
+        if (i != (int)adhereCells.size() - 1) {
             std::cout << ",";
         }
     }
@@ -238,4 +226,27 @@ int32_t Cell::releaseIndex() noexcept
     cellPool.push(idx);
 
     return idx;
+}
+
+/**
+ * @brief Cellの位置をシミュレーションフィールド内に戻す
+ *
+ */
+void Cell::adjustPosInField() noexcept
+{
+    const int32_t FIELD_WIDTH = FIELD_X_LEN;
+
+    // 座標が画面外に出たら、一周回して画面内に戻す
+    if (position.x < -(double)(FIELD_WIDTH / 2)) {
+        position.x = (FIELD_WIDTH / 2) - 1;
+    }
+    if ((double)(FIELD_WIDTH / 2) <= position.x) {
+        position.x = -FIELD_WIDTH / 2;
+    }
+    if (position.y < -(double)(FIELD_WIDTH / 2)) {
+        position.y = (FIELD_WIDTH / 2) - 1;
+    }
+    if ((double)(FIELD_WIDTH / 2) <= position.y) {
+        position.y = -FIELD_WIDTH / 2;
+    }
 }
