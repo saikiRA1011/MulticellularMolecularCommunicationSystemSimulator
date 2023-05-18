@@ -3,7 +3,8 @@ PYTHON := python3.10
 CFLAGS := -std=c++20 -Wall -Wextra -O2 -mtune=native -march=native -fopenmp
 DEBUGF := -std=c++20 -Wall -Wextra -fopenmp -g
 TESTFLAGS := -std=c++20 -Wall -Wextra -lgtest -lgtest_main -I/usr/local/include -L/usr/local/lib
-OBJS := Vec3.o Cell.o Simulation.o CellList.o UserSimulation.o
+OBJS := Vec3.o Cell.o Simulation.o CellList.o UserSimulation.o UserCell.o
+DOBJS := D_Vec3.o D_Cell.o D_Simulation.o D_CellList.o D_UserSimulation.o D_UserCell.o
 DIR := result image video
 
 nowdate:=$(shell date +%Y%m%d_%H%M)
@@ -18,19 +19,25 @@ TEST := src/test
 BACKUP := src/backup
 
 # こうすると動かない。なんで？
-DEBUGOBJS := $(UTIL)/Vec3.cpp $(CORE)/Cell.o $(CORE)/Simulation.o $(CORE)/CellList.o $(USER)/UserSimulation.o
+DEBUGOBJS := $(UTIL)/Vec3.cpp Cell.o Simulation.o CellList.o UserSimulation.o
 
-SimMain: $(MAIN)/SimMain.cpp $(OBJS) result
+SimMain: $(MAIN)/SimMain.cpp $(OBJS)
 	$(CC) -o SimMain $(CFLAGS) $(OBJS) $(MAIN)/SimMain.cpp
+
+Debug: $(MAIN)/SimMain.cpp $(DOBJS)
+	$(CC) -o Debug $(DEBUGF) $(DOBJS) $(MAIN)/SimMain.cpp
 
 version:
 	@$(CC) --version
 	@$(PYTHON) --version
 
-Vec3.o: $(UTIL)/Vec3.cpp
+Vec3.o: $(UTIL)/Vec3.cpp $(UTIL)/Vec3.hpp
 	$(CC) -c $(CFLAGS) $(UTIL)/Vec3.cpp
 
-Vec3Test: $(UTIL)/Vec3.cpp $(TEST)/Vec3Test.cpp Vec3.o
+D_Vec3.o: $(UTIL)/Vec3.cpp $(UTIL)/Vec3.hpp
+	$(CC) -c -o D_Vec3.o $(DEBUGF) $(UTIL)/Vec3.cpp
+
+Vec3Test: $(UTIL)/Vec3.cpp $(UTIL)/Vec3.hpp $(TEST)/Vec3Test.cpp Vec3.o
 	$(CC) -o Vec3Test $(TESTFLAGS) Vec3.o $(TEST)/Vec3Test.cpp
 	
 test: Vec3Test
@@ -39,17 +46,35 @@ test: Vec3Test
 Cell.o: $(UTIL)/Vec3.cpp $(UTIL)/Vec3.hpp $(CORE)/Cell.cpp $(CORE)/Cell.hpp
 	$(CC) -c $(CFLAGS) $(CORE)/Cell.cpp
 
+D_Cell.o: $(UTIL)/Vec3.cpp $(UTIL)/Vec3.hpp $(CORE)/Cell.cpp $(CORE)/Cell.hpp
+	$(CC) -c -o D_Cell.o $(DEBUGF) $(CORE)/Cell.cpp
+
+UserCell.o: $(UTIL)/Vec3.cpp $(UTIL)/Vec3.hpp $(CORE)/Cell.cpp $(CORE)/Cell.hpp $(USER)/UserCell.cpp $(USER)/UserCell.hpp
+	$(CC) -c $(CFLAGS) $(USER)/UserCell.cpp
+
+D_UserCell.o: $(UTIL)/Vec3.cpp $(UTIL)/Vec3.hpp $(CORE)/Cell.cpp $(CORE)/Cell.hpp $(USER)/UserCell.cpp $(USER)/UserCell.hpp
+	$(CC) -c -o D_UserCell.o $(DEBUGF) $(USER)/UserCell.cpp
+
 Simulation.o: $(CORE)/Simulation.cpp $(USER)/SimulationSettings.hpp $(CORE)/Simulation.hpp $(CORE)/Cell.hpp $(CORE)/Cell.cpp $(CORE)/CellList.hpp $(CORE)/CellList.cpp
 	$(CC) -c $(CFLAGS) $(CORE)/Simulation.cpp
 
+D_Simulation.o: $(CORE)/Simulation.cpp $(USER)/SimulationSettings.hpp $(CORE)/Simulation.hpp $(CORE)/Cell.hpp $(CORE)/Cell.cpp $(CORE)/CellList.hpp $(CORE)/CellList.cpp
+	$(CC) -c -o D_Simulation.o $(DEBUGF) $(CORE)/Simulation.cpp
+
 UserSimulation.o: $(CORE)/Simulation.cpp $(CORE)/Simulation.hpp $(USER)/UserSimulation.cpp $(USER)/UserSimulation.hpp 
 	$(CC) -c $(CFLAGS) $(USER)/UserSimulation.cpp
+
+D_UserSimulation.o: $(CORE)/Simulation.cpp $(CORE)/Simulation.hpp $(USER)/UserSimulation.cpp $(USER)/UserSimulation.hpp 
+	$(CC) -c -o D_UserSimulation.o $(DEBUGF) $(USER)/UserSimulation.cpp
 
 SegmentTree.o: $(CORE)/SegmentTree.cpp
 	$(CC) -c $(CFLAGS) $(CORE)/SegmentTree.cpp
 
 CellList.o: $(CORE)/CellList.cpp $(CORE)/CellList.hpp $(CORE)/Cell.hpp $(CORE)/Cell.cpp
 	$(CC) -c $(CFLAGS) $(CORE)/CellList.cpp
+
+D_CellList.o: $(CORE)/CellList.cpp $(CORE)/CellList.hpp $(CORE)/Cell.hpp $(CORE)/Cell.cpp
+	$(CC) -c -o D_CellList.o $(DEBUGF) $(CORE)/CellList.cpp
 
 VariableRatioCellList.o: $(CORE)/VariableRatioCellList.cpp
 	$(CC) -c $(CFLAGS) $(CORE)/VariableRatioCellList.cpp
