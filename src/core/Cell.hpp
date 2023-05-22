@@ -30,6 +30,7 @@ class Cell
     CellType typeID;
     Vec3 position; //!< Cellの座標(x,y,z)
     Vec3 velocity; //!< Cellの速度(x,y,z)
+    Vec3 preVelocity;
     double weight; //!< Cellの質量
     double radius; //!< Cellの半径
 
@@ -172,7 +173,7 @@ inline void Cell::addForce(double fx, double fy) noexcept
  */
 inline void Cell::addForce(Vec3 f) noexcept
 {
-    velocity = f.timesScalar(1.0 / weight);
+    velocity += f.timesScalar(1.0 / weight);
 }
 
 /**
@@ -182,6 +183,9 @@ inline void Cell::addForce(Vec3 f) noexcept
  */
 inline void Cell::nextStep() noexcept
 {
-    position += velocity;
+    position += (velocity + preVelocity).timesScalar(0.5); // 2次のルンゲクッタ法
+    preVelocity = velocity;
+    velocity    = Vec3::zero();
+
     adjustPosInField();
 }
