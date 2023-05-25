@@ -1,8 +1,8 @@
 #include "UserCell.hpp"
 
 std::mt19937 UserCell::randomEngine(1231);
-std::exponential_distribution<> UserCell::divisionDist(1.0 / 10.0);
-std::exponential_distribution<> UserCell::dieDist(1.0 / 15.0);
+std::exponential_distribution<> UserCell::divisionDist(1.0 / 100.0);
+std::exponential_distribution<> UserCell::dieDist(1.0 / 150.0);
 
 // TODO: 現在のモデルを実行すると左上の方にあるさいぼうが
 
@@ -61,11 +61,14 @@ bool UserCell::checkWillDie() const noexcept
 
 void UserCell::metabolize() noexcept
 {
-    divisionGauge += 0.1 * DELTA_TIME; // DELTA_TIMEをかけて時間スケールを合わせる
-    dieGauge += 0.1 * DELTA_TIME;      // DELTA_TIMEをかけて時間スケールを合わせる
+    divisionGauge += DELTA_TIME; // DELTA_TIMEをかけて時間スケールを合わせる
+    dieGauge += DELTA_TIME;      // DELTA_TIMEをかけて時間スケールを合わせる
 
-    double r = this->getRadius();
-    this->setRadius(r + 0.03 * DELTA_TIME);
+    double r               = this->getRadius();
+    const double newVolume = calcVolumeFromRadius(r) + 200.0 * DELTA_TIME;
+    const double newRadius = calcRadiusFromVolume(newVolume);
+
+    this->setRadius(newRadius);
 }
 
 int32_t UserCell::die() noexcept

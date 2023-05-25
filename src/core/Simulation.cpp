@@ -183,13 +183,14 @@ Vec3 Simulation::calcVolumeExclusion(std::shared_ptr<UserCell> c1, std::shared_p
         force -= diff.normalize().timesScalar(pow(1.0 - dist / sumRadius, 2)).timesScalar(ADHESION_BIAS);
     }
 
-    force = force.timesScalar(DELTA_TIME);
-
     return force;
 }
 
 void Simulation::stepPreprocess() noexcept
 {
+    for (auto cell : cells) {
+        cell->initForce();
+    }
 }
 
 void Simulation::stepEndProcess() noexcept
@@ -224,7 +225,6 @@ int32_t Simulation::nextStep() noexcept
     if (USE_CELL_LIST) {
         cellList.resetGrid();
         setCellList(); // XXX: ここでバグが出る
-        std::cout << "ok2" << std::endl;
     }
 
     Vec3 force = Vec3::zero();
@@ -264,19 +264,9 @@ int32_t Simulation::run()
     for (int32_t step = 1; step < SIM_STEP; step++) {
         auto start = std::chrono::system_clock::now();
 
-        if (step == 475) {
-            std::cout << cells.size() << std::endl;
-        }
-
         stepPreprocess();
         nextStep();
-        if (step == 475) {
-            std::cout << "ok3" << std::endl;
-        }
         stepEndProcess();
-        if (step == 475) {
-            std::cout << "ok4" << std::endl;
-        }
 
         const bool willOut = (step % OUTPUT_INTERVAL_STEP) == 0;
         if (willOut) {

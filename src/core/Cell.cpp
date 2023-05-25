@@ -71,6 +71,28 @@ Cell::~Cell()
 }
 
 /**
+ * @brief Cellの体積から半径を計算する
+ *
+ * @param volume
+ * @return double
+ */
+double Cell::calcRadiusFromVolume(double volume) noexcept
+{
+    return std::pow(volume * 3.0 / (4.0 * M_PI), 1.0 / 3.0);
+}
+
+/**
+ * @brief Cellの半径から体積を計算する
+ *
+ * @param radius
+ * @return double
+ */
+double Cell::calcVolumeFromRadius(double radius) noexcept
+{
+    return 4.0 / 3.0 * M_PI * std::pow(radius, 3.0);
+}
+
+/**
  * @brief 接着しているCellのリストを初期化する。初期化は遅いので注意が必要。必要ならSimulation::stepPreprocessで呼び出す。
  *
  */
