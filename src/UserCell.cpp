@@ -4,8 +4,6 @@ std::mt19937 UserCell::randomEngine(1231);
 std::exponential_distribution<> UserCell::divisionDist(1.0 / 100.0);
 std::exponential_distribution<> UserCell::dieDist(1.0 / 150.0);
 
-// TODO: 現在のモデルを実行すると左上の方にあるさいぼうが
-
 UserCell::UserCell()
   : UserCell(CellType::WORKER, Vec3(0, 0, 0))
 {
