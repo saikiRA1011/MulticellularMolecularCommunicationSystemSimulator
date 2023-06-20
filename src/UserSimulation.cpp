@@ -79,25 +79,25 @@ Vec3 UserSimulation::calcCellCellForce(std::shared_ptr<UserCell> c) const noexce
 
     switch (c->getCellType()) {
         case CellType::WORKER:
-            for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
-                if (aroundCells[i]->getCellType() == CellType::WORKER) {
-                    force += Simulation::calcRemoteForce(c, aroundCells[i]);
+            for (auto i : aroundCells) {
+                if (cells[i]->getCellType() == CellType::WORKER) {
+                    force += Simulation::calcRemoteForce(c, cells[i]);
                 }
             }
             force = force.normalize();
 
-            for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
-                if (aroundCells[i]->getCellType() != CellType::NONE) {
-                    force += Simulation::calcVolumeExclusion(c, aroundCells[i]);
+            for (auto i : aroundCells) {
+                if (cells[i]->getCellType() != CellType::NONE) {
+                    force += Simulation::calcVolumeExclusion(c, cells[i]);
                 }
             }
 
             return force.timesScalar(DELTA_TIME);
 
         case CellType::DEAD:
-            for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
-                if (aroundCells[i]->getCellType() != CellType::NONE) {
-                    force += Simulation::calcVolumeExclusion(c, aroundCells[i]);
+            for (auto i : aroundCells) {
+                if (cells[i]->getCellType() != CellType::NONE) {
+                    force += Simulation::calcVolumeExclusion(c, cells[i]);
                 }
             }
 

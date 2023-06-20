@@ -31,9 +31,9 @@ class CellList
     ~CellList();
 
     void init();
-    std::vector<std::shared_ptr<UserCell>> aroundCellList(const std::shared_ptr<UserCell> c) const;
-    std::vector<std::shared_ptr<UserCell>> getCellInGrid(const int32_t x, const int32_t y) const;
-    bool checkInSearchRadius(const std::shared_ptr<UserCell> c, const std::shared_ptr<UserCell> d) const;
+    std::vector<int32_t> aroundCellList(const std::shared_ptr<UserCell> c) const;
+    bool isInGrid(const int32_t x, const int32_t y) const;
+    bool checkInSearchRadius(const Vec3 v, const Vec3 u) const;
     void resetGrid() noexcept;
     void addCell(std::shared_ptr<UserCell> cell);
 };

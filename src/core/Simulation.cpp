@@ -114,18 +114,18 @@ Vec3 Simulation::calcCellCellForce(std::shared_ptr<UserCell> c) const noexcept
 
     auto aroundCellList = cellList.aroundCellList(c);
 
-    for (auto aroundCell : aroundCellList) {
-        if (aroundCell->getCellType() == CellType::NONE || aroundCell->getCellType() == CellType::DEAD)
+    for (auto i : aroundCellList) {
+        if (cells[i]->getCellType() == CellType::NONE || cells[i]->getCellType() == CellType::DEAD)
             continue;
 
-        force += calcRemoteForce(c, aroundCell);
+        force += calcRemoteForce(c, cells[i]);
     }
     force = force.normalize();
 
-    for (auto aroundCell : aroundCellList) {
-        if (aroundCell->getCellType() == CellType::NONE || aroundCell->getCellType() == CellType::DEAD)
+    for (auto i : aroundCellList) {
+        if (cells[i]->getCellType() == CellType::NONE || cells[i]->getCellType() == CellType::DEAD)
             continue;
-        force += calcVolumeExclusion(c, aroundCell);
+        force += calcVolumeExclusion(c, cells[i]);
     }
 
     return force;
@@ -224,13 +224,13 @@ int32_t Simulation::nextStep() noexcept
 {
     if (USE_CELL_LIST) {
         cellList.resetGrid();
-        setCellList(); // XXX: ここでバグが出る
+        setCellList();
     }
 
     Vec3 force = Vec3::zero();
 
-// XXX: スレッド数を増やしてもメモリアクセスがボトルネックになってしまう。
-#pragma omp parallel for num_threads(8) schedule(dynamic) private(force)
+    // XXX: スレッド数を増やしてもメモリアクセスがボトルネックになってしまう。
+    // #pragma omp parallel for num_threads(8) schedule(dynamic) private(force)
     for (int32_t i = 0; i < (int32_t)cells.size(); i++) {
         if (cells[i]->getCellType() == CellType::DEAD || cells[i]->getCellType() == CellType::NONE)
             continue;
