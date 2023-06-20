@@ -1,4 +1,4 @@
-CC := g++
+CC := g++-13
 PYTHON := python3.10
 CFLAGS := -std=c++20 -Wall -Wextra -O2 -mtune=native -march=native -fopenmp
 DEBUGF := -std=c++20 -Wall -Wextra -fopenmp -g
@@ -18,7 +18,6 @@ USER := src
 TEST := src/test
 BACKUP := src/backup
 
-# こうすると動かない。なんで？
 DEBUGOBJS := $(UTIL)/Vec3.cpp Cell.o Simulation.o CellList.o UserSimulation.o
 
 SimMain: $(MAIN)/SimMain.cpp $(OBJS)
@@ -26,6 +25,14 @@ SimMain: $(MAIN)/SimMain.cpp $(OBJS)
 
 Debug: $(MAIN)/SimMain.cpp $(DOBJS)
 	$(CC) -o Debug $(DEBUGF) $(DOBJS) $(MAIN)/SimMain.cpp
+
+SpeedTest: $(MAIN)/SpeedTest.cpp $(OBJS)
+	$(CC) -o SpeedTest $(CFLAGS) $(OBJS) $(MAIN)/SpeedTest.cpp
+
+# プログラムの定数倍最適化を考える際に使う
+# 新しくプロファイリングしたいときは、result.traceを削除してから実行する
+Profiling: Debug
+	xcrun xctrace record --template 'Time Profiler' --output ./result.trace --launch -- ./Debug; open ./result.trace
 
 version:
 	@$(CC) --version
