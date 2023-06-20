@@ -4,14 +4,16 @@ import glob
 # encoder
 fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
 
-with open('config.txt', 'r') as f:
-    img_w_len = int(f.readline())
-    img_h_len = int(f.readline())
+base_img = cv2.imread('./image/cells_00000.png')
 
-img_len = 1024
+img_w_len = base_img.shape[1]
+img_h_len = base_img.shape[0]
+
+print(img_w_len, img_h_len)
 
 # output
-video = cv2.VideoWriter('./video/out.mp4', fourcc, 20.0, (img_len, img_len))
+video = cv2.VideoWriter('./video/out.mp4', fourcc,
+                        20.0, (img_w_len, img_h_len))
 
 file_paths = sorted(glob.glob('./image/cells_*'))
 
