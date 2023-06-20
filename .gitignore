@@ -26,3 +26,4 @@ package
 src/convert_tools/__pycache__
 *Test
 !/src/test/
+*.trace

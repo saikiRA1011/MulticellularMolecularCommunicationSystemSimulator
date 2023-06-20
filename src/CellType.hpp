@@ -1,3 +1,5 @@
+#pragma once
+
 enum class CellType
 {
     NONE,     // 死滅・消滅した細胞など。CellのID更新には影響しない
