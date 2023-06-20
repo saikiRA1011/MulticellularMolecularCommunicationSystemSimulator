@@ -54,8 +54,8 @@ void Simulation::initCells() noexcept
     for (int32_t i = 0; i < CELL_NUM; i++) {
         double xPos = randomCellPosX(rand_gen);
         double yPos = randomCellPosY(rand_gen);
-        Cell c(CellType::WORKER, xPos, yPos, 10.0);
-        cells.push_back(std::make_shared<Cell>(c));
+        UserCell c(CellType::WORKER, xPos, yPos, 10.0);
+        cells.push_back(std::make_shared<UserCell>(c));
     }
 }
 
@@ -94,6 +94,8 @@ void Simulation::printCells(int32_t time) const
 
 void Simulation::setCellList() noexcept
 {
+    debugCounter++;
+
     for (int32_t i = 0; i < (int32_t)cells.size(); i++) {
         cellList.addCell(cells[i]);
     }
@@ -106,54 +108,25 @@ void Simulation::setCellList() noexcept
  * @return Vec3
  * @details Cellから働く力は遠隔力と近隣力の2つで構成される。さらに、近接力は体積排除効果と接着力の2つに分類される。
  */
-Vec3 Simulation::calcCellCellForce(std::shared_ptr<Cell> c) const noexcept
+Vec3 Simulation::calcCellCellForce(std::shared_ptr<UserCell> c) const noexcept
 {
     Vec3 force = Vec3::zero();
 
-    std::vector<std::shared_ptr<Cell>> aroundCells = cellList.aroundCellList(c);
+    auto aroundCellList = cellList.aroundCellList(c);
 
-    constexpr double COEFFICIENT = 1.0;
-
-    for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
-        auto cell = aroundCells[i];
-
-        if (cell->getCellType() == CellType::DEAD || cell->getCellType() == CellType::NONE) {
+    for (auto i : aroundCellList) {
+        if (cells[i]->getCellType() == CellType::NONE || cells[i]->getCellType() == CellType::DEAD)
             continue;
-        }
 
-        const Vec3 diff         = c->getPosition() - cell->getPosition();
-        const double dist       = diff.length();
-        constexpr double LAMBDA = 30.0;
-        const double weight     = cell->getWeight() * c->getWeight();
-
-        // d = |C1 - C2|
-        // F += c (C1 - C2) / d * e^(-d/λ)
-        force += -diff.normalize().timesScalar(weight).timesScalar(COEFFICIENT).timesScalar(std::exp(-dist / LAMBDA));
+        force += calcRemoteForce(c, cells[i]);
     }
-    force = force.normalize().timesScalar(COEFFICIENT);
+    force = force.normalize();
 
-    for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
-        auto cell = aroundCells[i];
-
-        if (cell->getCellType() == CellType::NONE) {
+    for (auto i : aroundCellList) {
+        if (cells[i]->getCellType() == CellType::NONE || cells[i]->getCellType() == CellType::DEAD)
             continue;
-        }
-
-        const Vec3 diff                   = c->getPosition() - cell->getPosition();
-        const double dist                 = diff.length();
-        const double sumRadius            = c->getRadius() + cell->getRadius();
-        const double overlapDist          = c->getRadius() + cell->getRadius() - dist;
-        constexpr double ELIMINATION_BIAS = 10.0;
-        constexpr double ADHESION_BIAS    = 0.4;
-
-        if (dist < sumRadius) {
-            // force += diff.normalize().timesScalar(std::pow(1.8, overlapDist)).timesScalar(BIAS);
-            force += diff.normalize().timesScalar(pow(1.0 - dist / sumRadius, 2)).timesScalar(ELIMINATION_BIAS);
-            force -= diff.normalize().timesScalar(pow(1.0 - dist / sumRadius, 2)).timesScalar(ADHESION_BIAS);
-        }
+        force += calcVolumeExclusion(c, cells[i]);
     }
-
-    force = force.timesScalar(DELTA_TIME);
 
     return force;
 }
@@ -168,27 +141,18 @@ Vec3 Simulation::calcCellCellForce(std::shared_ptr<Cell> c) const noexcept
  * e^{(-|C-C_i|/\lambda)}
  * @f}
  */
-Vec3 Simulation::calcRemoteForce(std::shared_ptr<Cell> c) const noexcept
+Vec3 Simulation::calcRemoteForce(std::shared_ptr<UserCell> c1, std::shared_ptr<UserCell> c2) const noexcept
 {
-    Vec3 force = Vec3::zero();
+    Vec3 force                   = Vec3::zero();
+    constexpr double COEFFICIENT = 1.0;
+    const Vec3 diff              = c1->getPosition() - c2->getPosition();
+    const double dist            = diff.length();
+    constexpr double LAMBDA      = 30.0;
+    const double weight          = c2->getWeight() * c1->getWeight();
 
-    std::vector<std::shared_ptr<Cell>> aroundCells = cellList.aroundCellList(c);
-
-    for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
-        auto cell = aroundCells[i];
-
-        Vec3 diff   = c->getPosition() - cell->getPosition();
-        double dist = diff.length();
-
-        constexpr double LAMBDA      = 30.0;
-        constexpr double COEFFICIENT = 0.5;
-
-        // d = |C1 - C2|
-        // F += c (C1 - C2) / d * e^(-d/λ)
-        force += -diff.normalize().timesScalar(COEFFICIENT).timesScalar(std::exp(-dist / LAMBDA));
-    }
-
-    force = force.timesScalar(DELTA_TIME);
+    // d = |C1 - C2|
+    // F += c (C1 - C2) / d * e^(-d/λ)
+    force += -diff.normalize().timesScalar(weight).timesScalar(COEFFICIENT).timesScalar(std::exp(-dist / LAMBDA));
 
     return force;
 }
@@ -202,33 +166,31 @@ Vec3 Simulation::calcRemoteForce(std::shared_ptr<Cell> c) const noexcept
  * F = \sum_i
  * @f}
  */
-Vec3 Simulation::calcVolumeExclusion(std::shared_ptr<Cell> c) const noexcept
+Vec3 Simulation::calcVolumeExclusion(std::shared_ptr<UserCell> c1, std::shared_ptr<UserCell> c2) const noexcept
 {
-    Vec3 force = Vec3::zero();
+    Vec3 force        = Vec3::zero();
+    const Vec3 diff   = c1->getPosition() - c2->getPosition();
+    const double dist = diff.length();
+    // const double weight               = c2->getWeight() * c1->getWeight();
+    const double sumRadius = c1->getRadius() + c2->getRadius();
+    // const double overlapDist          = c1->getRadius() + c2->getRadius() - dist;
+    constexpr double ELIMINATION_BIAS = 10.0;
+    constexpr double ADHESION_BIAS    = 0.4;
 
-    std::vector<std::shared_ptr<Cell>> aroundCells = cellList.aroundCellList(c);
-
-    for (int32_t i = 0; i < (int32_t)aroundCells.size(); i++) {
-        auto cell                         = aroundCells[i];
-        const Vec3 diff                   = c->getPosition() - cell->getPosition();
-        const double dist                 = diff.length();
-        const double sumRadius            = c->getRadius() + cell->getRadius();
-        const double overlapDist          = c->getRadius() + cell->getRadius() - dist;
-        constexpr double ELIMINATION_BIAS = 10.0;
-        constexpr double ADHESION_BIAS    = 0.4;
-
-        if (dist < sumRadius) {
-            force += diff.normalize().timesScalar(pow(1.0 - dist / sumRadius, 2)).timesScalar(ELIMINATION_BIAS);
-        }
+    if (dist < sumRadius) {
+        // force += diff.normalize().timesScalar(std::pow(1.8, overlapDist)).timesScalar(BIAS);
+        force += diff.normalize().timesScalar(pow(1.0 - dist / sumRadius, 2)).timesScalar(ELIMINATION_BIAS);
+        force -= diff.normalize().timesScalar(pow(1.0 - dist / sumRadius, 2)).timesScalar(ADHESION_BIAS);
     }
-
-    force = force.timesScalar(DELTA_TIME);
 
     return force;
 }
 
 void Simulation::stepPreprocess() noexcept
 {
+    for (auto cell : cells) {
+        cell->initForce();
+    }
 }
 
 void Simulation::stepEndProcess() noexcept
@@ -241,7 +203,7 @@ void Simulation::stepEndProcess() noexcept
  * @param c
  * @return Vec3
  */
-Vec3 Simulation::calcForce(std::shared_ptr<Cell> c) const noexcept
+Vec3 Simulation::calcForce(std::shared_ptr<UserCell> c) const noexcept
 {
     Vec3 force = Vec3::zero();
 
@@ -265,15 +227,20 @@ int32_t Simulation::nextStep() noexcept
         setCellList();
     }
 
-#pragma omp parallel for num_threads(omp_get_max_threads()) schedule(dynamic)
+    Vec3 force = Vec3::zero();
+
+    // XXX: スレッド数を増やしてもメモリアクセスがボトルネックになってしまう。
+    // #pragma omp parallel for num_threads(8) schedule(dynamic) private(force)
     for (int32_t i = 0; i < (int32_t)cells.size(); i++) {
-        Vec3 force;
-        force = calcForce(cells[i]);
+        if (cells[i]->getCellType() == CellType::DEAD || cells[i]->getCellType() == CellType::NONE)
+            continue;
+
+        force = calcCellCellForce(cells[i]);
         cells[i]->addForce(force);
     }
 
-    for (int32_t cellID = 0; cellID < (int32_t)cells.size(); cellID++) {
-        cells[cellID]->nextStep();
+    for (auto cell : cells) {
+        cell->nextStep();
     }
 
     return 0;

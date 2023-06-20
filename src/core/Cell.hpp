@@ -26,40 +26,35 @@
  */
 class Cell
 {
-  private:
+  protected:
     CellType typeID;
     Vec3 position; //!< Cellの座標(x,y,z)
     Vec3 velocity; //!< Cellの速度(x,y,z)
     double weight; //!< Cellの質量
     double radius; //!< Cellの半径
 
-    bool willDivide;
-
-    static int32_t upperOfCellCount;
-
     std::vector<const Cell*> adhereCells;
-
-    double divisionCycleTime;  //!< 細胞の分裂周期
-    double divisionCycleGauge; //!< 細胞の分裂周期のゲージ。divisionCycleTimeを超えたら分裂する。
-
-    double dieCycleTime;  //!< 細胞の死滅周期
-    double dieCycleGauge; //!< 細胞の死滅周期のゲージ。dieCycleTimeを超えたら死滅する。
 
     std::vector<int> molecularStocks; //!< 細胞の保持している分子数。配列の添字は分子の種類。
 
     int32_t releaseIndex() noexcept;
 
+    void adjustPosInField() noexcept;
+
+  private:
+    static int32_t upperOfCellCount;
+    std::queue<Vec3> preVelocitiesQueue;
+
     // Simulation *sim; //!< Cellの呼び出し元になるSimulationインスタンスのポインタ
 
   public:
-    static std::queue<int> cellPool; //!< CellのIDを管理するためのキュー
-
     Cell();
     Cell(CellType _typeID, double x, double y, double radius = 5.0, double vx = 0, double vy = 0);
     Cell(CellType _typeID, Vec3 pos, double radius = 5.0, Vec3 v = Vec3::zero());
     ~Cell();
 
-    static int32_t numberOfCellsBorn;
+    static double calcRadiusFromVolume(double volume) noexcept;
+    static double calcVolumeFromRadius(double radius) noexcept;
 
     CellType getCellType() const noexcept;
     Vec3 getPosition() const noexcept;
@@ -68,6 +63,7 @@ class Cell
     double getRadius() const noexcept;
     double setRadius(double r);
 
+    void initForce() noexcept;
     void addForce(double fx, double fy) noexcept;
     void addForce(Vec3 f) noexcept;
     void nextStep() noexcept;
@@ -79,7 +75,7 @@ class Cell
     virtual bool checkWillDivide() const noexcept; // ユーザが定義
     virtual void metabolize() noexcept;            // ユーザが定義
     virtual int32_t die() noexcept;                // ユーザが定義
-    Cell divide() noexcept;
+    Cell divide() noexcept;                        // オーバーロードして使う。
 
     void emitMolecule(int moleculeId) noexcept;
 
@@ -87,6 +83,9 @@ class Cell
 
     void printCell() const noexcept;
     void printDebug() const noexcept; // デバッグ用
+
+    static int32_t numberOfCellsBorn;
+    static std::queue<int> cellPool; //!< CellのIDを管理するためのキュー
 
     const int id;         //!< CellのID
     const int arrayIndex; //!< 配列のどこに入るか
@@ -159,6 +158,15 @@ inline double Cell::setRadius(double r)
 }
 
 /**
+ * @brief Cellにかかっている力を初期化する。
+ *
+ */
+inline void Cell::initForce() noexcept
+{
+    velocity = Vec3::zero();
+}
+
+/**
  * @brief Cellに力を加える(double型)。このモデルでは力はそのまま速度になる。
  *
  * @param fx x方向の力
@@ -177,7 +185,7 @@ inline void Cell::addForce(double fx, double fy) noexcept
  */
 inline void Cell::addForce(Vec3 f) noexcept
 {
-    velocity = f.timesScalar(1.0 / weight);
+    velocity += f.timesScalar(1.0 / weight);
 }
 
 /**
@@ -187,21 +195,45 @@ inline void Cell::addForce(Vec3 f) noexcept
  */
 inline void Cell::nextStep() noexcept
 {
-    position += velocity;
+    // this->position += velocity;
 
-    const int32_t FIELD_WIDTH = FIELD_X_LEN;
+    int32_t preVelocitiesNum = preVelocitiesQueue.size();
 
-    // 座標が画面外に出たら、一周回して画面内に戻す
-    if (position.x < -(FIELD_WIDTH / 2)) {
-        position.x = (FIELD_WIDTH / 2) - 1;
+    assert(0 <= preVelocitiesNum && preVelocitiesNum <= 3);
+
+    Vec3 adjustedVelocity = Vec3::zero();
+
+    // 4次Adams-Bashforth法の係数 t-3, t-2,  t-1,   t
+    double velocityWeight[4] = { -9.0, 37.0, -59.0, 55.0 };
+
+    // TODO: adams-bashforth法を用いると細胞の挙動がおかしくなる。原因を調べる。
+
+    // 初回は過去の速度がないので、現在の速度で初期化する。
+    // 本当ならルンゲクッタ法を使って初期化したほうがいい
+    if (preVelocitiesNum == 0) {
+        for (int32_t i = 0; i < 3; i++) {
+            preVelocitiesQueue.push(velocity);
+        }
     }
-    if (FIELD_WIDTH / 2 <= position.x) {
-        position.x = -FIELD_WIDTH / 2;
+
+    // 4次のAdams-Bashforth法
+    adjustedVelocity += velocity.timesScalar(velocityWeight[3]);
+    Vec3 preVelocity;
+    for (int32_t i = 0; i < 3; i++) {
+        preVelocity = preVelocitiesQueue.front();
+        preVelocitiesQueue.pop();
+
+        if (i != 0) { // キューの先頭(一番古いデータ)以外は再びキューに追加する。一番古いデータはもう使わないので削除
+            preVelocitiesQueue.push(preVelocity);
+        }
+
+        adjustedVelocity += preVelocity.timesScalar(velocityWeight[i]); // 重みをかけて足す
     }
-    if (position.y < -(FIELD_WIDTH / 2)) {
-        position.y = (FIELD_WIDTH / 2) - 1;
-    }
-    if (FIELD_WIDTH / 2 <= position.y) {
-        position.y = -FIELD_WIDTH / 2;
-    }
+
+    adjustedVelocity = adjustedVelocity.timesScalar(1.0 / 24.0);
+    position += adjustedVelocity; // 2次のルンゲクッタ法
+
+    preVelocitiesQueue.push(velocity); // 今回の速度をキューに追加(調整前)
+
+    adjustPosInField();
 }
