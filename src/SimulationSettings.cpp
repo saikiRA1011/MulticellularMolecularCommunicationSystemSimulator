@@ -1,5 +1,13 @@
 #include "SimulationSettings.hpp"
 
+/**
+ * @brief 設定ファイルからの読み込み
+ * @brief 必要に応じてユーザが設定項目を書き足しても良い。
+ * @note 設定ファイルのパスはsrc/config.yaml。パースに失敗した場合は例外処理をする。
+ *
+ * @return true
+ * @return false
+ */
 bool SimulationSettings::init_settings()
 {
     std::string path = "src/config.yaml";
@@ -22,11 +30,14 @@ bool SimulationSettings::init_settings()
 
     } catch (YAML::ParserException& e) {
         std::cerr << e.what() << std::endl;
+
+        return false;
     }
 
     return true;
 }
 
+// staticメンバの初期化
 bool SimulationSettings::USE_CELL_LIST              = false;
 int32_t SimulationSettings::CELL_SEED               = 0;
 int32_t SimulationSettings::SIM_STEP                = 0;
