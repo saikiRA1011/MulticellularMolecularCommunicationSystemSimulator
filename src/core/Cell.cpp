@@ -135,7 +135,7 @@ bool Cell::checkWillDivide() const noexcept
 void Cell::metabolize() noexcept
 {
     double r = this->getRadius();
-    this->setRadius(r + 0.03 * DELTA_TIME);
+    this->setRadius(r + 0.03 * SimulationSettings::DELTA_TIME);
 }
 
 /**
@@ -212,7 +212,8 @@ int32_t Cell::getNewCellIndex() noexcept
 void Cell::printCell() const noexcept
 {
     std::cout << id << "\t" << NAMEOF_ENUM(typeID) << "\t";
-    std::cout << position.x << "\t" << position.y << "\t" << position.z << "\t" << velocity.x << "\t" << velocity.y << "\t" << velocity.z << "\t" << radius << "\t" << adhereCells.size() << "\t" << "_";
+    std::cout << position.x << "\t" << position.y << "\t" << position.z << "\t" << velocity.x << "\t" << velocity.y << "\t" << velocity.z << "\t" << radius << "\t" << adhereCells.size() << "\t"
+              << "_";
 
     for (int i = 0; i < (int)adhereCells.size(); i++) {
         std::cout << adhereCells[i]->id;
@@ -256,7 +257,7 @@ int32_t Cell::releaseIndex() noexcept
  */
 void Cell::adjustPosInField() noexcept
 {
-    const int32_t FIELD_WIDTH = FIELD_X_LEN;
+    const int32_t FIELD_WIDTH = SimulationSettings::FIELD_X_LEN;
 
     // 座標が画面外に出たら、一周回して画面内に戻す
     if (position.x < -(double)(FIELD_WIDTH / 2)) {

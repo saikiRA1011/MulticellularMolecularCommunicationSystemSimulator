@@ -12,9 +12,9 @@
  */
 Simulation::Simulation()
   : cellList()
-  , randomCellPosX(-FIELD_X_LEN / 2, FIELD_X_LEN / 2)
-  , randomCellPosY(-FIELD_Y_LEN / 2, FIELD_Y_LEN / 2)
-// , aroundCellSetList(FIELD_Y_LEN, std::unordered_set<int32_t>())
+  , randomCellPosX(-SimulationSettings::FIELD_X_LEN / 2, SimulationSettings::FIELD_X_LEN / 2)
+  , randomCellPosY(-SimulationSettings::FIELD_Y_LEN / 2, SimulationSettings::FIELD_Y_LEN / 2)
+// , aroundCellSetList(SimulationSettings::FIELD_Y_LEN, std::unordered_set<int32_t>())
 {
     consoleStream = std::cout.rdbuf();
 }
@@ -34,11 +34,11 @@ Simulation::~Simulation()
 void Simulation::exportConfig() const
 {
     std::ofstream outputfile("config.txt");
-    outputfile << FIELD_X_LEN << std::endl;
-    outputfile << FIELD_Y_LEN << std::endl;
-    outputfile << SIM_STEP << std::endl;
+    outputfile << SimulationSettings::FIELD_X_LEN << std::endl;
+    outputfile << SimulationSettings::FIELD_Y_LEN << std::endl;
+    outputfile << SimulationSettings::SIM_STEP << std::endl;
 
-    constexpr double TIME_PER_FILE = DELTA_TIME * (double)OUTPUT_INTERVAL_STEP;
+    const double TIME_PER_FILE = SimulationSettings::DELTA_TIME * (double)SimulationSettings::OUTPUT_INTERVAL_STEP;
 
     outputfile << TIME_PER_FILE << std::endl;
 
@@ -51,7 +51,7 @@ void Simulation::exportConfig() const
  */
 void Simulation::initCells() noexcept
 {
-    for (int32_t i = 0; i < CELL_NUM; i++) {
+    for (int32_t i = 0; i < SimulationSettings::CELL_NUM; i++) {
         double xPos = randomCellPosX(rand_gen);
         double yPos = randomCellPosY(rand_gen);
         UserCell c(CellType::WORKER, xPos, yPos, 10.0);
@@ -222,15 +222,15 @@ Vec3 Simulation::calcForce(std::shared_ptr<UserCell> c) const noexcept
  */
 int32_t Simulation::nextStep() noexcept
 {
-    if (USE_CELL_LIST) {
+    if (SimulationSettings::USE_CELL_LIST) {
         cellList.resetGrid();
         setCellList();
     }
 
     Vec3 force = Vec3::zero();
 
-    // XXX: スレッド数を増やしてもメモリアクセスがボトルネックになってしまう。
-    // #pragma omp parallel for num_threads(8) schedule(dynamic) private(force)
+// XXX: スレッド数を増やしてもメモリアクセスがボトルネックになってしまう。
+#pragma omp parallel for num_threads(8) schedule(dynamic) private(force)
     for (int32_t i = 0; i < (int32_t)cells.size(); i++) {
         if (cells[i]->getCellType() == CellType::DEAD || cells[i]->getCellType() == CellType::NONE)
             continue;
@@ -261,16 +261,16 @@ int32_t Simulation::run()
 
     std::cout << "initialized." << std::endl;
 
-    for (int32_t step = 1; step < SIM_STEP; step++) {
+    for (int32_t step = 1; step < SimulationSettings::SIM_STEP; step++) {
         auto start = std::chrono::system_clock::now();
 
         stepPreprocess();
         nextStep();
         stepEndProcess();
 
-        const bool willOut = (step % OUTPUT_INTERVAL_STEP) == 0;
+        const bool willOut = (step % SimulationSettings::OUTPUT_INTERVAL_STEP) == 0;
         if (willOut) {
-            printCells(step / OUTPUT_INTERVAL_STEP);
+            printCells(step / SimulationSettings::OUTPUT_INTERVAL_STEP);
         }
         const bool wasOut = willOut;
 
@@ -281,8 +281,8 @@ int32_t Simulation::run()
         sumTime += msec;
     }
 
-    const double averageTime = (double)sumTime / (double)SIM_STEP;
-    std::cout << "Initial cell count : " << CELL_NUM << "    average processing time : " << averageTime << std::endl;
+    const double averageTime = (double)sumTime / (double)SimulationSettings::SIM_STEP;
+    std::cout << "Initial cell count : " << SimulationSettings::CELL_NUM << "    average processing time : " << averageTime << std::endl;
 
     return 0;
 }
@@ -295,5 +295,5 @@ int32_t Simulation::run()
  */
 int32_t Simulation::getFieldLen()
 {
-    return FIELD_X_LEN;
+    return SimulationSettings::FIELD_X_LEN;
 }

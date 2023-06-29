@@ -30,8 +30,8 @@ CellList::~CellList()
  */
 void CellList::init()
 {
-    constexpr int32_t CELL_GRID_LEN_X = FIELD_X_LEN / GRID_SIZE_MAGNIFICATION;
-    constexpr int32_t CELL_GRID_LEN_Y = FIELD_Y_LEN / GRID_SIZE_MAGNIFICATION;
+    const int32_t CELL_GRID_LEN_X = SimulationSettings::FIELD_X_LEN / SimulationSettings::GRID_SIZE_MAGNIFICATION;
+    const int32_t CELL_GRID_LEN_Y = SimulationSettings::FIELD_Y_LEN / SimulationSettings::GRID_SIZE_MAGNIFICATION;
 
     cellField.resize(CELL_GRID_LEN_Y);
     for (int32_t y = 0; y < CELL_GRID_LEN_Y; y++) {
@@ -52,8 +52,8 @@ std::tuple<int32_t, int32_t> CellList::getGridCoordinateByCellPos(const std::sha
 {
     Vec3 pos = c->getPosition();
 
-    const int32_t gridX = (pos.x + FIELD_X_LEN / 2) / GRID_SIZE_MAGNIFICATION;
-    const int32_t gridY = (pos.y + FIELD_Y_LEN / 2) / GRID_SIZE_MAGNIFICATION;
+    const int32_t gridX = (pos.x + SimulationSettings::FIELD_X_LEN / 2) / SimulationSettings::GRID_SIZE_MAGNIFICATION;
+    const int32_t gridY = (pos.y + SimulationSettings::FIELD_Y_LEN / 2) / SimulationSettings::GRID_SIZE_MAGNIFICATION;
 
     return std::forward_as_tuple(gridX, gridY);
 }
@@ -68,7 +68,7 @@ std::tuple<int32_t, int32_t> CellList::getGridCoordinateByCellPos(const std::sha
 std::vector<int32_t> CellList::aroundCellList(const std::shared_ptr<UserCell> c) const
 {
     std::vector<int32_t> aroundCells;
-    constexpr int32_t CHECK_GRID_WIDTH = (SEARCH_RADIUS + GRID_SIZE_MAGNIFICATION - 1) / GRID_SIZE_MAGNIFICATION; // 切り上げの割り算
+    const int32_t CHECK_GRID_WIDTH = (SimulationSettings::SEARCH_RADIUS + SimulationSettings::GRID_SIZE_MAGNIFICATION - 1) / SimulationSettings::GRID_SIZE_MAGNIFICATION; // 切り上げの割り算
 
     auto [gridX, gridY] = getGridCoordinateByCellPos(c);
 
@@ -98,8 +98,8 @@ std::vector<int32_t> CellList::aroundCellList(const std::shared_ptr<UserCell> c)
  */
 bool CellList::isInGrid(const int32_t x, const int32_t y) const
 {
-    constexpr int32_t GRID_X_WIDTH = FIELD_X_LEN / GRID_SIZE_MAGNIFICATION;
-    constexpr int32_t GRID_Y_WIDTH = FIELD_Y_LEN / GRID_SIZE_MAGNIFICATION;
+    const int32_t GRID_X_WIDTH = SimulationSettings::FIELD_X_LEN / SimulationSettings::GRID_SIZE_MAGNIFICATION;
+    const int32_t GRID_Y_WIDTH = SimulationSettings::FIELD_Y_LEN / SimulationSettings::GRID_SIZE_MAGNIFICATION;
     // 範囲外の場合は空のvectorを返す
     if (x < 0 || GRID_X_WIDTH <= x || y < 0 || GRID_Y_WIDTH <= y) {
         return false;
@@ -119,7 +119,7 @@ bool CellList::isInGrid(const int32_t x, const int32_t y) const
 bool CellList::checkInSearchRadius(const Vec3 v, const Vec3 u) const
 {
     Vec3 diff            = v - u;
-    const bool isInRange = (diff.x * diff.x + diff.y * diff.y + diff.z * diff.z) <= SEARCH_RADIUS * SEARCH_RADIUS;
+    const bool isInRange = (diff.x * diff.x + diff.y * diff.y + diff.z * diff.z) <= SimulationSettings::SEARCH_RADIUS * SimulationSettings::SEARCH_RADIUS;
 
     // 距離がSEARCH_RADIUSより離れている場合はfalse
     if (!isInRange) {
@@ -135,8 +135,8 @@ bool CellList::checkInSearchRadius(const Vec3 v, const Vec3 u) const
  */
 void CellList::resetGrid() noexcept
 {
-    constexpr int32_t GRID_X_WIDTH = FIELD_X_LEN / GRID_SIZE_MAGNIFICATION;
-    constexpr int32_t GRID_Y_WIDTH = FIELD_Y_LEN / GRID_SIZE_MAGNIFICATION;
+    const int32_t GRID_X_WIDTH = SimulationSettings::FIELD_X_LEN / SimulationSettings::GRID_SIZE_MAGNIFICATION;
+    const int32_t GRID_Y_WIDTH = SimulationSettings::FIELD_Y_LEN / SimulationSettings::GRID_SIZE_MAGNIFICATION;
 
     // グリッドに保存されているCellのリストを初期化する。O(n^2) nは1辺の長さ
     for (int32_t y = 0; y < GRID_Y_WIDTH; y++) {
@@ -155,8 +155,8 @@ void CellList::addCell(std::shared_ptr<UserCell> cell)
 {
     Vec3 pos = cell->getPosition();
 
-    const int32_t scaledY = (pos.y + FIELD_Y_LEN / 2) / GRID_SIZE_MAGNIFICATION;
-    const int32_t scaledX = (pos.x + FIELD_X_LEN / 2) / GRID_SIZE_MAGNIFICATION;
+    const int32_t scaledY = (pos.y + SimulationSettings::FIELD_Y_LEN / 2) / SimulationSettings::GRID_SIZE_MAGNIFICATION;
+    const int32_t scaledX = (pos.x + SimulationSettings::FIELD_X_LEN / 2) / SimulationSettings::GRID_SIZE_MAGNIFICATION;
 
     cellField[scaledY][scaledX].emplace_back(cell);
 }

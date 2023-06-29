@@ -92,7 +92,7 @@ Vec3 UserSimulation::calcCellCellForce(std::shared_ptr<UserCell> c) const noexce
                 }
             }
 
-            return force.timesScalar(DELTA_TIME);
+            return force.timesScalar(SimulationSettings::DELTA_TIME);
 
         case CellType::DEAD:
             for (auto i : aroundCells) {
@@ -101,7 +101,7 @@ Vec3 UserSimulation::calcCellCellForce(std::shared_ptr<UserCell> c) const noexce
                 }
             }
 
-            return force.timesScalar(DELTA_TIME);
+            return force.timesScalar(SimulationSettings::DELTA_TIME);
 
         case CellType::NONE:
             return Vec3::zero();
