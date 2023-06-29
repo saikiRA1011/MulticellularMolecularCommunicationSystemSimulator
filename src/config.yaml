@@ -1,0 +1,16 @@
+cell:
+    cell_seed: 0 # cellの位置などを設定する際に用いるシード値
+    cell_num: 1000 # cellの初期個数
+
+simulation:
+    sim_step: 500 # シミュレーションの総ステップ数
+    output_interval: 1 # 出力間隔
+    field_x_len: 1024 # シミュレーションフィールドのx座標の長さ
+    field_y_len: 1024 # シミュレーションフィールドのy座標の長さ
+    field_z_len: 0 # シミュレーションフィールドのz座標の長さ
+    delta_time: 0.1 # 1ステップあたりのシミュレーション内時間
+
+cell_list:
+    use_cell_list: true # cell listを用いるかどうか
+    grid_size_mag: 16 # cell listにおけるグリッドの分割倍率。最小は1、値は2^nである必要がある。
+    search_radius: 100 # この半径内(positionの差)にあるcellを力の計算対象とする。

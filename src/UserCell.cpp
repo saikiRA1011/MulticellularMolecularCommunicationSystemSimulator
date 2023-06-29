@@ -59,11 +59,11 @@ bool UserCell::checkWillDie() const noexcept
 
 void UserCell::metabolize() noexcept
 {
-    divisionGauge += DELTA_TIME; // DELTA_TIMEをかけて時間スケールを合わせる
-    dieGauge += DELTA_TIME;      // DELTA_TIMEをかけて時間スケールを合わせる
+    divisionGauge += SimulationSettings::DELTA_TIME; // DELTA_TIMEをかけて時間スケールを合わせる
+    dieGauge += SimulationSettings::DELTA_TIME;      // DELTA_TIMEをかけて時間スケールを合わせる
 
     double r               = this->getRadius();
-    const double newVolume = calcVolumeFromRadius(r) + 200.0 * DELTA_TIME;
+    const double newVolume = calcVolumeFromRadius(r) + 200.0 * SimulationSettings::DELTA_TIME;
     const double newRadius = calcRadiusFromVolume(newVolume);
 
     this->setRadius(newRadius);
@@ -81,20 +81,20 @@ UserCell UserCell::divide() noexcept
     divisionGauge = 0;
     divisionTime  = divisionDist(randomEngine);
 
-    Vec3 pos            = this->getPosition();
-    Vec3 childDirection = Vec3::randomDirection2().timesScalar(5); // どの方向に分裂するかを決める。分裂元は逆方向に動く。
-
     // 体積を二分割したときの半径を求める。
     double halfVolumeRadius = this->radius / std::pow(2, 1.0 / 3.0);
 
-    // Cellのtypeはとりあえず継承する形にする
-    UserCell c(this->typeID, this->getPosition() + childDirection, halfVolumeRadius);
+    Vec3 pos            = this->getPosition();
+    Vec3 childDirection = Vec3::randomDirection2(); // どの方向に分裂するかを決める。分裂元は逆方向に動く。
+
+    // Cellのtypeはとりあえず継承する形にする。位置はchildDirection方向に半径の半分だけずらす
+    UserCell c(this->typeID, this->getPosition() + childDirection.timesScalar(halfVolumeRadius / 2), halfVolumeRadius);
     c.adjustPosInField();
 
     this->setRadius(halfVolumeRadius); // 分裂元も体積を半分にする
 
-    c.addForce(childDirection);
-    this->addForce(-childDirection);
+    // c.addForce(childDirection);
+    // this->addForce(-childDirection);
 
     return c;
 }

@@ -44,9 +44,9 @@ class Simulation
 
   private:
     // random
-    std::mt19937 rand_gen{ CELL_SEED };              //!< 乱数生成器(生成器はとりあえずメルセンヌ・ツイスタ)
-    std::uniform_real_distribution<> randomCellPosX; //!< Cellのx座標の生成器
-    std::uniform_real_distribution<> randomCellPosY; //!< Cellのy座標の生成器
+    std::mt19937 rand_gen{ SimulationSettings::CELL_SEED }; //!< 乱数生成器(生成器はとりあえずメルセンヌ・ツイスタ)
+    std::uniform_real_distribution<> randomCellPosX;        //!< Cellのx座標の生成器
+    std::uniform_real_distribution<> randomCellPosY;        //!< Cellのy座標の生成器
 
     Field<std::vector<std::shared_ptr<Cell>>> cellsInGrid; //!< グリッド内にcellのポインタを入れる。
 

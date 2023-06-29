@@ -1,10 +1,10 @@
 CC := g++-13
 PYTHON := python3.10
-CFLAGS := -std=c++20 -Wall -Wextra -O2 -mtune=native -march=native -fopenmp
-DEBUGF := -std=c++20 -Wall -Wextra -fopenmp -g
-TESTFLAGS := -std=c++20 -Wall -Wextra -lgtest -lgtest_main -I/usr/local/include -L/usr/local/lib
-OBJS := Vec3.o Cell.o Simulation.o CellList.o UserSimulation.o UserCell.o
-DOBJS := D_Vec3.o D_Cell.o D_Simulation.o D_CellList.o D_UserSimulation.o D_UserCell.o
+CFLAGS := -std=c++20 -Wall -Wextra -O2 -mtune=native -march=native -fopenmp -I/usr/local/include -L/usr/local/lib -lyaml-cpp
+DEBUGF := -std=c++20 -Wall -Wextra -fopenmp -g -I/usr/local/include -L/usr/local/lib -lyaml-cpp
+TESTFLAGS := -std=c++20 -Wall -Wextra -lgtest -lgtest_main  -I/usr/local/include  -L/usr/local/lib -lyaml-cpp
+OBJS := Vec3.o Cell.o Simulation.o CellList.o UserSimulation.o UserCell.o SimulationSettings.o
+DOBJS := D_Vec3.o D_Cell.o D_Simulation.o D_CellList.o D_UserSimulation.o D_UserCell.o D_SimulationSettings.o
 DIR := result image video
 
 nowdate:=$(shell date +%Y%m%d_%H%M)
@@ -21,13 +21,13 @@ BACKUP := src/backup
 DEBUGOBJS := $(UTIL)/Vec3.cpp Cell.o Simulation.o CellList.o UserSimulation.o
 
 SimMain: $(MAIN)/SimMain.cpp $(OBJS)
-	$(CC) -o SimMain $(CFLAGS) $(OBJS) $(MAIN)/SimMain.cpp
+	$(CC) -o $@ $(CFLAGS) $(OBJS) $(MAIN)/SimMain.cpp
 
 Debug: $(MAIN)/SimMain.cpp $(DOBJS)
-	$(CC) -o Debug $(DEBUGF) $(DOBJS) $(MAIN)/SimMain.cpp
+	$(CC) -o $@ $(DEBUGF) $(DOBJS) $(MAIN)/SimMain.cpp
 
 SpeedTest: $(MAIN)/SpeedTest.cpp $(OBJS)
-	$(CC) -o SpeedTest $(CFLAGS) $(OBJS) $(MAIN)/SpeedTest.cpp
+	$(CC) -o $@ $(CFLAGS) $(OBJS) $(MAIN)/SpeedTest.cpp
 
 # プログラムの定数倍最適化を考える際に使う
 # 新しくプロファイリングしたいときは、result.traceを削除してから実行する
@@ -38,56 +38,62 @@ version:
 	@$(CC) --version
 	@$(PYTHON) --version
 
+SimulationSettings.o: $(USER)/SimulationSettings.cpp $(USER)/SimulationSettings.hpp
+	$(CC) -o $@ -c $(CFLAGS) $(USER)/SimulationSettings.cpp
+
+D_SimulationSettings.o: $(USER)/SimulationSettings.cpp $(USER)/SimulationSettings.hpp
+	$(CC) -c -o $@ $(DEBUGF) $(USER)/SimulationSettings.cpp
+
 Vec3.o: $(UTIL)/Vec3.cpp $(UTIL)/Vec3.hpp
-	$(CC) -c $(CFLAGS) $(UTIL)/Vec3.cpp
+	$(CC) -o $@ -c $(CFLAGS) $(UTIL)/Vec3.cpp
 
 D_Vec3.o: $(UTIL)/Vec3.cpp $(UTIL)/Vec3.hpp
-	$(CC) -c -o D_Vec3.o $(DEBUGF) $(UTIL)/Vec3.cpp
+	$(CC) -c -o $@ $(DEBUGF) $(UTIL)/Vec3.cpp
 
 Vec3Test: $(UTIL)/Vec3.cpp $(UTIL)/Vec3.hpp $(TEST)/Vec3Test.cpp Vec3.o
-	$(CC) -o Vec3Test $(TESTFLAGS) Vec3.o $(TEST)/Vec3Test.cpp
+	$(CC) -o $@ $(TESTFLAGS) $(TEST)/Vec3Test.cpp Vec3.o
 	
 test: Vec3Test
 	./Vec3Test
 
-Cell.o: $(UTIL)/Vec3.cpp $(UTIL)/Vec3.hpp $(CORE)/Cell.cpp $(CORE)/Cell.hpp
-	$(CC) -c $(CFLAGS) $(CORE)/Cell.cpp
+Cell.o: $(UTIL)/Vec3.cpp $(UTIL)/Vec3.hpp $(CORE)/Cell.cpp $(CORE)/Cell.hpp SimulationSettings.o Vec3.o
+	$(CC) -o $@ -c $(CFLAGS) $(CORE)/Cell.cpp 
 
-D_Cell.o: $(UTIL)/Vec3.cpp $(UTIL)/Vec3.hpp $(CORE)/Cell.cpp $(CORE)/Cell.hpp
-	$(CC) -c -o D_Cell.o $(DEBUGF) $(CORE)/Cell.cpp
+D_Cell.o: $(UTIL)/Vec3.cpp $(UTIL)/Vec3.hpp $(CORE)/Cell.cpp $(CORE)/Cell.hpp D_SimulationSettings.o
+	$(CC) -c -o $@ $(DEBUGF) $(CORE)/Cell.cpp 
 
-UserCell.o: $(UTIL)/Vec3.cpp $(UTIL)/Vec3.hpp $(CORE)/Cell.cpp $(CORE)/Cell.hpp $(USER)/UserCell.cpp $(USER)/UserCell.hpp
-	$(CC) -c $(CFLAGS) $(USER)/UserCell.cpp
+UserCell.o: $(UTIL)/Vec3.cpp $(UTIL)/Vec3.hpp $(CORE)/Cell.cpp $(CORE)/Cell.hpp $(USER)/UserCell.cpp $(USER)/UserCell.hpp SimulationSettings.o
+	$(CC) -o $@ -c $(CFLAGS) $(USER)/UserCell.cpp 
 
-D_UserCell.o: $(UTIL)/Vec3.cpp $(UTIL)/Vec3.hpp $(CORE)/Cell.cpp $(CORE)/Cell.hpp $(USER)/UserCell.cpp $(USER)/UserCell.hpp
-	$(CC) -c -o D_UserCell.o $(DEBUGF) $(USER)/UserCell.cpp
+D_UserCell.o: $(UTIL)/Vec3.cpp $(UTIL)/Vec3.hpp $(CORE)/Cell.cpp $(CORE)/Cell.hpp $(USER)/UserCell.cpp $(USER)/UserCell.hpp D_SimulationSettings.o
+	$(CC) -c -o $@ $(DEBUGF) $(USER)/UserCell.cpp
 
-Simulation.o: $(CORE)/Simulation.cpp $(USER)/SimulationSettings.hpp $(CORE)/Simulation.hpp $(CORE)/Cell.hpp $(CORE)/Cell.cpp $(CORE)/CellList.hpp $(CORE)/CellList.cpp
-	$(CC) -c $(CFLAGS) $(CORE)/Simulation.cpp
+Simulation.o: $(CORE)/Simulation.cpp $(USER)/SimulationSettings.hpp $(CORE)/Simulation.hpp $(CORE)/Cell.hpp $(CORE)/Cell.cpp $(CORE)/CellList.hpp $(CORE)/CellList.cpp SimulationSettings.o
+	$(CC) -c $(CFLAGS) $(CORE)/Simulation.cpp 
 
-D_Simulation.o: $(CORE)/Simulation.cpp $(USER)/SimulationSettings.hpp $(CORE)/Simulation.hpp $(CORE)/Cell.hpp $(CORE)/Cell.cpp $(CORE)/CellList.hpp $(CORE)/CellList.cpp
-	$(CC) -c -o D_Simulation.o $(DEBUGF) $(CORE)/Simulation.cpp
+D_Simulation.o: $(CORE)/Simulation.cpp $(USER)/SimulationSettings.hpp $(CORE)/Simulation.hpp $(CORE)/Cell.hpp $(CORE)/Cell.cpp $(CORE)/CellList.hpp $(CORE)/CellList.cpp D_SimulationSettings.o
+	$(CC) -c -o $@ $(DEBUGF) $(CORE)/Simulation.cpp 
 
-UserSimulation.o: $(CORE)/Simulation.cpp $(CORE)/Simulation.hpp $(USER)/UserSimulation.cpp $(USER)/UserSimulation.hpp 
-	$(CC) -c $(CFLAGS) $(USER)/UserSimulation.cpp
+UserSimulation.o: $(CORE)/Simulation.cpp $(CORE)/Simulation.hpp $(USER)/UserSimulation.cpp $(USER)/UserSimulation.hpp SimulationSettings.o
+	$(CC) -c $(CFLAGS) $(USER)/UserSimulation.cpp 
 
-D_UserSimulation.o: $(CORE)/Simulation.cpp $(CORE)/Simulation.hpp $(USER)/UserSimulation.cpp $(USER)/UserSimulation.hpp 
-	$(CC) -c -o D_UserSimulation.o $(DEBUGF) $(USER)/UserSimulation.cpp
+D_UserSimulation.o: $(CORE)/Simulation.cpp $(CORE)/Simulation.hpp $(USER)/UserSimulation.cpp $(USER)/UserSimulation.hpp D_SimulationSettings.o
+	$(CC) -c -o $@ $(DEBUGF) $(USER)/UserSimulation.cpp 
 
 SegmentTree.o: $(CORE)/SegmentTree.cpp
 	$(CC) -c $(CFLAGS) $(CORE)/SegmentTree.cpp
 
-CellList.o: $(CORE)/CellList.cpp $(CORE)/CellList.hpp $(CORE)/Cell.hpp $(CORE)/Cell.cpp
-	$(CC) -c $(CFLAGS) $(CORE)/CellList.cpp
+CellList.o: $(CORE)/CellList.cpp $(CORE)/CellList.hpp $(CORE)/Cell.hpp $(CORE)/Cell.cpp SimulationSettings.o
+	$(CC) -c $(CFLAGS) $(CORE)/CellList.cpp 
 
-D_CellList.o: $(CORE)/CellList.cpp $(CORE)/CellList.hpp $(CORE)/Cell.hpp $(CORE)/Cell.cpp
-	$(CC) -c -o D_CellList.o $(DEBUGF) $(CORE)/CellList.cpp
+D_CellList.o: $(CORE)/CellList.cpp $(CORE)/CellList.hpp $(CORE)/Cell.hpp $(CORE)/Cell.cpp D_SimulationSettings.o
+	$(CC) -c -o $@ $(DEBUGF) $(CORE)/CellList.cpp 
 
 VariableRatioCellList.o: $(CORE)/VariableRatioCellList.cpp
 	$(CC) -c $(CFLAGS) $(CORE)/VariableRatioCellList.cpp
 
-seg-test: SegmentTree.o $(TEST)/SegTest.cpp
-	$(CC) -o SegTest $(CFLAGS) SegmentTree.o $(TEST)/SegTest.cpp
+SegTest: SegmentTree.o $(TEST)/SegTest.cpp
+	$(CC) -o $@ $(CFLAGS) SegmentTree.o $(TEST)/SegTest.cpp
 
 all: clean data-cleanup $(DIR) SimMain run convert open
 
