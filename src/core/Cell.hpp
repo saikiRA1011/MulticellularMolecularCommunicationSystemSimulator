@@ -207,6 +207,7 @@ inline void Cell::nextStep() noexcept
     double velocityWeight[4] = { -9.0, 37.0, -59.0, 55.0 };
 
     // TODO: adams-bashforth法を用いると細胞の挙動がおかしくなる。原因を調べる。
+    // https://www1.gifu-u.ac.jp/~tanaka/numerical_analysis.pdf Adams-bashforth法は安定性があまりよくないらしい
 
     // 初回は過去の速度がないので、現在の速度で初期化する。
     // 本当ならルンゲクッタ法を使って初期化したほうがいい
