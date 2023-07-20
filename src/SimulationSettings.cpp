@@ -22,7 +22,13 @@ bool SimulationSettings::init_settings()
         OUTPUT_INTERVAL_STEP = config["simulation"]["output_interval"].as<int32_t>();
         FIELD_X_LEN          = config["simulation"]["field_x_len"].as<int32_t>();
         FIELD_Y_LEN          = config["simulation"]["field_y_len"].as<int32_t>();
+        FIELD_Z_LEN          = config["simulation"]["field_z_len"].as<int32_t>();
         DELTA_TIME           = config["simulation"]["delta_time"].as<double>();
+
+        MOLECULE_FIELD_X_LEN = config["molecule"]["field_x_len"].as<int32_t>();
+        MOLECULE_FIELD_Y_LEN = config["molecule"]["field_y_len"].as<int32_t>();
+        MOLECULE_FIELD_Z_LEN = config["molecule"]["field_z_len"].as<int32_t>();
+        MOLECULE_DELTA_TIME  = config["molecule"]["delta_time"].as<double>();
 
         USE_CELL_LIST           = config["cell_list"]["use_cell_list"].as<bool>();
         GRID_SIZE_MAGNIFICATION = config["cell_list"]["grid_size_mag"].as<int32_t>();
@@ -47,4 +53,9 @@ int32_t SimulationSettings::GRID_SIZE_MAGNIFICATION = 0;
 int32_t SimulationSettings::SEARCH_RADIUS           = 0;
 int32_t SimulationSettings::FIELD_X_LEN             = 0;
 int32_t SimulationSettings::FIELD_Y_LEN             = 0;
+int32_t SimulationSettings::FIELD_Z_LEN             = 0;
+int32_t SimulationSettings::MOLECULE_FIELD_X_LEN    = 0;
+int32_t SimulationSettings::MOLECULE_FIELD_Y_LEN    = 0;
+int32_t SimulationSettings::MOLECULE_FIELD_Z_LEN    = 0;
 double SimulationSettings::DELTA_TIME               = 0.0;
+double SimulationSettings::MOLECULE_DELTA_TIME      = 0.0;

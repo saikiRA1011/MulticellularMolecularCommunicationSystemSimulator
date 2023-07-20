@@ -36,6 +36,12 @@ class SimulationSettings
 
     static int32_t FIELD_X_LEN; //!< シミュレーションをおこなうフィールドのx方向の辺の長さ。長さは2のn乗とする。
     static int32_t FIELD_Y_LEN; //!< シミュレーションをおこなうフィールドのy方向の辺の長さ。長さは2のn乗とする。
+    static int32_t FIELD_Z_LEN; //!< シミュレーションをおこなうフィールドのz方向の辺の長さ。長さは2のn乗とする。
 
-    static double DELTA_TIME; //!< 時間スケール(1が通常時)
+    static int32_t MOLECULE_FIELD_X_LEN; //!< 分子のフィールドのx方向の辺の長さ。長さは2のn乗とする。
+    static int32_t MOLECULE_FIELD_Y_LEN; //!< 分子のフィールドのy方向の辺の長さ。長さは2のn乗とする。
+    static int32_t MOLECULE_FIELD_Z_LEN; //!< 分子のフィールドのz方向の辺の長さ。長さは2のn乗とする。
+
+    static double DELTA_TIME;          //!< 時間スケール(1が通常時)
+    static double MOLECULE_DELTA_TIME; //!< 分子の時間スケール(だいたいDELTA_TIMEより小さい)
 };
