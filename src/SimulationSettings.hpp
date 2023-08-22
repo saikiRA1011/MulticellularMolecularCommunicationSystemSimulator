@@ -17,6 +17,15 @@
 #include <string>
 #include <yaml-cpp/yaml.h>
 
+enum class PositionUpdateMethod
+{
+    ORIGINAL,
+    AB4,
+    AB3,
+    AB2,
+    EULER,
+};
+
 class SimulationSettings
 {
   public:
@@ -29,7 +38,8 @@ class SimulationSettings
     static int32_t SIM_STEP;             //!< シミュレーションで行うステップの絶対数。シミュレーションの時間はDELTA_TIME*SIM_STEP[単位時間]となる。
     static int32_t OUTPUT_INTERVAL_STEP; //!< シミュレーション結果を出力するステップ間隔。
 
-    static int32_t CELL_NUM; //!< シミュレーションで生成するCell数
+    static int32_t CELL_NUM;                            //!< シミュレーションで生成するCell数
+    static PositionUpdateMethod POSITION_UPDATE_METHOD; //!< 細胞位置の更新方法(陽オイラー法やAdams-Bashforth法など)
 
     static int32_t GRID_SIZE_MAGNIFICATION; //!< CellListで使用するグリッドサイズの倍率。最小は1、値は2^nである必要がある。
     static int32_t SEARCH_RADIUS;           //!< この半径内(positionの差)にあるcellを力の計算の対象とする。

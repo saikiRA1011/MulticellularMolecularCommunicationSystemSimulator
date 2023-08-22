@@ -70,6 +70,122 @@ Cell::~Cell()
 {
 }
 
+Vec3 Cell::calcVelocity(std::queue<Vec3> velocities) noexcept
+{
+    // 初回は過去の速度がないので、現在の速度で初期化する。
+    // 本当ならルンゲクッタ法を使って初期化したほうがいい
+
+    switch (SimulationSettings::POSITION_UPDATE_METHOD) {
+        case PositionUpdateMethod::EULER:
+            return calcEuler(velocities);
+        case PositionUpdateMethod::AB2:
+            return calcAB2(velocities);
+        case PositionUpdateMethod::AB3:
+            return calcAB3(velocities);
+        case PositionUpdateMethod::AB4:
+            return calcAB4(velocities);
+        case PositionUpdateMethod::ORIGINAL:
+            return calcOriginal(velocities);
+        default:
+            return Vec3::zero();
+    }
+}
+
+// TODO: adams-bashforth法を用いると細胞の挙動がおかしくなる。原因を調べる。
+// https://www1.gifu-u.ac.jp/~tanaka/numerical_analysis.pdf Adams-bashforth法は安定性があまりよくないらしい
+Vec3 Cell::calcAB4(std::queue<Vec3> velocities) noexcept
+{
+    assert(velocities.size() == 4);
+
+    // 4次Adams-Bashforth法の係数 t-3, t-2,  t-1, t
+    double velocityWeight[4] = { -9.0, 37.0, -59.0, 55.0 };
+    Vec3 adjustedVelocity    = Vec3::zero();
+
+    u_int32_t velocitiesSize = velocities.size();
+    Vec3 velocity;
+    for (u_int32_t i = 0; i < velocitiesSize; i++) {
+        velocity = velocities.front();
+        velocities.pop();
+
+        adjustedVelocity += velocity.timesScalar(velocityWeight[i]);
+    }
+    adjustedVelocity = adjustedVelocity.timesScalar(1.0 / 24.0);
+
+    return adjustedVelocity;
+}
+
+Vec3 Cell::calcAB3(std::queue<Vec3> velocities) noexcept
+{
+    assert(velocities.size() == 3);
+
+    // 3次Adams-Bashforth法の係数 t-2, t-1, t
+    double velocityWeight[3] = { 5, -16, 23 };
+    Vec3 adjustedVelocity    = Vec3(0, 0, 0);
+
+    u_int32_t velocitiesSize = velocities.size();
+    Vec3 velocity;
+    for (u_int32_t i = 0; i < velocitiesSize; i++) {
+        velocity = velocities.front();
+        velocities.pop();
+
+        adjustedVelocity += velocity.timesScalar(velocityWeight[i]);
+    }
+    adjustedVelocity = adjustedVelocity.timesScalar(1.0 / 12.0);
+
+    return adjustedVelocity;
+}
+
+Vec3 Cell::calcAB2(std::queue<Vec3> velocities) noexcept
+{
+    assert(velocities.size() == 2);
+
+    // 2次Adams-Bashforth法の係数 t-1, t
+    double velocityWeight[2] = { -1, 3 };
+    Vec3 adjustedVelocity    = Vec3(0, 0, 0);
+
+    u_int32_t velocitiesSize = velocities.size();
+    Vec3 velocity;
+    for (u_int32_t i = 0; i < velocitiesSize; i++) {
+        velocity = velocities.front();
+        velocities.pop();
+
+        adjustedVelocity += velocity.timesScalar(velocityWeight[i]);
+    }
+    adjustedVelocity = adjustedVelocity.timesScalar(1.0 / 2.0);
+
+    return adjustedVelocity;
+}
+
+Vec3 Cell::calcEuler(std::queue<Vec3> velocities) noexcept
+{
+    assert(velocities.size() == 1);
+    return velocities.front();
+}
+
+Vec3 Cell::calcOriginal(std::queue<Vec3> velocities) noexcept
+{
+    assert(1 <= velocities.size() && velocities.size() <= 4);
+
+    switch (velocities.size()) {
+        case 1:
+            return calcEuler(velocities);
+            break;
+        case 2:
+            return calcAB2(velocities);
+            break;
+        case 3:
+            return calcAB3(velocities);
+            break;
+        case 4:
+            return calcAB4(velocities);
+            break;
+        default:
+            std::cerr << "Error: Cell::calcOriginal: velocities.size() is invalid." << std::endl;
+            exit(1);
+            break;
+    }
+}
+
 /**
  * @brief Cellの体積から半径を計算する
  *

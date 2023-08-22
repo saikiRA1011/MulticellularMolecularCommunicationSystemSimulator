@@ -18,6 +18,22 @@ bool SimulationSettings::init_settings()
         CELL_SEED = config["cell"]["cell_seed"].as<int32_t>();
         CELL_NUM  = config["cell"]["cell_num"].as<int32_t>();
 
+        std::string postionUpdateMethodStr = config["cell"]["position_update_method"].as<std::string>();
+        if (postionUpdateMethodStr == "AB4")
+            POSITION_UPDATE_METHOD = PositionUpdateMethod::AB4;
+        else if (postionUpdateMethodStr == "AB3")
+            POSITION_UPDATE_METHOD = PositionUpdateMethod::AB3;
+        else if (postionUpdateMethodStr == "AB2")
+            POSITION_UPDATE_METHOD = PositionUpdateMethod::AB2;
+        else if (postionUpdateMethodStr == "EULER")
+            POSITION_UPDATE_METHOD = PositionUpdateMethod::EULER;
+        else if (postionUpdateMethodStr == "ORIGINAL")
+            POSITION_UPDATE_METHOD = PositionUpdateMethod::ORIGINAL;
+        else {
+            std::cerr << "Invalid position_update_method: " << postionUpdateMethodStr << std::endl;
+            return false;
+        }
+
         SIM_STEP             = config["simulation"]["sim_step"].as<int32_t>();
         OUTPUT_INTERVAL_STEP = config["simulation"]["output_interval"].as<int32_t>();
         FIELD_X_LEN          = config["simulation"]["field_x_len"].as<int32_t>();
@@ -44,18 +60,19 @@ bool SimulationSettings::init_settings()
 }
 
 // staticメンバの初期化
-bool SimulationSettings::USE_CELL_LIST              = false;
-int32_t SimulationSettings::CELL_SEED               = 0;
-int32_t SimulationSettings::SIM_STEP                = 0;
-int32_t SimulationSettings::OUTPUT_INTERVAL_STEP    = 0;
-int32_t SimulationSettings::CELL_NUM                = 0;
-int32_t SimulationSettings::GRID_SIZE_MAGNIFICATION = 0;
-int32_t SimulationSettings::SEARCH_RADIUS           = 0;
-int32_t SimulationSettings::FIELD_X_LEN             = 0;
-int32_t SimulationSettings::FIELD_Y_LEN             = 0;
-int32_t SimulationSettings::FIELD_Z_LEN             = 0;
-int32_t SimulationSettings::MOLECULE_FIELD_X_LEN    = 0;
-int32_t SimulationSettings::MOLECULE_FIELD_Y_LEN    = 0;
-int32_t SimulationSettings::MOLECULE_FIELD_Z_LEN    = 0;
-double SimulationSettings::DELTA_TIME               = 0.0;
-double SimulationSettings::MOLECULE_DELTA_TIME      = 0.0;
+bool SimulationSettings::USE_CELL_LIST                          = false;
+int32_t SimulationSettings::CELL_SEED                           = 0;
+int32_t SimulationSettings::SIM_STEP                            = 0;
+int32_t SimulationSettings::OUTPUT_INTERVAL_STEP                = 0;
+int32_t SimulationSettings::CELL_NUM                            = 0;
+PositionUpdateMethod SimulationSettings::POSITION_UPDATE_METHOD = PositionUpdateMethod::AB4;
+int32_t SimulationSettings::GRID_SIZE_MAGNIFICATION             = 0;
+int32_t SimulationSettings::SEARCH_RADIUS                       = 0;
+int32_t SimulationSettings::FIELD_X_LEN                         = 0;
+int32_t SimulationSettings::FIELD_Y_LEN                         = 0;
+int32_t SimulationSettings::FIELD_Z_LEN                         = 0;
+int32_t SimulationSettings::MOLECULE_FIELD_X_LEN                = 0;
+int32_t SimulationSettings::MOLECULE_FIELD_Y_LEN                = 0;
+int32_t SimulationSettings::MOLECULE_FIELD_Z_LEN                = 0;
+double SimulationSettings::DELTA_TIME                           = 0.0;
+double SimulationSettings::MOLECULE_DELTA_TIME                  = 0.0;

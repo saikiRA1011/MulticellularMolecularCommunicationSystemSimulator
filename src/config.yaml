@@ -1,22 +1,23 @@
 cell:
     cell_seed: 0 # cellの位置などを設定する際に用いるシード値
-    cell_num: 1000 # cellの初期個数
+    cell_num: 2 # cellの初期個数
+    position_update_method: EULER # ORIGINAL, AB4, AB3, AB2, EULER から選択
 
 simulation:
-    sim_step: 500 # シミュレーションの総ステップ数
-    output_interval: 1 # 出力間隔
+    sim_step: 1000 # シミュレーションの総ステップ数
+    output_interval: 10 # 出力間隔
     field_x_len: 1024 # シミュレーションフィールドのx座標の長さ
     field_y_len: 1024 # シミュレーションフィールドのy座標の長さ
     field_z_len: 0 # シミュレーションフィールドのz座標の長さ
     delta_time: 0.1 # 1ステップあたりのシミュレーション内時間
 
 molecule:
-    delta_time: 0.01
+    delta_time: 0.1
     field_x_len: 512 # 分子管理用フィールドのx座標の長さ
     field_y_len: 512 # 分子管理用フィールドのy座標の長さ
     field_z_len: 0 # 分子間利用フィールドのz座標の長さ
 
 cell_list:
     use_cell_list: true # cell listを用いるかどうか
-    grid_size_mag: 16 # cell listにおけるグリッドの分割倍率。最小は1、値は2^nである必要がある。
-    search_radius: 100 # この半径内(positionの差)にあるcellを力の計算対象とする。
+    grid_size_mag: 1024 # cell listにおけるグリッドの分割倍率。最小は1、値は2^nである必要がある。
+    search_radius: 1024 # この半径内(positionの差)にあるcellを力の計算対象とする。
