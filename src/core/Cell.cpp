@@ -11,6 +11,7 @@
 
 #include "Cell.hpp"
 
+// static変数の初期化
 int32_t Cell::upperOfCellCount  = 0;
 int32_t Cell::numberOfCellsBorn = 0;
 std::queue<int> Cell::cellPool  = std::queue<int>();
@@ -70,11 +71,16 @@ Cell::~Cell()
 {
 }
 
+/**
+ * @brief Cellの速度を計算する。引数には今までの速度を格納したキューを渡す。
+ * @note キューの長さは計算アルゴリズムによって変わる。ユーザ側はあまり考えなくていいが、コントリビューターは注意すること。
+ *
+ * @param velocities
+ * @return Vec3
+ */
 Vec3 Cell::calcVelocity(std::queue<Vec3> velocities) noexcept
 {
-    // 初回は過去の速度がないので、現在の速度で初期化する。
-    // 本当ならルンゲクッタ法を使って初期化したほうがいい
-
+    // パラメータに合わせて計算方法を変える
     switch (SimulationSettings::POSITION_UPDATE_METHOD) {
         case PositionUpdateMethod::EULER:
             return calcEuler(velocities);
@@ -87,12 +93,18 @@ Vec3 Cell::calcVelocity(std::queue<Vec3> velocities) noexcept
         case PositionUpdateMethod::ORIGINAL:
             return calcOriginal(velocities);
         default:
-            return Vec3::zero();
+            std::cerr << "Error: Invalid PositionUpdateMethod" << std::endl;
+            exit(1);
     }
 }
 
-// TODO: adams-bashforth法を用いると細胞の挙動がおかしくなる。原因を調べる。
-// https://www1.gifu-u.ac.jp/~tanaka/numerical_analysis.pdf Adams-bashforth法は安定性があまりよくないらしい
+/**
+ * @brief 速度を4次のAdams-Bashforth法で計算する。
+ * @note キューの長さは4である必要がある。また、Adams-Bashforth法は次数が高いほど精度も高くなる反面安定性が下がるので、荒い時間ステップで計算するときは別のアルゴリズムを用いる。
+ *       参考：https://www1.gifu-u.ac.jp/~tanaka/numerical_analysis.pdf
+ * @param velocities
+ * @return Vec3
+ */
 Vec3 Cell::calcAB4(std::queue<Vec3> velocities) noexcept
 {
     assert(velocities.size() == 4);
@@ -114,6 +126,13 @@ Vec3 Cell::calcAB4(std::queue<Vec3> velocities) noexcept
     return adjustedVelocity;
 }
 
+/**
+ * @brief 速度を3次のAdams-Bashforth法で計算する。
+ * @note 詳しいことはcalcAB4()を参照。
+ *
+ * @param velocities
+ * @return Vec3
+ */
 Vec3 Cell::calcAB3(std::queue<Vec3> velocities) noexcept
 {
     assert(velocities.size() == 3);
@@ -135,6 +154,13 @@ Vec3 Cell::calcAB3(std::queue<Vec3> velocities) noexcept
     return adjustedVelocity;
 }
 
+/**
+ * @brief 速度を2次のAdams-Bashforth法で計算する。
+ * @note 詳しいことはcalcAB4()を参照。
+ *
+ * @param velocities
+ * @return Vec3
+ */
 Vec3 Cell::calcAB2(std::queue<Vec3> velocities) noexcept
 {
     assert(velocities.size() == 2);
@@ -156,12 +182,25 @@ Vec3 Cell::calcAB2(std::queue<Vec3> velocities) noexcept
     return adjustedVelocity;
 }
 
+/**
+ * @brief 速度をオイラー法で計算する。
+ * @note 精度は一番低いが、安定性はあるので荒い時間ステップで計算する場合はこれがいいかもしれない。
+ *
+ * @param velocities
+ * @return Vec3
+ */
 Vec3 Cell::calcEuler(std::queue<Vec3> velocities) noexcept
 {
     assert(velocities.size() == 1);
     return velocities.front();
 }
 
+/**
+ * @brief オリジナルの方法で速度を計算する。実際のところはキューの長さに応じて上記の関数を呼び出しているだけ。あまり精度が良くないため使わないほうがいいかも
+ *
+ * @param velocities
+ * @return Vec3
+ */
 Vec3 Cell::calcOriginal(std::queue<Vec3> velocities) noexcept
 {
     assert(1 <= velocities.size() && velocities.size() <= 4);

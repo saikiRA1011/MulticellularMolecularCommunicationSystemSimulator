@@ -11,19 +11,36 @@
 
 #include "UserSimulation.hpp"
 
+/**
+ * @brief コンストラクタ。何も呼び出さない。
+ *
+ */
 UserSimulation::UserSimulation(/* args */)
 {
 }
 
+/**
+ * @brief デストラクタ。何もしない。
+ *
+ */
 UserSimulation::~UserSimulation()
 {
 }
 
+/**
+ * @brief シミュレーションで扱う細胞の初期化。ここで細胞を生成する。生成した細胞はcellsに格納する。
+ * @note 各細胞の初期状態はユーザが定義する。
+ *
+ */
 void UserSimulation::initCells() noexcept
 {
     Simulation::initCells();
 }
 
+/**
+ * @brief 各ステップの前処理。
+ *
+ */
 void UserSimulation::stepPreprocess() noexcept
 {
     int32_t preCellCount = cells.size();
@@ -68,10 +85,26 @@ void UserSimulation::stepPreprocess() noexcept
     }
 }
 
+/**
+ * @brief 各ステップの後処理。
+ *
+ */
 void UserSimulation::stepEndProcess() noexcept
 {
 }
 
+Vec3 UserSimulation::calcTestForce(std::shared_ptr<Cell> c, std::shared_ptr<Cell> d) const noexcept
+{
+    Vec3 result = Vec3::zero();
+    return result;
+}
+
+/**
+ * @brief 細胞間作用の計算。細胞の種類に応じて計算を行う。
+ *
+ * @param c
+ * @return Vec3
+ */
 Vec3 UserSimulation::calcCellCellForce(std::shared_ptr<UserCell> c) const noexcept
 {
     auto aroundCells = cellList.aroundCellList(c);

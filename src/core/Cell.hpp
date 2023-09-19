@@ -27,13 +27,13 @@
 class Cell
 {
   protected:
-    CellType typeID;
-    Vec3 position; //!< Cellの座標(x,y,z)
-    Vec3 velocity; //!< Cellの速度(x,y,z)
-    double weight; //!< Cellの質量
-    double radius; //!< Cellの半径
+    CellType typeID; //!< Cellの種類
+    Vec3 position;   //!< Cellの座標(x,y,z)
+    Vec3 velocity;   //!< Cellの速度(x,y,z)
+    double weight;   //!< Cellの質量
+    double radius;   //!< Cellの半径
 
-    std::vector<const Cell*> adhereCells;
+    std::vector<const Cell*> adhereCells; //!< 接着しているCellのポインタを格納する配列
 
     std::vector<int> molecularStocks; //!< 細胞の保持している分子数。配列の添字は分子の種類。
 
@@ -42,8 +42,9 @@ class Cell
     void adjustPosInField() noexcept;
 
   private:
-    static int32_t upperOfCellCount;
-    std::queue<Vec3> preVelocitiesQueue;
+    static int32_t upperOfCellCount; //!< 同時に存在していた細胞の上限数。static変数。
+
+    std::queue<Vec3> preVelocitiesQueue; //!< 速度計算用のキュー
 
     // Simulation *sim; //!< Cellの呼び出し元になるSimulationインスタンスのポインタ
     static Vec3 calcVelocity(std::queue<Vec3> velocities) noexcept;
@@ -90,8 +91,8 @@ class Cell
     void printCell() const noexcept;
     void printDebug() const noexcept; // デバッグ用
 
-    static int32_t numberOfCellsBorn;
-    static std::queue<int> cellPool; //!< CellのIDを管理するためのキュー
+    static int32_t numberOfCellsBorn; //!< 今までに生成した生きているCellの数。static変数。
+    static std::queue<int> cellPool;  //!< CellのIDを管理するためのキュー
 
     const int id;         //!< CellのID
     const int arrayIndex; //!< 配列のどこに入るか
