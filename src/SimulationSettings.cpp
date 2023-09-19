@@ -41,10 +41,11 @@ bool SimulationSettings::init_settings()
         FIELD_Z_LEN          = config["simulation"]["field_z_len"].as<int32_t>();
         DELTA_TIME           = config["simulation"]["delta_time"].as<double>();
 
-        MOLECULE_FIELD_X_LEN = config["molecule"]["field_x_len"].as<int32_t>();
-        MOLECULE_FIELD_Y_LEN = config["molecule"]["field_y_len"].as<int32_t>();
-        MOLECULE_FIELD_Z_LEN = config["molecule"]["field_z_len"].as<int32_t>();
-        MOLECULE_DELTA_TIME  = config["molecule"]["delta_time"].as<double>();
+        DEFAULT_MOLECULE_NUMS = config["molecule"]["default_molecule_nums"].as<std::vector<int64_t>>();
+        MOLECULE_FIELD_X_LEN  = config["molecule"]["field_x_len"].as<int32_t>();
+        MOLECULE_FIELD_Y_LEN  = config["molecule"]["field_y_len"].as<int32_t>();
+        MOLECULE_FIELD_Z_LEN  = config["molecule"]["field_z_len"].as<int32_t>();
+        MOLECULE_DELTA_TIME   = config["molecule"]["delta_time"].as<double>();
 
         USE_CELL_LIST           = config["cell_list"]["use_cell_list"].as<bool>();
         GRID_SIZE_MAGNIFICATION = config["cell_list"]["grid_size_mag"].as<int32_t>();
@@ -71,6 +72,7 @@ int32_t SimulationSettings::SEARCH_RADIUS                       = 0;
 int32_t SimulationSettings::FIELD_X_LEN                         = 0;
 int32_t SimulationSettings::FIELD_Y_LEN                         = 0;
 int32_t SimulationSettings::FIELD_Z_LEN                         = 0;
+std::vector<int64_t> SimulationSettings::DEFAULT_MOLECULE_NUMS  = {};
 int32_t SimulationSettings::MOLECULE_FIELD_X_LEN                = 0;
 int32_t SimulationSettings::MOLECULE_FIELD_Y_LEN                = 0;
 int32_t SimulationSettings::MOLECULE_FIELD_Z_LEN                = 0;

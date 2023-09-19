@@ -1,6 +1,6 @@
 cell:
     cell_seed: 0 # cellの位置などを設定する際に用いるシード値
-    cell_num: 2 # cellの初期個数
+    cell_num: 2 # cellの初期個数。TODO: 複数種類の細胞に対応する
     position_update_method: EULER # ORIGINAL, AB4, AB3, AB2, EULER から選択
 
 simulation:
@@ -12,6 +12,8 @@ simulation:
     delta_time: 0.1 # 1ステップあたりのシミュレーション内時間
 
 molecule:
+    default_molecule_nums:
+        - 1000
     delta_time: 0.1
     field_x_len: 512 # 分子管理用フィールドのx座標の長さ
     field_y_len: 512 # 分子管理用フィールドのy座標の長さ

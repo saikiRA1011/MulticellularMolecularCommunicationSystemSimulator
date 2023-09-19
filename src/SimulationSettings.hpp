@@ -15,6 +15,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <vector>
 #include <yaml-cpp/yaml.h>
 
 enum class PositionUpdateMethod
@@ -47,6 +48,8 @@ class SimulationSettings
     static int32_t FIELD_X_LEN; //!< シミュレーションをおこなうフィールドのx方向の辺の長さ。長さは2のn乗とする。
     static int32_t FIELD_Y_LEN; //!< シミュレーションをおこなうフィールドのy方向の辺の長さ。長さは2のn乗とする。
     static int32_t FIELD_Z_LEN; //!< シミュレーションをおこなうフィールドのz方向の辺の長さ。長さは2のn乗とする。
+
+    static std::vector<int64_t> DEFAULT_MOLECULE_NUMS; //!< 分子の初期数(各分子の種類ごとに設定する)
 
     static int32_t MOLECULE_FIELD_X_LEN; //!< 分子のフィールドのx方向の辺の長さ。長さは2のn乗とする。
     static int32_t MOLECULE_FIELD_Y_LEN; //!< 分子のフィールドのy方向の辺の長さ。長さは2のn乗とする。
