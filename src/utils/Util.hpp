@@ -10,6 +10,7 @@
  */
 
 #pragma once
+#include "./MakeVector.hpp"
 #include <random>
 #include <sstream>
 #include <string>
@@ -19,3 +20,6 @@ template<typename T>
 using FieldLine = std::vector<T>; //!< 2次元フィールドの行
 template<typename T>
 using Field = std::vector<FieldLine<T>>; //!< 2次元フィールド
+
+template<typename T>
+using Field3D = std::vector<Field<T>>; //!< 3次元フィールド
