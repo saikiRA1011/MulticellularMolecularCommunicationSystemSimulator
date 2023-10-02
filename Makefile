@@ -17,6 +17,7 @@ MAIN := src
 USER := src
 TEST := src/test
 BACKUP := src/backup
+DEBUG := src/debug
 
 DEBUGOBJS := $(UTIL)/Vec3.cpp Cell.o Simulation.o CellList.o UserSimulation.o
 
@@ -28,6 +29,9 @@ Debug: $(MAIN)/SimMain.cpp $(DOBJS)
 
 SpeedTest: $(MAIN)/SpeedTest.cpp $(OBJS)
 	$(CC) -o $@ $(CFLAGS) $(OBJS) $(MAIN)/SpeedTest.cpp
+
+MoleculeDebug: $(DEBUG)/MoleculeSpaceDebug.cpp MoleculeSpace.o SimulationSettings.o
+	$(CC) -o $@ $(CFLAGS) MoleculeSpace.o SimulationSettings.o $(DEBUG)/MoleculeSpaceDebug.cpp
 
 # プログラムの定数倍最適化を考える際に使う
 # 新しくプロファイリングしたいときは、result.traceを削除してから実行する
@@ -79,6 +83,12 @@ UserSimulation.o: $(CORE)/Simulation.cpp $(CORE)/Simulation.hpp $(USER)/UserSimu
 
 D_UserSimulation.o: $(CORE)/Simulation.cpp $(CORE)/Simulation.hpp $(USER)/UserSimulation.cpp $(USER)/UserSimulation.hpp D_SimulationSettings.o
 	$(CC) -c -o $@ $(DEBUGF) $(USER)/UserSimulation.cpp 
+
+MoleculeSpace.o: $(CORE)/MoleculeSpace.cpp $(CORE)/MoleculeSpace.hpp SimulationSettings.o $(UTIL)/Util.hpp
+	$(CC) -c $(CFLAGS) $(CORE)/MoleculeSpace.cpp
+
+D_MoleculeSpace.o: D_SimulationSettings.o $(UTIL)/Util.hpp
+	$(CC) -c -o $@ $(DEBUGF) $(CORE)/MoleculeSpace.cpp
 
 SegmentTree.o: $(CORE)/SegmentTree.cpp
 	$(CC) -c $(CFLAGS) $(CORE)/SegmentTree.cpp
