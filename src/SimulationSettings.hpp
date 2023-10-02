@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include "thirdparty/nameof.hpp"
 #include <cstdint>
 #include <fstream>
 #include <iostream>
@@ -33,6 +34,7 @@ class SimulationSettings
     SimulationSettings();
     ~SimulationSettings();
     static bool init_settings();
+    static void printSettings();
 
     static bool USE_CELL_LIST;
     static int32_t CELL_SEED;

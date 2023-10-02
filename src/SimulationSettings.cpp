@@ -60,6 +60,31 @@ bool SimulationSettings::init_settings()
     return true;
 }
 
+void SimulationSettings::printSettings()
+{
+    std::cout << "USE CELL LIST : " << USE_CELL_LIST << std::endl;
+    std::cout << "CELL SEED : " << CELL_SEED << std::endl;
+    std::cout << "SIM STEP : " << SIM_STEP << std::endl;
+    std::cout << "OUTPUT INTERVAL STEP : " << OUTPUT_INTERVAL_STEP << std::endl;
+    std::cout << "CELL NUM : " << CELL_NUM << std::endl;
+    std::cout << "POSITION UPDATE METHOD : " << NAMEOF_ENUM(POSITION_UPDATE_METHOD) << std::endl;
+    std::cout << "GRID SIZE MAGNIFICATION : " << GRID_SIZE_MAGNIFICATION << std::endl;
+    std::cout << "SEARCH RADIUS : " << SEARCH_RADIUS << std::endl;
+    std::cout << "FIELD X LEN : " << FIELD_X_LEN << std::endl;
+    std::cout << "FIELD Y LEN : " << FIELD_Y_LEN << std::endl;
+    std::cout << "FIELD Z LEN : " << FIELD_Z_LEN << std::endl;
+    std::cout << "DEFAULT MOLECULE NUMS : ";
+    for (auto& num : DEFAULT_MOLECULE_NUMS) {
+        std::cout << num << " ";
+    }
+    std::cout << std::endl;
+    std::cout << "MOLECULE FIELD X LEN : " << MOLECULE_FIELD_X_LEN << std::endl;
+    std::cout << "MOLECULE FIELD Y LEN : " << MOLECULE_FIELD_Y_LEN << std::endl;
+    std::cout << "MOLECULE FIELD Z LEN : " << MOLECULE_FIELD_Z_LEN << std::endl;
+    std::cout << "DELTA TIME : " << DELTA_TIME << std::endl;
+    std::cout << "MOLECULE DELTA TIME : " << MOLECULE_DELTA_TIME << std::endl;
+}
+
 // staticメンバの初期化
 bool SimulationSettings::USE_CELL_LIST                          = false;
 int32_t SimulationSettings::CELL_SEED                           = 0;
