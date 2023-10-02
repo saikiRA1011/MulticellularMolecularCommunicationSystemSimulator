@@ -24,7 +24,10 @@ README_tmp.html
 tutorial/out/*.log
 package
 src/convert_tools/__pycache__
+src/debug
 *Test
 !/src/test/
 *.trace
 other/*
+playground/*
+MoleculeDebug
