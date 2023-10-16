@@ -5,8 +5,7 @@ latex
 out_mac
 out_win
 result/*
-SimMain.dSYM
-Debug.dSYM
+*.dSYM
 Doxifile.bak
 out.mp4
 video/*
@@ -31,3 +30,5 @@ src/debug
 other/*
 playground/*
 MoleculeDebug
+molecule_result/*
+molecule_image/*
