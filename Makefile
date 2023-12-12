@@ -30,8 +30,8 @@ Debug: $(MAIN)/SimMain.cpp $(DOBJS)
 SpeedTest: $(MAIN)/SpeedTest.cpp $(OBJS)
 	$(CC) -o $@ $(CFLAGS) $(OBJS) $(MAIN)/SpeedTest.cpp
 
-MoleculeDebug: $(DEBUG)/MoleculeSpaceDebug.cpp MoleculeSpace.o SimulationSettings.o
-	$(CC) -o $@ $(CFLAGS) MoleculeSpace.o SimulationSettings.o $(DEBUG)/MoleculeSpaceDebug.cpp
+MoleculeDebug: $(DEBUG)/MoleculeSpaceDebug.cpp D_MoleculeSpace.o D_SimulationSettings.o
+	$(CC) -o $@ $(DEBUGF) D_MoleculeSpace.o D_SimulationSettings.o $(DEBUG)/MoleculeSpaceDebug.cpp
 
 # プログラムの定数倍最適化を考える際に使う
 # 新しくプロファイリングしたいときは、result.traceを削除してから実行する
@@ -72,22 +72,22 @@ UserCell.o: $(UTIL)/Vec3.cpp $(UTIL)/Vec3.hpp $(CORE)/Cell.cpp $(CORE)/Cell.hpp 
 D_UserCell.o: $(UTIL)/Vec3.cpp $(UTIL)/Vec3.hpp $(CORE)/Cell.cpp $(CORE)/Cell.hpp $(USER)/UserCell.cpp $(USER)/UserCell.hpp D_SimulationSettings.o
 	$(CC) -c -o $@ $(DEBUGF) $(USER)/UserCell.cpp
 
-Simulation.o: $(CORE)/Simulation.cpp $(USER)/SimulationSettings.hpp $(CORE)/Simulation.hpp $(CORE)/Cell.hpp $(CORE)/Cell.cpp $(CORE)/CellList.hpp $(CORE)/CellList.cpp SimulationSettings.o
+Simulation.o: $(CORE)/Simulation.cpp $(USER)/SimulationSettings.hpp $(CORE)/Simulation.hpp $(CORE)/Cell.hpp $(CORE)/Cell.cpp $(CORE)/CellList.hpp $(CORE)/CellList.cpp SimulationSettings.o MoleculeSpace.o
 	$(CC) -c $(CFLAGS) $(CORE)/Simulation.cpp 
 
-D_Simulation.o: $(CORE)/Simulation.cpp $(USER)/SimulationSettings.hpp $(CORE)/Simulation.hpp $(CORE)/Cell.hpp $(CORE)/Cell.cpp $(CORE)/CellList.hpp $(CORE)/CellList.cpp D_SimulationSettings.o
+D_Simulation.o: $(CORE)/Simulation.cpp $(USER)/SimulationSettings.hpp $(CORE)/Simulation.hpp $(CORE)/Cell.hpp $(CORE)/Cell.cpp $(CORE)/CellList.hpp $(CORE)/CellList.cpp D_SimulationSettings.o D_MoleculeSpace.o
 	$(CC) -c -o $@ $(DEBUGF) $(CORE)/Simulation.cpp 
 
-UserSimulation.o: $(CORE)/Simulation.cpp $(CORE)/Simulation.hpp $(USER)/UserSimulation.cpp $(USER)/UserSimulation.hpp SimulationSettings.o
+UserSimulation.o: $(CORE)/Simulation.cpp $(CORE)/Simulation.hpp $(USER)/UserSimulation.cpp $(USER)/UserSimulation.hpp SimulationSettings.o MoleculeSpace.o
 	$(CC) -c $(CFLAGS) $(USER)/UserSimulation.cpp 
 
-D_UserSimulation.o: $(CORE)/Simulation.cpp $(CORE)/Simulation.hpp $(USER)/UserSimulation.cpp $(USER)/UserSimulation.hpp D_SimulationSettings.o
+D_UserSimulation.o: $(CORE)/Simulation.cpp $(CORE)/Simulation.hpp $(USER)/UserSimulation.cpp $(USER)/UserSimulation.hpp D_SimulationSettings.o D_MoleculeSpace.o
 	$(CC) -c -o $@ $(DEBUGF) $(USER)/UserSimulation.cpp 
 
 MoleculeSpace.o: $(CORE)/MoleculeSpace.cpp $(CORE)/MoleculeSpace.hpp SimulationSettings.o $(UTIL)/Util.hpp
 	$(CC) -c $(CFLAGS) $(CORE)/MoleculeSpace.cpp
 
-D_MoleculeSpace.o: D_SimulationSettings.o $(UTIL)/Util.hpp
+D_MoleculeSpace.o: $(CORE)/MoleculeSpace.cpp $(CORE)/MoleculeSpace.hpp D_SimulationSettings.o $(UTIL)/Util.hpp
 	$(CC) -c -o $@ $(DEBUGF) $(CORE)/MoleculeSpace.cpp
 
 SegmentTree.o: $(CORE)/SegmentTree.cpp
