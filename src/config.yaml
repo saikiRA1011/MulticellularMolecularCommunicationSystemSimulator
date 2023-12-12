@@ -1,25 +1,53 @@
 cell:
     cell_seed: 0 # cellの位置などを設定する際に用いるシード値
-    cell_num: 2 # cellの初期個数。TODO: 複数種類の細胞に対応する
+    cell_num: 1000 # cellの初期個数。TODO: 複数種類の細胞に対応する
     position_update_method: EULER # ORIGINAL, AB4, AB3, AB2, EULER から選択
 
 simulation:
     sim_step: 1000 # シミュレーションの総ステップ数
-    output_interval: 10 # 出力間隔
+    output_interval: 1 # 出力間隔
     field_x_len: 1024 # シミュレーションフィールドのx座標の長さ
     field_y_len: 1024 # シミュレーションフィールドのy座標の長さ
     field_z_len: 0 # シミュレーションフィールドのz座標の長さ
     delta_time: 0.1 # 1ステップあたりのシミュレーション内時間
 
 molecule:
-    default_molecule_nums:
-        - 1000
+    default_molecule_nums: # 各分子の初期個数(リストで表現する)
+        - 10000
     delta_time: 0.1
-    field_x_len: 512 # 分子管理用フィールドのx座標の長さ
-    field_y_len: 512 # 分子管理用フィールドのy座標の長さ
-    field_z_len: 0 # 分子間利用フィールドのz座標の長さ
+    field_x_len: 100 # 分子管理用フィールドのx座標の長さ >= 1
+    field_y_len: 100 # 分子管理用フィールドのy座標の長さ >= 1
+    field_z_len: 1 # 分子管理用フィールドのz座標の長さ >= 1
+
+    #
+    #                   xy2
+    #                   /
+    #                  /
+    #  yz1   +-------------------+
+    #   \   /                   /|
+    #    \ /                   / |
+    #     /        zx2        /  |
+    #    /                   /   |
+    #   /                   /    |
+    #  +-------------------+ yz2 +
+    #  |                   |    /
+    #  |                   |   /
+    #  |        xy1        |  /
+    #  |                   | /
+    #  |                   |/
+    #  +-------------------+
+    #           |
+    #           |
+    #          zx1
+    boundary_condition: # 分子管理用フィールドの境界条件
+        xy1: DIRICHLET
+        xy2: DIRICHLET
+        yz1: DIRICHLET
+        yz2: DIRICHLET
+        zx1: DIRICHLET
+        zx2: DIRICHLET
 
 cell_list:
     use_cell_list: true # cell listを用いるかどうか
-    grid_size_mag: 1024 # cell listにおけるグリッドの分割倍率。最小は1、値は2^nである必要がある。
-    search_radius: 1024 # この半径内(positionの差)にあるcellを力の計算対象とする。
+    grid_size_mag: 32 # cell listにおけるグリッドの分割倍率。最小は1、値は2^nである必要がある。
+    search_radius: 256 # この半径内(positionの差)にあるcellを力の計算対象とする。

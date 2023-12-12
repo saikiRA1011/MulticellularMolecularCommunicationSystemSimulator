@@ -17,6 +17,7 @@
 #include "../SimulationSettings.hpp"
 #include "../utils/Util.hpp"
 #include "CellList.hpp"
+#include "MoleculeSpace.hpp"
 #include <chrono>
 #include <fstream>
 #include <iomanip>
