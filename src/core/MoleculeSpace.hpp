@@ -73,5 +73,5 @@ class MoleculeSpace
 
     void nextStep() noexcept;
 
-    void debugPrint() const noexcept;
+    void print() const noexcept;
 };

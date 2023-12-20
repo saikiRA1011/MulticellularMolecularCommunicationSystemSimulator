@@ -43,6 +43,8 @@ class Simulation
     std::vector<std::shared_ptr<UserCell>> cells; //!< シミュレーションで使うCellのリスト。
     std::streambuf* consoleStream;                //!< 標準出力のストリームバッファ
 
+    std::vector<std::unique_ptr<MoleculeSpace>> moleculeSpaces; //!< 分子の空間を管理するクラス。分子の種類ごとに1つの空間を持つ。
+
   private:
     // random
     std::mt19937 rand_gen{ SimulationSettings::CELL_SEED }; //!< 乱数生成器(生成器はとりあえずメルセンヌ・ツイスタ)
@@ -52,7 +54,8 @@ class Simulation
     Field<std::vector<std::shared_ptr<Cell>>> cellsInGrid; //!< グリッド内にcellのポインタを入れる。
 
     void printHeader() const noexcept;
-    void printCells(int32_t) const;
+    void printCells(int32_t time) const;
+    void printMolecules(int32_t time) const;
 
     //  std::vector<std::unordered_set<int32_t>> aroundCellSetList;
 
@@ -61,6 +64,9 @@ class Simulation
 
     int32_t debugCounter = 0;
 
+    int32_t stepNumDigit;
+    int32_t moleculeTypeNumDigit;
+
   public:
     Simulation(/* args */);
     ~Simulation();
@@ -68,6 +74,7 @@ class Simulation
     void exportConfig() const;
 
     virtual void initCells() noexcept;
+    void initDirectories();
 
     virtual Vec3 calcCellCellForce(std::shared_ptr<UserCell>) const noexcept;
     virtual void stepPreprocess() noexcept;

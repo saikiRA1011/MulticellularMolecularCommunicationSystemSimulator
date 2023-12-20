@@ -136,6 +136,7 @@ MoleculeSpace::MoleculeSpace(int64_t moleculeNum, MoleculeDistributionType distr
 
     switch (distributionType) {
         case MoleculeDistributionType::UNIFORM: {
+            std::cout << "uniform" << std::endl;
             std::uniform_int_distribution<int32_t> randX(0, width - 1);
             std::uniform_int_distribution<int32_t> randY(0, height - 1);
             std::uniform_int_distribution<int32_t> randZ(0, depth - 1);
@@ -151,6 +152,7 @@ MoleculeSpace::MoleculeSpace(int64_t moleculeNum, MoleculeDistributionType distr
             break;
         }
         case MoleculeDistributionType::GAUSSIAN: {
+            std::cout << "gaussian" << std::endl;
             std::normal_distribution<double> randX(width / 2.0, 5.0);
             std::normal_distribution<double> randY(height / 2.0, 5.0);
             std::normal_distribution<double> randZ(depth / 2.0, 5.0);
@@ -206,7 +208,7 @@ void MoleculeSpace::nextStep() noexcept
     moleculeSpace = nextMoleculeSpace;
 }
 
-void MoleculeSpace::debugPrint() const noexcept
+void MoleculeSpace::print() const noexcept
 {
     for (int x = 1; x <= width; x++) {
         for (int y = 1; y <= height; y++) {

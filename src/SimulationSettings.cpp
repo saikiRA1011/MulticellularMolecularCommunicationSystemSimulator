@@ -42,6 +42,7 @@ bool SimulationSettings::init_settings()
         DELTA_TIME           = config["simulation"]["delta_time"].as<double>();
 
         DEFAULT_MOLECULE_NUMS = config["molecule"]["default_molecule_nums"].as<std::vector<int64_t>>();
+        MOLECULE_TYPE_NUM     = DEFAULT_MOLECULE_NUMS.size();
         MOLECULE_FIELD_X_LEN  = config["molecule"]["field_x_len"].as<int32_t>();
         MOLECULE_FIELD_Y_LEN  = config["molecule"]["field_y_len"].as<int32_t>();
         MOLECULE_FIELD_Z_LEN  = config["molecule"]["field_z_len"].as<int32_t>();
@@ -98,6 +99,7 @@ int32_t SimulationSettings::FIELD_X_LEN                         = 0;
 int32_t SimulationSettings::FIELD_Y_LEN                         = 0;
 int32_t SimulationSettings::FIELD_Z_LEN                         = 0;
 std::vector<int64_t> SimulationSettings::DEFAULT_MOLECULE_NUMS  = {};
+int32_t SimulationSettings::MOLECULE_TYPE_NUM                   = 0;
 int32_t SimulationSettings::MOLECULE_FIELD_X_LEN                = 0;
 int32_t SimulationSettings::MOLECULE_FIELD_Y_LEN                = 0;
 int32_t SimulationSettings::MOLECULE_FIELD_Z_LEN                = 0;
