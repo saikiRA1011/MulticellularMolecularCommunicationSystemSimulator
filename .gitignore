@@ -28,7 +28,7 @@ src/debug
 !/src/test/
 *.trace
 other/*
-playground/*
 MoleculeDebug
 molecule_result/*
 molecule_image/*
+sample
