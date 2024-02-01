@@ -17,6 +17,7 @@ bool SimulationSettings::init_settings()
 
         CELL_SEED = config["cell"]["cell_seed"].as<int32_t>();
         CELL_NUM  = config["cell"]["cell_num"].as<int32_t>();
+        assert(CELL_NUM >= 0);
 
         std::string postionUpdateMethodStr = config["cell"]["position_update_method"].as<std::string>();
         if (postionUpdateMethodStr == "AB4")
@@ -34,23 +35,40 @@ bool SimulationSettings::init_settings()
             return false;
         }
 
-        SIM_STEP             = config["simulation"]["sim_step"].as<int32_t>();
+        SIM_STEP = config["simulation"]["sim_step"].as<int32_t>();
+        assert(SIM_STEP >= 0);
         OUTPUT_INTERVAL_STEP = config["simulation"]["output_interval"].as<int32_t>();
-        FIELD_X_LEN          = config["simulation"]["field_x_len"].as<int32_t>();
-        FIELD_Y_LEN          = config["simulation"]["field_y_len"].as<int32_t>();
-        FIELD_Z_LEN          = config["simulation"]["field_z_len"].as<int32_t>();
-        DELTA_TIME           = config["simulation"]["delta_time"].as<double>();
+        assert(OUTPUT_INTERVAL_STEP > 0);
+        FIELD_X_LEN = config["simulation"]["field_x_len"].as<int32_t>();
+        assert(FIELD_X_LEN >= 0);
+        FIELD_Y_LEN = config["simulation"]["field_y_len"].as<int32_t>();
+        assert(FIELD_Y_LEN >= 0);
+        FIELD_Z_LEN = config["simulation"]["field_z_len"].as<int32_t>();
+        assert(FIELD_Z_LEN >= 0);
+        DELTA_TIME = config["simulation"]["delta_time"].as<double>();
+        assert(DELTA_TIME > 0.0);
 
         DEFAULT_MOLECULE_NUMS = config["molecule"]["default_molecule_nums"].as<std::vector<int64_t>>();
-        MOLECULE_TYPE_NUM     = DEFAULT_MOLECULE_NUMS.size();
-        MOLECULE_FIELD_X_LEN  = config["molecule"]["field_x_len"].as<int32_t>();
-        MOLECULE_FIELD_Y_LEN  = config["molecule"]["field_y_len"].as<int32_t>();
-        MOLECULE_FIELD_Z_LEN  = config["molecule"]["field_z_len"].as<int32_t>();
-        MOLECULE_DELTA_TIME   = config["molecule"]["delta_time"].as<double>();
+        assert(DEFAULT_MOLECULE_NUMS.size() > 0);
+        MOLECULE_TYPE_NUM    = DEFAULT_MOLECULE_NUMS.size();
+        MOLECULE_FIELD_X_LEN = config["molecule"]["field_x_len"].as<int32_t>();
+        assert(MOLECULE_FIELD_X_LEN >= 1);
+        MOLECULE_FIELD_Y_LEN = config["molecule"]["field_y_len"].as<int32_t>();
+        assert(MOLECULE_FIELD_Y_LEN >= 1);
+        MOLECULE_FIELD_Z_LEN = config["molecule"]["field_z_len"].as<int32_t>();
+        assert(MOLECULE_FIELD_Z_LEN >= 1);
+        MOLECULE_DELTA_TIME = config["molecule"]["delta_time"].as<double>();
+        assert(MOLECULE_DELTA_TIME > 0.0);
 
         USE_CELL_LIST           = config["cell_list"]["use_cell_list"].as<bool>();
         GRID_SIZE_MAGNIFICATION = config["cell_list"]["grid_size_mag"].as<int32_t>();
-        SEARCH_RADIUS           = config["cell_list"]["search_radius"].as<int32_t>();
+        int32_t tmp             = GRID_SIZE_MAGNIFICATION;
+        while (tmp > 1) {
+            assert(tmp % 2 == 0);
+            tmp >>= 1;
+        }
+        SEARCH_RADIUS = config["cell_list"]["search_radius"].as<int32_t>();
+        assert(SEARCH_RADIUS >= 0);
 
     } catch (YAML::ParserException& e) {
         std::cerr << e.what() << std::endl;
@@ -74,6 +92,7 @@ void SimulationSettings::printSettings()
     std::cout << "FIELD X LEN : " << FIELD_X_LEN << std::endl;
     std::cout << "FIELD Y LEN : " << FIELD_Y_LEN << std::endl;
     std::cout << "FIELD Z LEN : " << FIELD_Z_LEN << std::endl;
+    std::cout << "MOLECULE TYPE NUM : " << MOLECULE_TYPE_NUM << std::endl;
     std::cout << "DEFAULT MOLECULE NUMS : ";
     for (auto& num : DEFAULT_MOLECULE_NUMS) {
         std::cout << num << " ";
