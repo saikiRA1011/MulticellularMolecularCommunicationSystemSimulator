@@ -36,6 +36,8 @@ class SimulationSettings
     static bool init_settings();
     static void printSettings();
 
+    // 入力値チェックのため、u_intではなくintを使う
+    // そもそもu_intを使ったところでそれほど大きな値を扱うわけではないので、intで十分
     static bool USE_CELL_LIST;
     static int32_t CELL_SEED;
     static int32_t SIM_STEP;             //!< シミュレーションで行うステップの絶対数。シミュレーションの時間はDELTA_TIME*SIM_STEP[単位時間]となる。
