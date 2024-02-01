@@ -2,10 +2,12 @@ from glob import glob
 import matplotlib.animation as animation
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
+from matplotlib import colormaps as cmaps
 import cv2
 import numpy as np
 import glob
 import math
+
 
 cell_files = sorted(glob.glob('./result/*'))
 molecule_files = sorted(glob.glob("molecule_result/0/molecule_*"))
@@ -20,6 +22,7 @@ IMAGE_LEN = 1024
 
 time_delta_sec = time_per_file * 60
 scale = IMAGE_LEN / img_w_len
+cmap = cmaps.get_cmap('Reds')
 
 for i in range(len(cell_files)):
     img = np.full((IMAGE_LEN, IMAGE_LEN, 3), 255, dtype=np.uint8)
@@ -41,13 +44,14 @@ for i in range(len(cell_files)):
             deg3.append(deg2)
 
     XY = np.array(deg3).squeeze().T
-    cmap = cm.get_cmap('Reds')
-    color_img = np.array(cmap(XY)*256, dtype=np.uint8)
+
+    XY = np.array(XY * 100, dtype=np.uint32)
+    color_img = np.array(cmap(XY, bytes=True), dtype=np.uint8)
 
     color_img = cv2.cvtColor(color_img, cv2.COLOR_RGBA2BGR)
     zoomed_color_img = color_img.repeat(8, axis=0).repeat(8, axis=1)
 
-    img = cv2.cvtColor(zoomed_color_img, cv2.COLOR_RGBA2BGR)
+    img = zoomed_color_img
 
     cv2.circle(img, (IMAGE_LEN//2, IMAGE_LEN//2), IMAGE_LEN//2, (0, 0, 0))
     cv2.line(img, (0, IMAGE_LEN//2), (IMAGE_LEN, IMAGE_LEN//2), (0, 0, 0))
