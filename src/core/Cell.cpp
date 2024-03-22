@@ -78,7 +78,7 @@ Cell::~Cell()
  * @param velocities
  * @return Vec3
  */
-Vec3 Cell::calcVelocity(std::queue<Vec3> velocities) noexcept
+Vec3 Cell::calcVelocity(std::queue<Vec3>& velocities) noexcept
 {
     // パラメータに合わせて計算方法を変える
     switch (SimulationSettings::POSITION_UPDATE_METHOD) {
@@ -105,7 +105,7 @@ Vec3 Cell::calcVelocity(std::queue<Vec3> velocities) noexcept
  * @param velocities
  * @return Vec3
  */
-Vec3 Cell::calcAB4(std::queue<Vec3> velocities) noexcept
+Vec3 Cell::calcAB4(std::queue<Vec3>& velocities) noexcept
 {
     assert(velocities.size() == 4);
 
@@ -118,6 +118,7 @@ Vec3 Cell::calcAB4(std::queue<Vec3> velocities) noexcept
     for (u_int32_t i = 0; i < velocitiesSize; i++) {
         velocity = velocities.front();
         velocities.pop();
+        velocities.push(velocity);
 
         adjustedVelocity += velocity.timesScalar(velocityWeight[i]);
     }
@@ -133,7 +134,7 @@ Vec3 Cell::calcAB4(std::queue<Vec3> velocities) noexcept
  * @param velocities
  * @return Vec3
  */
-Vec3 Cell::calcAB3(std::queue<Vec3> velocities) noexcept
+Vec3 Cell::calcAB3(std::queue<Vec3>& velocities) noexcept
 {
     assert(velocities.size() == 3);
 
@@ -146,6 +147,7 @@ Vec3 Cell::calcAB3(std::queue<Vec3> velocities) noexcept
     for (u_int32_t i = 0; i < velocitiesSize; i++) {
         velocity = velocities.front();
         velocities.pop();
+        velocities.push(velocity);
 
         adjustedVelocity += velocity.timesScalar(velocityWeight[i]);
     }
@@ -161,7 +163,7 @@ Vec3 Cell::calcAB3(std::queue<Vec3> velocities) noexcept
  * @param velocities
  * @return Vec3
  */
-Vec3 Cell::calcAB2(std::queue<Vec3> velocities) noexcept
+Vec3 Cell::calcAB2(std::queue<Vec3>& velocities) noexcept
 {
     assert(velocities.size() == 2);
 
@@ -174,6 +176,7 @@ Vec3 Cell::calcAB2(std::queue<Vec3> velocities) noexcept
     for (u_int32_t i = 0; i < velocitiesSize; i++) {
         velocity = velocities.front();
         velocities.pop();
+        velocities.push(velocity);
 
         adjustedVelocity += velocity.timesScalar(velocityWeight[i]);
     }
@@ -189,7 +192,7 @@ Vec3 Cell::calcAB2(std::queue<Vec3> velocities) noexcept
  * @param velocities
  * @return Vec3
  */
-Vec3 Cell::calcEuler(std::queue<Vec3> velocities) noexcept
+Vec3 Cell::calcEuler(std::queue<Vec3>& velocities) noexcept
 {
     assert(velocities.size() == 1);
     return velocities.front();
@@ -201,7 +204,7 @@ Vec3 Cell::calcEuler(std::queue<Vec3> velocities) noexcept
  * @param velocities
  * @return Vec3
  */
-Vec3 Cell::calcOriginal(std::queue<Vec3> velocities) noexcept
+Vec3 Cell::calcOriginal(std::queue<Vec3>& velocities) noexcept
 {
     assert(1 <= velocities.size() && velocities.size() <= 4);
 
@@ -334,10 +337,21 @@ Cell Cell::divide() noexcept
  *
  * @param moleculeId
  */
-void Cell::emitMolecule(int moleculeId) noexcept
+double Cell::emitMolecule(int moleculeId) noexcept
 {
-    std::cout << moleculeId << std::endl;
-    return;
+    return 0.0;
+}
+
+/**
+ * @brief moleculeId の分子を環境から吸収する
+ *
+ * @param moleculeId
+ * @param amountOnTheSpot
+ * @return double
+ */
+double Cell::absorbMolecule(int moleculeId, double amountOnTheSpot) noexcept
+{
+    return 0.0;
 }
 
 /**
@@ -366,18 +380,21 @@ int32_t Cell::getNewCellIndex() noexcept
  */
 void Cell::printCell() const noexcept
 {
-    std::cout << id << "\t" << NAMEOF_ENUM(typeID) << "\t";
-    std::cout << position.x << "\t" << position.y << "\t" << position.z << "\t" << velocity.x << "\t" << velocity.y << "\t" << velocity.z << "\t" << radius << "\t" << adhereCells.size() << "\t"
-              << "_";
+    // std::cout << id << "\t" << NAMEOF_ENUM(typeID) << "\t";
+    // std::cout << position.x << "\t" << position.y << "\t" << position.z << "\t" << velocity.x << "\t" << velocity.y << "\t" << velocity.z << "\t" << radius << "\t" << adhereCells.size() << "\t"
+    //           << "_";
 
-    for (int i = 0; i < (int)adhereCells.size(); i++) {
-        std::cout << adhereCells[i]->id;
+    std::cout << id << "\t";
+    std::cout << position.x << "\t" << position.y;
 
-        if (i != (int)adhereCells.size() - 1) {
-            std::cout << ",";
-        }
-    }
-    std::cout << std::endl;
+    // for (int i = 0; i < (int)adhereCells.size(); i++) {
+    //     std::cout << adhereCells[i]->id;
+
+    //     if (i != (int)adhereCells.size() - 1) {
+    //         std::cout << ",";
+    //     }
+    // }
+    std::cout << "\n";
 }
 
 /**

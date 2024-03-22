@@ -26,7 +26,7 @@ cmap = cmaps.get_cmap('Reds')
 
 for i in range(len(cell_files)):
     img = np.full((IMAGE_LEN, IMAGE_LEN, 3), 255, dtype=np.uint8)
-    fig, ax = plt.subplots(figsize=(1, 1), dpi=128)
+    fig, ax = plt.subplots(figsize=(1, 1), dpi=20)
 
     deg3 = []
     with open(molecule_files[i], "r") as f:
@@ -45,12 +45,11 @@ for i in range(len(cell_files)):
 
     XY = np.array(deg3).squeeze().T
 
-    XY = np.array(XY * 100, dtype=np.uint32)
-    color_img = np.array(cmap(XY, bytes=True), dtype=np.uint8)
+    XY = np.array(XY, dtype=np.uint32)
+    color_img = np.array(cmap(XY*100, bytes=True), dtype=np.uint8)
 
     color_img = cv2.cvtColor(color_img, cv2.COLOR_RGBA2BGR)
-    zoomed_color_img = color_img.repeat(8, axis=0).repeat(8, axis=1)
-
+    zoomed_color_img = color_img.repeat(4, axis=0).repeat(4, axis=1)
     img = zoomed_color_img
 
     cv2.circle(img, (IMAGE_LEN//2, IMAGE_LEN//2), IMAGE_LEN//2, (0, 0, 0))
@@ -67,7 +66,7 @@ for i in range(len(cell_files)):
         x = float(cell[2])*scale+IMAGE_LEN/2
         y = float(cell[3])*scale+IMAGE_LEN/2
         z = float(cell[4])*scale+IMAGE_LEN/2
-        r = float(cell[8])*scale
+        r = float(cell[8])  # * scale
 
         if x < 0 or x > IMAGE_LEN or y < 0 or y > IMAGE_LEN:
             print('out of range')

@@ -15,9 +15,9 @@
 #include "Cell.hpp"
 // #include "UserRule.hpp"
 #include "../SimulationSettings.hpp"
+#include "../UserMoleculeSpace.hpp"
 #include "../utils/Util.hpp"
 #include "CellList.hpp"
-#include "MoleculeSpace.hpp"
 #include <chrono>
 #include <fstream>
 #include <iomanip>
@@ -43,14 +43,14 @@ class Simulation
     std::vector<std::shared_ptr<UserCell>> cells; //!< シミュレーションで使うCellのリスト。
     std::streambuf* consoleStream;                //!< 標準出力のストリームバッファ
 
-    std::vector<std::unique_ptr<MoleculeSpace>> moleculeSpaces; //!< 分子の空間を管理するクラス。分子の種類ごとに1つの空間を持つ。
+    std::vector<std::unique_ptr<UserMoleculeSpace>> moleculeSpaces; //!< 分子の空間を管理するクラス。分子の種類ごとに1つの空間を持つ。
 
-  private:
     // random
     std::mt19937 rand_gen{ SimulationSettings::CELL_SEED }; //!< 乱数生成器(生成器はとりあえずメルセンヌ・ツイスタ)
     std::uniform_real_distribution<> randomCellPosX;        //!< Cellのx座標の生成器
     std::uniform_real_distribution<> randomCellPosY;        //!< Cellのy座標の生成器
 
+  private:
     Field<std::vector<std::shared_ptr<Cell>>> cellsInGrid; //!< グリッド内にcellのポインタを入れる。
 
     void printHeader() const noexcept;

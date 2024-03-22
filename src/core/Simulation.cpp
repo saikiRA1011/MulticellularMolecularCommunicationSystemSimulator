@@ -22,7 +22,9 @@ Simulation::Simulation()
     moleculeTypeNumDigit = (unsigned int)std::log10(SimulationSettings::MOLECULE_TYPE_NUM) + 1; // ファイル名の0埋めに使う
 
     for (int i = 0; i < SimulationSettings::MOLECULE_TYPE_NUM; i++) {
-        moleculeSpaces[i] = std::make_unique<MoleculeSpace>(SimulationSettings::DEFAULT_MOLECULE_NUMS[i], MoleculeDistributionType::UNIFORM);
+        // cells はvector<UserCell*>& を渡すはずなのに、vector<shared_ptr<UserCEll>>& になっている。スマートポインタをやめるかスマートポインタを渡すようにするか考える
+        moleculeSpaces[i] = std::make_unique<UserMoleculeSpace>(SimulationSettings::DEFAULT_MOLECULE_NUMS[i], MoleculeDistributionType::UNIFORM, MoleculeSpaceBorderType::NEUMANN, cells, i);
+        // moleculeSpaces[i]->
     }
 }
 
@@ -86,7 +88,8 @@ void Simulation::initDirectories()
  */
 void Simulation::printHeader() const noexcept
 {
-    std::cout << "ID\ttypeID\tX\tY\tZ\tVx\tVy\tVz\tR\tN_contact\tContact_IDs" << std::endl;
+    // std::cout << "ID\ttypeID\tX\tY\tZ\tVx\tVy\tVz\tR\tN_contact\tContact_IDs" << std::endl;
+    std::cout << "ID\tX\tY" << std::endl;
 }
 
 /**
@@ -282,11 +285,15 @@ int32_t Simulation::nextStep() noexcept
     }
 
     for (int32_t i = 0; i < SimulationSettings::MOLECULE_TYPE_NUM; i++) {
-        moleculeSpaces[i]->nextStep();
+        moleculeSpaces[i]->calcConcentrationDiff();
     }
 
     for (auto cell : cells) {
         cell->nextStep();
+    }
+
+    for (int32_t i = 0; i < SimulationSettings::MOLECULE_TYPE_NUM; i++) {
+        moleculeSpaces[i]->nextStep();
     }
 
     return 0;
@@ -303,6 +310,7 @@ int32_t Simulation::run()
     std::cout << "Open MP max threads: " << omp_get_max_threads() << std::endl;
 
     printCells(0);
+    printMolecules(0);
     auto sumTime = 0;
 
     std::cout << "initialized." << std::endl;

@@ -9,7 +9,7 @@ ims = []
 files = glob("molecule_result/0/molecule_*")
 files = sorted(files)
 
-fig, ax = plt.subplots(figsize=(1, 1), dpi=128)
+fig, ax = plt.subplots(figsize=(1, 1), dpi=50)
 is_first = True
 time = 0
 

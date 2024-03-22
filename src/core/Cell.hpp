@@ -20,6 +20,8 @@
 #include <queue>
 #include <random>
 
+class MoleculeSpace;
+
 /**
  * @class Cell
  * @brief Cell単体の状態を管理するクラス
@@ -35,7 +37,8 @@ class Cell
 
     std::vector<const Cell*> adhereCells; //!< 接着しているCellのポインタを格納する配列
 
-    std::vector<int> molecularStocks; //!< 細胞の保持している分子数。配列の添字は分子の種類。
+    std::vector<MoleculeSpace*> moleculeSpaces; //!< 分子空間のポインタを格納する配列
+    std::vector<int> molecularStocks;           //!< 細胞の保持している分子数。配列の添字は分子の種類。
 
     int32_t releaseIndex() noexcept;
 
@@ -47,12 +50,12 @@ class Cell
     std::queue<Vec3> preVelocitiesQueue; //!< 速度計算用のキュー
 
     // Simulation *sim; //!< Cellの呼び出し元になるSimulationインスタンスのポインタ
-    static Vec3 calcVelocity(std::queue<Vec3> velocities) noexcept;
-    static Vec3 calcAB4(std::queue<Vec3> velocities) noexcept;
-    static Vec3 calcAB3(std::queue<Vec3> velocities) noexcept;
-    static Vec3 calcAB2(std::queue<Vec3> velocities) noexcept;
-    static Vec3 calcEuler(std::queue<Vec3> velocities) noexcept;
-    static Vec3 calcOriginal(std::queue<Vec3> velocities) noexcept;
+    static Vec3 calcVelocity(std::queue<Vec3>& velocities) noexcept;
+    static Vec3 calcAB4(std::queue<Vec3>& velocities) noexcept;
+    static Vec3 calcAB3(std::queue<Vec3>& velocities) noexcept;
+    static Vec3 calcAB2(std::queue<Vec3>& velocities) noexcept;
+    static Vec3 calcEuler(std::queue<Vec3>& velocities) noexcept;
+    static Vec3 calcOriginal(std::queue<Vec3>& velocities) noexcept;
 
   public:
     Cell();
@@ -84,7 +87,8 @@ class Cell
     virtual int32_t die() noexcept;                // ユーザが定義
     Cell divide() noexcept;                        // オーバーライドして使う。
 
-    void emitMolecule(int moleculeId) noexcept;
+    virtual double emitMolecule(int moleculeId) noexcept;
+    virtual double absorbMolecule(int moleculeId, double amountOnTheSpot) noexcept;
 
     static int32_t getNewCellIndex() noexcept;
 

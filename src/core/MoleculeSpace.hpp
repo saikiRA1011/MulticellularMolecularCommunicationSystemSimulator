@@ -12,9 +12,11 @@
 #pragma once
 
 #include "../SimulationSettings.hpp"
+#include "../UserCell.hpp"
 #include "../thirdparty/nameof.hpp"
 #include "../utils/MakeVector.hpp"
 #include "../utils/Util.hpp"
+#include "../utils/Vec3.hpp"
 #include <random>
 
 enum class MoleculeDistributionType
@@ -49,16 +51,20 @@ enum class MoleculeSpaceBorderType
 
 class MoleculeSpace
 {
-  private:
-    int32_t width;       // x方向の格子数(横幅)
-    int32_t height;      // y方向の格子数(高さ)
-    int32_t depth;       // z方向の格子数(縦幅)
-    const double dr;     // 空間の各格子の大きさ
-    int64_t moleculeNum; // 現在の分子の総数
+  protected:
+    u_int32_t width;                    // x方向の格子数(横幅)
+    u_int32_t height;                   // y方向の格子数(高さ)
+    u_int32_t depth;                    // z方向の格子数(縦幅)
+    const double dr;                    // 空間の各格子の大きさ
+    u_int64_t moleculeNum;              // 現在の分子の総数
+    MoleculeSpaceBorderType borderType; // 境界条件の種類
 
-    Field3D<double> moleculeSpace; // 分子を扱う空間。各格子に分子の数を格納する。
+    Field3D<double> deltaMoleculeSpace;            // 次のステップでの分子の増減を格納する空間
+    Field3D<double> moleculeSpace;                 // 分子を扱う空間。各格子に分子の数を格納する。
+    std::vector<std::shared_ptr<UserCell>>& cells; // 格子の情報を格納する配列
 
     const double D; // 拡散係数
+    const u_int32_t ID;
 
     double diffuse(int32_t x, int32_t y, int32_t z);
     double production(int32_t x, int32_t y, int32_t z);
@@ -68,10 +74,14 @@ class MoleculeSpace
     void setupBoundary(Field3D<double>& ms, MoleculeSpaceBorderType borderType);
 
   public:
-    MoleculeSpace(int64_t moleculeNum, MoleculeDistributionType distributionType);
+    MoleculeSpace(const u_int64_t moleculeNum, const MoleculeDistributionType distributionType, const MoleculeSpaceBorderType borderType, std::vector<std::shared_ptr<UserCell>>& cells,
+                  const u_int32_t ID, const double _D);
     ~MoleculeSpace();
 
-    void nextStep() noexcept;
+    virtual void calcConcentrationDiff() noexcept;
+    virtual void nextStep() noexcept;
+
+    double getMoleculeNum(Vec3 pos) const noexcept;
 
     void print() const noexcept;
 };

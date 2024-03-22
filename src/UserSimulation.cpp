@@ -91,12 +91,14 @@ void UserSimulation::stepPreprocess() noexcept
  */
 void UserSimulation::stepEndProcess() noexcept
 {
-}
+    for (int32_t i = 0; i < (int32_t)cells.size(); i++) {
+        if (cells[i]->getCellType() == CellType::DEAD || cells[i]->getCellType() == CellType::NONE) {
+            continue;
+        }
 
-Vec3 UserSimulation::calcTestForce(std::shared_ptr<Cell> c, std::shared_ptr<Cell> d) const noexcept
-{
-    Vec3 result = Vec3::zero();
-    return result;
+        Vec3 pos = cells[i]->getPosition();
+        cells[i]->updateState(moleculeSpaces[0]->getMoleculeNum(pos));
+    }
 }
 
 /**
@@ -107,6 +109,7 @@ Vec3 UserSimulation::calcTestForce(std::shared_ptr<Cell> c, std::shared_ptr<Cell
  */
 Vec3 UserSimulation::calcCellCellForce(std::shared_ptr<UserCell> c) const noexcept
 {
+    return Vec3::zero();
     auto aroundCells = cellList.aroundCellList(c);
     Vec3 force       = Vec3::zero();
 

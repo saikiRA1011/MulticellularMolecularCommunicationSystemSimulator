@@ -1,7 +1,7 @@
 #include "UserCell.hpp"
 
 std::mt19937 UserCell::randomEngine(1231);
-std::exponential_distribution<> UserCell::divisionDist(1.0 / 100.0);
+std::exponential_distribution<> UserCell::divisionDist(1.0 / 130.0);
 std::exponential_distribution<> UserCell::dieDist(1.0 / 150.0);
 
 UserCell::UserCell()
@@ -21,6 +21,10 @@ UserCell::UserCell()
 UserCell::UserCell(CellType _typeID, double x, double y, double radius, double vx, double vy)
   : UserCell(_typeID, Vec3(x, y, 0), radius, Vec3(vx, vy, 0))
 {
+    for (double cAMP = 0.0; cAMP <= 1.0; cAMP += 0.1) {
+        test(cAMP);
+    }
+    exit(0);
 }
 
 /**
@@ -49,9 +53,9 @@ UserCell::UserCell(CellType _typeID, Vec3 pos, double radius, Vec3 v)
  */
 bool UserCell::checkWillDivide() const noexcept
 {
-    if (divisionGauge >= divisionTime) {
-        return true;
-    }
+    // if (divisionGauge >= divisionTime) {
+    //     return true;
+    // }
     return false;
 }
 
@@ -63,9 +67,9 @@ bool UserCell::checkWillDivide() const noexcept
  */
 bool UserCell::checkWillDie() const noexcept
 {
-    if (dieGauge >= dieTime) {
-        return true;
-    }
+    // if (dieGauge >= dieTime) {
+    //     return true;
+    // }
     return false;
 }
 
@@ -75,11 +79,12 @@ bool UserCell::checkWillDie() const noexcept
  */
 void UserCell::metabolize() noexcept
 {
+    return;
     divisionGauge += SimulationSettings::DELTA_TIME; // DELTA_TIMEをかけて時間スケールを合わせる
     dieGauge += SimulationSettings::DELTA_TIME;      // DELTA_TIMEをかけて時間スケールを合わせる
 
     double r               = this->getRadius();
-    const double newVolume = calcVolumeFromRadius(r) + 200.0 * SimulationSettings::DELTA_TIME;
+    const double newVolume = calcVolumeFromRadius(r) + 100.0 * SimulationSettings::DELTA_TIME;
     const double newRadius = calcRadiusFromVolume(newVolume);
 
     this->setRadius(newRadius);
@@ -123,4 +128,58 @@ UserCell UserCell::divide() noexcept
     // this->addForce(-childDirection);
 
     return c;
+}
+
+double UserCell::emitMolecule(int32_t moleculeId) noexcept
+{
+    return cAMP * Kt / H;
+}
+
+double UserCell::absorbMolecule(int32_t moleculeId, double amountOnTheSpot) noexcept
+{
+    return 0;
+}
+
+double UserCell::calcSynthesis(double extracellularCAMP) const noexcept
+{
+    const double y   = (activeReceptor * extracellularCAMP) / (1.0 + extracellularCAMP);
+    const double num = ALPHA * (LAMBDA * THETA + EPSILON * y * y);
+    const double den = 1 + ALPHA * THETA + EPSILON * y * y * (1 + ALPHA);
+    const double phi = num / den;
+
+    return Q * SIGMA * phi / (Ki + Kt);
+}
+
+// f1とf2は正常版と一致する
+double UserCell::f1(double cAMP) const noexcept
+{
+    return (K1 + K2 * cAMP) / (1 + cAMP);
+}
+
+double UserCell::f2(double cAMP) const noexcept
+{
+    return (K1 * L1 + K2 * L2 * C * cAMP) / (1 + C * cAMP);
+}
+
+void UserCell::setDiffState(double extracellularCAMP) noexcept
+{
+    diffCamp = calcSynthesis(extracellularCAMP);
+
+    // この計算は正しい
+    diffActiveReceptor = (-activeReceptor * f1(extracellularCAMP) + (1.0 - activeReceptor) * f2(extracellularCAMP));
+}
+
+void UserCell::test(double cAMP) const noexcept
+{
+    for (double ar = 0.0; ar <= 1.0; ar += 0.1) {
+        std::cout << "cAMP : " << cAMP << " activeReceptor : " << ar << " diffActive : " << (-ar * f1(cAMP) + (1.0 - ar) * f2(cAMP)) << std::endl;
+    }
+}
+
+void UserCell::updateState(double extracellularCAMP) noexcept
+{
+    cAMP = diffCamp;
+    cAMP = std::min(cAMP, 1.0);
+    activeReceptor += diffActiveReceptor * SimulationSettings::DELTA_TIME;
+    activeReceptor = std::max(0.0, activeReceptor);
 }
