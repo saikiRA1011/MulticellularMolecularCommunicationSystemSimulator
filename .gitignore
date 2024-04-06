@@ -32,3 +32,5 @@ MoleculeDebug
 molecule_result/*
 molecule_image/*
 sample
+figs/*
+molecule_result_full/*
