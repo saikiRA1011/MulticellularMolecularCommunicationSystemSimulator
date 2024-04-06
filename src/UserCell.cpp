@@ -21,10 +21,10 @@ UserCell::UserCell()
 UserCell::UserCell(CellType _typeID, double x, double y, double radius, double vx, double vy)
   : UserCell(_typeID, Vec3(x, y, 0), radius, Vec3(vx, vy, 0))
 {
-    for (double cAMP = 0.0; cAMP <= 1.0; cAMP += 0.1) {
-        test(cAMP);
-    }
-    exit(0);
+    // for (double cAMP = 0.0; cAMP <= 1.0; cAMP += 0.1) {
+    //     test(cAMP);
+    // }
+    // exit(0);
 }
 
 /**
@@ -140,6 +140,7 @@ double UserCell::absorbMolecule(int32_t moleculeId, double amountOnTheSpot) noex
     return 0;
 }
 
+// これは大丈夫
 double UserCell::calcSynthesis(double extracellularCAMP) const noexcept
 {
     const double y   = (activeReceptor * extracellularCAMP) / (1.0 + extracellularCAMP);
@@ -163,6 +164,7 @@ double UserCell::f2(double cAMP) const noexcept
 
 void UserCell::setDiffState(double extracellularCAMP) noexcept
 {
+    // これも大丈夫
     diffCamp = calcSynthesis(extracellularCAMP);
 
     // この計算は正しい
@@ -172,14 +174,22 @@ void UserCell::setDiffState(double extracellularCAMP) noexcept
 void UserCell::test(double cAMP) const noexcept
 {
     for (double ar = 0.0; ar <= 1.0; ar += 0.1) {
-        std::cout << "cAMP : " << cAMP << " activeReceptor : " << ar << " diffActive : " << (-ar * f1(cAMP) + (1.0 - ar) * f2(cAMP)) << std::endl;
+        const double y   = (ar * cAMP) / (1.0 + cAMP);
+        const double num = ALPHA * (LAMBDA * THETA + EPSILON * y * y);
+        const double den = 1 + ALPHA * THETA + EPSILON * y * y * (1 + ALPHA);
+        const double phi = num / den;
+
+        std::cout << "cAMP : " << cAMP << " active : " << ar << " Synthesis : " << Q * SIGMA * phi / (Ki + Kt) << std::endl;
     }
+    // for (double ar = 0.0; ar <= 1.0; ar += 0.1) {
+    // std::cout << "cAMP : " << cAMP << " activeReceptor : " << ar << " Synthesis : " << calcSynthesis(cAMP) << std::endl;
+    // }
 }
 
 void UserCell::updateState(double extracellularCAMP) noexcept
 {
     cAMP = diffCamp;
-    cAMP = std::min(cAMP, 1.0);
+    // cAMP = std::min(cAMP, 1.0);
     activeReceptor += diffActiveReceptor * SimulationSettings::DELTA_TIME;
     activeReceptor = std::max(0.0, activeReceptor);
 }

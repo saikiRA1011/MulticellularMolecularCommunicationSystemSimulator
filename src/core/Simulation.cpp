@@ -23,7 +23,7 @@ Simulation::Simulation()
 
     for (int i = 0; i < SimulationSettings::MOLECULE_TYPE_NUM; i++) {
         // cells はvector<UserCell*>& を渡すはずなのに、vector<shared_ptr<UserCEll>>& になっている。スマートポインタをやめるかスマートポインタを渡すようにするか考える
-        moleculeSpaces[i] = std::make_unique<UserMoleculeSpace>(SimulationSettings::DEFAULT_MOLECULE_NUMS[i], MoleculeDistributionType::UNIFORM, MoleculeSpaceBorderType::NEUMANN, cells, i);
+        moleculeSpaces[i] = std::make_unique<UserMoleculeSpace>(SimulationSettings::DEFAULT_MOLECULE_NUMS[i], MoleculeDistributionType::NONE, MoleculeSpaceBorderType::NEUMANN, cells, i);
         // moleculeSpaces[i]->
     }
 }
@@ -274,27 +274,52 @@ int32_t Simulation::nextStep() noexcept
 
     Vec3 force = Vec3::zero();
 
-// XXX: スレッド数を増やしてもメモリアクセスがボトルネックになってしまう。
-#pragma omp parallel for num_threads(8) schedule(dynamic) private(force)
-    for (int32_t i = 0; i < (int32_t)cells.size(); i++) {
-        if (cells[i]->getCellType() == CellType::DEAD || cells[i]->getCellType() == CellType::NONE)
-            continue;
+    // auto cell_start = std::chrono::system_clock::now();
+    // XXX: スレッド数を増やしてもメモリアクセスがボトルネックになってしまう。
+#pragma omp parallel for schedule(dynamic) private(force)
+    for (int32_t i = 0; i < (int32_t)cells.size(); i += 3000) {
+        for (u_int32_t j = 0; j < 3000 && i + j < (int32_t)cells.size(); j++) {
+            if (cells[i + j]->getCellType() == CellType::DEAD || cells[i + j]->getCellType() == CellType::NONE)
+                continue;
 
-        force = calcCellCellForce(cells[i]);
-        cells[i]->addForce(force);
+            force = calcCellCellForce(cells[i + j]);
+            cells[i + j]->addForce(force);
+        }
     }
 
+    // auto cell_end = std::chrono::system_clock::now();
+
+    // auto molecule_start = std::chrono::system_clock::now();
     for (int32_t i = 0; i < SimulationSettings::MOLECULE_TYPE_NUM; i++) {
         moleculeSpaces[i]->calcConcentrationDiff();
     }
+// auto molecule_end = std::chrono::system_clock::now();
 
-    for (auto cell : cells) {
-        cell->nextStep();
+// for (auto cell : cells) {
+//     cell->nextStep();
+// }
+
+// FIXME: 重たいので注意
+#pragma omp parallel for schedule(dynamic)
+    for (u_int32_t i = 0; i < cells.size(); i += 3000) {
+        for (u_int32_t j = 0; j < 3000 && i + j < cells.size(); j++) {
+            cells[i + j]->nextStep();
+        }
     }
 
+    // auto molecule_next_start = std::chrono::system_clock::now();
     for (int32_t i = 0; i < SimulationSettings::MOLECULE_TYPE_NUM; i++) {
         moleculeSpaces[i]->nextStep();
     }
+    // auto molecule_next_end = std::chrono::system_clock::now();
+
+    // auto cell_duration          = std::chrono::duration_cast<std::chrono::milliseconds>(cell_end - cell_start).count();
+    // auto molecule_duration      = std::chrono::duration_cast<std::chrono::milliseconds>(molecule_end - molecule_start).count();
+    // auto molecule_next_duration = std::chrono::duration_cast<std::chrono::milliseconds>(molecule_next_end - molecule_next_start).count();
+
+    // std::cout << "cell: " << cell_duration << "msec" << std::endl;
+    // std::cout << "molecule: " << molecule_duration << "msec" << std::endl;
+    // std::cout << "molecule next: " << molecule_next_duration << "msec" << std::endl;
 
     return 0;
 }
@@ -319,7 +344,7 @@ int32_t Simulation::run()
         auto start = std::chrono::system_clock::now();
 
         stepPreprocess();
-        nextStep();
+        nextStep(); // この中がネック
         stepEndProcess();
 
         const bool willOut = (step % SimulationSettings::OUTPUT_INTERVAL_STEP) == 0;
@@ -336,7 +361,7 @@ int32_t Simulation::run()
         sumTime += msec;
     }
 
-    const double averageTime = (double)sumTime / (double)SimulationSettings::SIM_STEP;
+    const double averageTime = (double)sumTime / ((double)SimulationSettings::SIM_STEP - 1);
     std::cout << "Initial cell count : " << SimulationSettings::CELL_NUM << "    average processing time : " << averageTime << std::endl;
 
     return 0;

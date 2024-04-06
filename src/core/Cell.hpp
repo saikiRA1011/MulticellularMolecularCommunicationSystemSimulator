@@ -203,6 +203,8 @@ inline void Cell::addForce(Vec3 f) noexcept
  * @brief
  * Cellの位置を更新し、次の時間に進める。このメソッドはすべてのセルにaddForceした後に呼び出すことを想定している。
  *  もしすべてのCellにaddForceしていなかった場合、Cellを呼び出す順番によって挙動が変わってしまう。
+ * @note
+ * 計算が遅いので注意
  */
 inline void Cell::nextStep() noexcept
 {

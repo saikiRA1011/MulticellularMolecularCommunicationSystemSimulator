@@ -1,7 +1,7 @@
 CC := g++-13
 PYTHON := python3.10
-CFLAGS := -std=c++20 -Wall -Wextra -O3 -mtune=native -march=native -fopenmp -I/usr/local/include -L/usr/local/lib -lyaml-cpp
-DEBUGF := -std=c++20 -Wall -Wextra -gdwarf-3 -fopenmp -g -I/usr/local/include -L/usr/local/lib -lyaml-cpp
+CFLAGS := -std=c++20 -O3 -Wall -Wextra -mtune=native -march=native -fopenmp -I/usr/local/include -L/usr/local/lib -lyaml-cpp
+DEBUGF := -std=c++20 -Wall -Wextra -gdwarf-3 -fopenmp -g -I/usr/local/include -L/usr/local/lib -pg # -lyaml-cpp
 TESTFLAGS := -std=c++20 -Wall -Wextra -lgtest -lgtest_main  -I/usr/local/include  -L/usr/local/lib -lyaml-cpp
 OBJS := Vec3.o Cell.o Simulation.o CellList.o UserSimulation.o UserCell.o SimulationSettings.o MoleculeSpace.o UserMoleculeSpace.o
 DOBJS := D_Vec3.o D_Cell.o D_Simulation.o D_CellList.o D_UserSimulation.o D_UserCell.o D_SimulationSettings.o D_MoleculeSpace.o D_UserMoleculeSpace.o
@@ -22,10 +22,13 @@ DEBUG := src/debug
 DEBUGOBJS := $(UTIL)/Vec3.cpp Cell.o Simulation.o CellList.o UserSimulation.o
 
 SimMain: $(MAIN)/SimMain.cpp $(OBJS)
-	$(CC) -o $@ $(CFLAGS) $(OBJS) $(MAIN)/SimMain.cpp
+	$(CC) -o $@ $(CFLAGS) $(OBJS) $(MAIN)/SimMain.cpp -lyaml-cpp
+
+yaml_test: $(MAIN)/yaml_test.cpp
+	$(CC) -o $@ $(MAIN)/yaml_test.cpp $(CFLAGS)
 
 Debug: $(MAIN)/SimMain.cpp $(DOBJS)
-	$(CC) -o $@ $(DEBUGF) $(DOBJS) $(MAIN)/SimMain.cpp
+	$(CC) -o $@ $(DEBUGF) $(DOBJS) $(MAIN)/SimMain.cpp -lyaml-cpp
 
 SpeedTest: $(MAIN)/SpeedTest.cpp $(OBJS)
 	$(CC) -o $@ $(CFLAGS) $(OBJS) $(MAIN)/SpeedTest.cpp

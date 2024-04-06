@@ -46,8 +46,10 @@ void UserSimulation::stepPreprocess() noexcept
     int32_t preCellCount = cells.size();
 
     // すべての細胞の力を初期化する(速度を0に設定)
-    for (int i = 0; i < preCellCount; i++) {
-        cells[i]->initForce();
+    for (int i = 0; i < preCellCount; i += 3000) {
+        for (int j = 0; j < 3000 && i + j < preCellCount; j++) {
+            cells[i + j]->initForce();
+        }
     }
 
     for (int i = 0; i < preCellCount; i++) {
@@ -57,6 +59,7 @@ void UserSimulation::stepPreprocess() noexcept
 
         cells[i]->metabolize();
     }
+
     for (int i = 0; i < preCellCount; i++) {
         if (cells[i]->getCellType() == CellType::DEAD || cells[i]->getCellType() == CellType::NONE) {
             continue;
@@ -91,13 +94,16 @@ void UserSimulation::stepPreprocess() noexcept
  */
 void UserSimulation::stepEndProcess() noexcept
 {
-    for (int32_t i = 0; i < (int32_t)cells.size(); i++) {
-        if (cells[i]->getCellType() == CellType::DEAD || cells[i]->getCellType() == CellType::NONE) {
-            continue;
-        }
+#pragma omp parallel for schedule(dynamic)
+    for (int32_t i = 0; i < (int32_t)cells.size(); i += 3000) {
+        for (int32_t j = 0; j < 3000 && i + j < (int32_t)cells.size(); j++) {
+            if (cells[i + j]->getCellType() == CellType::DEAD || cells[i + j]->getCellType() == CellType::NONE) {
+                continue;
+            }
 
-        Vec3 pos = cells[i]->getPosition();
-        cells[i]->updateState(moleculeSpaces[0]->getMoleculeNum(pos));
+            Vec3 pos = cells[i + j]->getPosition();
+            cells[i + j]->updateState(moleculeSpaces[0]->getMoleculeNum(pos));
+        }
     }
 }
 
@@ -110,6 +116,7 @@ void UserSimulation::stepEndProcess() noexcept
 Vec3 UserSimulation::calcCellCellForce(std::shared_ptr<UserCell> c) const noexcept
 {
     return Vec3::zero();
+
     auto aroundCells = cellList.aroundCellList(c);
     Vec3 force       = Vec3::zero();
 

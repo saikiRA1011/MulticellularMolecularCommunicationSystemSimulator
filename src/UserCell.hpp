@@ -22,7 +22,7 @@ class UserCell : public Cell
     double dieGauge      = 0; //!< 細胞の死滅周期のゲージ。dieTimeを超えたら死滅する。
 
     double cAMP               = 0;   //!< 細胞内のcAMP濃度
-    double activeReceptor     = 1.0; //!< 細胞内の活性受容体の数。割合なので1が最大
+    double activeReceptor     = 0.0; //!< 細胞内の活性受容体の数。割合なので1が最大
     double diffCamp           = 0;
     double diffActiveReceptor = 0;
 

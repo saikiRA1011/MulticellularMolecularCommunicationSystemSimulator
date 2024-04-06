@@ -23,7 +23,8 @@ enum class MoleculeDistributionType
 {
     UNIFORM,
     GAUSSIAN,
-    POINT
+    POINT,
+    NONE
 };
 
 enum class MoleculeSpaceBorderType
