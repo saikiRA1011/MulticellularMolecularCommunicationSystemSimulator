@@ -271,7 +271,6 @@ int32_t Simulation::nextStep() noexcept
         cellList.resetGrid();
         setCellList();
     }
-
     Vec3 force = Vec3::zero();
 
 // XXX: スレッド数を増やしてもメモリアクセスがボトルネックになってしまう。

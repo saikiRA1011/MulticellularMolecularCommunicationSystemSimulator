@@ -54,18 +54,18 @@ void UserSimulation::stepPreprocess() noexcept
         if (cells[i]->getCellType() == CellType::DEAD || cells[i]->getCellType() == CellType::NONE) {
             continue;
         }
-
         cells[i]->metabolize();
     }
-    for (int i = 0; i < preCellCount; i++) {
-        if (cells[i]->getCellType() == CellType::DEAD || cells[i]->getCellType() == CellType::NONE) {
-            continue;
-        }
-        if (cells[i]->checkWillDie()) {
-            cells[i]->die();
-            continue;
-        }
-    }
+
+    // for (int i = 0; i < preCellCount; i++) {
+    //     if (cells[i]->getCellType() == CellType::DEAD || cells[i]->getCellType() == CellType::NONE) {
+    //         continue;
+    //     }
+    //     if (cells[i]->checkWillDie()) {
+    //         cells[i]->die();
+    //         continue;
+    //     }
+    // }
 
     for (int i = 0; i < preCellCount; i++) {
         if (cells[i]->getCellType() == CellType::DEAD || cells[i]->getCellType() == CellType::NONE) {
@@ -109,7 +109,6 @@ void UserSimulation::stepEndProcess() noexcept
  */
 Vec3 UserSimulation::calcCellCellForce(std::shared_ptr<UserCell> c) const noexcept
 {
-    return Vec3::zero();
     auto aroundCells = cellList.aroundCellList(c);
     Vec3 force       = Vec3::zero();
 

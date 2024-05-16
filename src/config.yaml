@@ -1,22 +1,22 @@
 cell:
     cell_seed: 0 # cellの位置などを設定する際に用いるシード値
-    cell_num: 5000 # cellの初期個数。TODO: 複数種類の細胞に対応する。細胞数を増やすとやたら重くなる。理由を調べる
+    cell_num: 1000 # cellの初期個数。TODO: 複数種類の細胞に対応する。細胞数を増やすとやたら重くなる。理由を調べる
     position_update_method: EULER # AB4, AB3, AB2, EULER から選択
 
 simulation:
-    sim_step: 100000 # シミュレーションの総ステップ数
-    output_interval: 100 # 出力間隔
-    field_x_len: 128 # シミュレーションフィールドのx座標の長さ
-    field_y_len: 128 # シミュレーションフィールドのy座標の長さ
+    sim_step: 1000 # シミュレーションの総ステップ数
+    output_interval: 5 # 出力間隔
+    field_x_len: 1024 # シミュレーションフィールドのx座標の長さ
+    field_y_len: 1024 # シミュレーションフィールドのy座標の長さ
     field_z_len: 0 # シミュレーションフィールドのz座標の長さ
-    delta_time: 0.001 # 1ステップあたりのシミュレーション内時間
+    delta_time: 0.1 # 1ステップあたりのシミュレーション内時間
 
 molecule:
     default_molecule_nums: # 各分子の初期個数(リストで表現する)
         - 3000
     delta_time: 0.001
-    field_x_len: 128 # 分子管理用フィールドのx座標の長さ >= 1
-    field_y_len: 128 # 分子管理用フィールドのy座標の長さ >= 1
+    field_x_len: 10 # 分子管理用フィールドのx座標の長さ >= 1
+    field_y_len: 10 # 分子管理用フィールドのy座標の長さ >= 1
     field_z_len: 1 # 分子管理用フィールドのz座標の長さ >= 1
 
     #
@@ -39,6 +39,8 @@ molecule:
     #           |
     #           |
     #          zx1
+
+    # TODO: 実装内で利用していないので、使うようにする
     boundary_condition: # 分子管理用フィールドの境界条件
         xy1: NEUMANN
         xy2: NEUMANN

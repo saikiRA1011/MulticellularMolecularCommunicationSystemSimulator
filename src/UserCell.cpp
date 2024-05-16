@@ -21,10 +21,6 @@ UserCell::UserCell()
 UserCell::UserCell(CellType _typeID, double x, double y, double radius, double vx, double vy)
   : UserCell(_typeID, Vec3(x, y, 0), radius, Vec3(vx, vy, 0))
 {
-    for (double cAMP = 0.0; cAMP <= 1.0; cAMP += 0.1) {
-        test(cAMP);
-    }
-    exit(0);
 }
 
 /**
@@ -53,9 +49,9 @@ UserCell::UserCell(CellType _typeID, Vec3 pos, double radius, Vec3 v)
  */
 bool UserCell::checkWillDivide() const noexcept
 {
-    // if (divisionGauge >= divisionTime) {
-    //     return true;
-    // }
+    if (divisionGauge >= divisionTime) {
+        return true;
+    }
     return false;
 }
 
@@ -67,9 +63,9 @@ bool UserCell::checkWillDivide() const noexcept
  */
 bool UserCell::checkWillDie() const noexcept
 {
-    // if (dieGauge >= dieTime) {
-    //     return true;
-    // }
+    if (dieGauge >= dieTime) {
+        return true;
+    }
     return false;
 }
 
@@ -79,12 +75,11 @@ bool UserCell::checkWillDie() const noexcept
  */
 void UserCell::metabolize() noexcept
 {
-    return;
     divisionGauge += SimulationSettings::DELTA_TIME; // DELTA_TIMEをかけて時間スケールを合わせる
     dieGauge += SimulationSettings::DELTA_TIME;      // DELTA_TIMEをかけて時間スケールを合わせる
 
     double r               = this->getRadius();
-    const double newVolume = calcVolumeFromRadius(r) + 100.0 * SimulationSettings::DELTA_TIME;
+    const double newVolume = calcVolumeFromRadius(r) + 50.0 * SimulationSettings::DELTA_TIME;
     const double newRadius = calcRadiusFromVolume(newVolume);
 
     this->setRadius(newRadius);

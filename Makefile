@@ -22,10 +22,10 @@ DEBUG := src/debug
 DEBUGOBJS := $(UTIL)/Vec3.cpp Cell.o Simulation.o CellList.o UserSimulation.o
 
 SimMain: $(MAIN)/SimMain.cpp $(OBJS)
-	$(CC) -o $@ $(CFLAGS) $(OBJS) $(MAIN)/SimMain.cpp
+	$(CC) -o $@ $(CFLAGS) $(OBJS) $(MAIN)/SimMain.cpp  -lyaml-cpp
 
 Debug: $(MAIN)/SimMain.cpp $(DOBJS)
-	$(CC) -o $@ $(DEBUGF) $(DOBJS) $(MAIN)/SimMain.cpp
+	$(CC) -o $@ $(DEBUGF) $(DOBJS) $(MAIN)/SimMain.cpp -lyaml-cpp
 
 SpeedTest: $(MAIN)/SpeedTest.cpp $(OBJS)
 	$(CC) -o $@ $(CFLAGS) $(OBJS) $(MAIN)/SpeedTest.cpp
