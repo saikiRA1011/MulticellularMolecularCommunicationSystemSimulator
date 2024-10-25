@@ -4,8 +4,11 @@
 # Overview
 It is a general-purpose simulator for multicellular molecular communication simulations and allows users to define simulation parameters and dynamics to run simulations for various models.
 
-tutorial  
-jp -> https://github.com/saikiRA1011/CellNetworkShapeSimulation/blob/main/tutorial/out/tutorial.pdf
+## Other Languages README
+[日本語](https://github.com/saikiRA1011/CellNetworkShapeSimulation/blob/main/README_jp.md)
+
+## Tutorial  
+[日本語](https://github.com/saikiRA1011/CellNetworkShapeSimulation/blob/main/tutorial/out/tutorial.pdf)
 
 # Requirement
 - gcc(version 11 or later)
