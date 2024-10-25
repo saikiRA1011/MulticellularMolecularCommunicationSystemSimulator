@@ -2,56 +2,56 @@
 ![gif](https://github.com/saikiRA1011/CellNetworkShapeSimulation/blob/main/readme_img/sim.gif)
 
 # Overview
-分子通信シミュレーションのための汎用シミュレータであり、ユーザがシミュレーションのパラメータや力学作用を定義することでさまざまなモデルに対応したシミュレーションを実行することができます。
+It is a general-purpose simulator for multicellular molecular communication simulations and allows users to define simulation parameters and dynamics to run simulations for various models.
 
 tutorial  
 jp -> https://github.com/saikiRA1011/CellNetworkShapeSimulation/blob/main/tutorial/out/tutorial.pdf
 
 # Requirement
-- gcc(version 11以降)
-- Python3系(必要ライブラリはrequirements.txtから取得可能)
+- gcc(version 11 or later)
+- Python3 series(Required libraries can be obtained from requirements.txt)
 - pip
 - make
-- mac OS or Linux (環境次第ではWindowsも可能)
+- mac OS or Linux (Windows is possible depending on the environment)
 
-Pythonの必要ライブラリは以下のコマンドで一括インストールできます。  
+The required Python libraries can be installed in a batch with the following command.  
 `pip install -r requirements.txt`
 
 # Usage
 ### Step 1
-シミュレータをmakeする。  
+`make` the simulator.  
 `make`
 
 ### Step 2
-シミュレータを実行する。  
+Run the simulator.  
 `make run`
 
 ### Step 3
-実行結果を動画に変換する。  
+Convert the execution results to video.  
 `make convert`
 
 ### Step 4
-変換した動画を確認する。  
+Check the converted video.  
 `make open`
   
   
-ただし、Step 1 ~ Step 4は`make all`でまとめて実行することもできます。
-また、各種コマンドは`make help`から確認することができます。
+However, Step 1 ~ Step 4 can also be run together with `make all`.
+You can also check the various commands from `make help`.
 
-## シミュレーションモデルの作成方法
-UserSimulation.cpp(.hpp)にモデルを記述します。現在作成可能なモデルは細胞間に働く力学モデル(calcCellCellForce)のみです。  
-シミュレーションのパラメータはSimulationSettings.hppに記述します。ユーザが記述するプログラムは主にこの2つです。  
-UserSimulationの親クラスはSimulationであり、ユーザが使用できる変数(つまり、publicかprotectedの変数)はcells(シミュレーション中のすべてのCellを保存したリスト)とcellList(CellListクラスのインスタンス)です。  
-あるCell cの付近のすべてのCell(のポインタ)を取得したい場合は、`cellList.aroundCellList(c)`によって取得可能です。ただし、すべてのCellを力学モデルの計算対象にしたい場合は、cellsの方を利用したほうが良いです。  
-サンプルの力学モデルは`Simulation::calcCellCellForce(Cell &c)`を参考にすると良いです。
+## How to create a simulation model
+Describe the model in `src/UserSimulation.cpp(.hpp)` and `src/UserCell.cpp(.hpp)`.  <!-- 現在作成可能なモデルは細胞間に働く力学モデル(`calcCellCellForce()`)、細胞分裂の条件チェック(``)のみです。 -->
+The simulation parameters are written in `src/config.yaml`. These are the three main programs written by the user.  
+<!-- `UserSimulation`の親クラスは`Simulation`であり、ユーザが使用できる変数(つまり、publicかprotectedの変数)は`cells`(シミュレーション中のすべての`Cell`を保存したリスト)と`cellList`(`CellList`クラスのインスタンス)です。   -->
+<!-- あるCell cの付近のすべてのCell(のポインタ)を取得したい場合は、`cellList.aroundCellList(c)`によって取得可能です。ただし、すべてのCellを力学モデルの計算対象にしたい場合は、cellsの方を利用したほうが良いです。   -->
+You can refer to ` UserSimulation::calcCellCellForce()` for a sample dynamics model.
 
 # Features
-- CellListのアルゴリズムを利用することによりシミュレーションを高速に実行することが可能となっています。  
-- Makefileに定義されたコマンドにより、ユーザはディレクトリの構造を深く考えることなく、コンパイルから結果の確認までを簡単に実行することができます。  
-- シミュレーションの結果をテキスト(./result/*)に出力しているため、ユーザが独自にビジュアライザを作成し、再利用することもできます。
+- The CellList algorithm makes it possible to run simulations at high speed.  
+- The commands defined in the Makefile allow the user to easily compile and check the results without having to think too much about the directory structure.  
+- The simulation results can be saved as text (`./result/*`), allowing users to create and reuse their own visualizers.
 
 # Tips
-ドキュメントの生成にDoxygenを利用しているので、Doxygenの環境を用意することで各クラスやメソッドの説明を簡単に見ることができます。
+Since Doxygen is used to generate the documentation, you can easily view the description of each class and method by preparing the Doxygen environment.
 
 # Author
-所属 : https://sites.google.com/c.info.eng.osaka-cu.ac.jp/ect/%E3%83%9B%E3%83%BC%E3%83%A0
+Affiliation : https://sites.google.com/c.info.eng.osaka-cu.ac.jp/ect/%E3%83%9B%E3%83%BC%E3%83%A0
