@@ -15,24 +15,34 @@ jp -> https://github.com/saikiRA1011/CellNetworkShapeSimulation/blob/main/tutori
 - mac OS or Linux (Windows is possible depending on the environment)
 
 The required Python libraries can be installed in a batch with the following command.  
-`pip install -r requirements.txt`
+```sh
+$ pip install -r requirements.txt
+```
 
 # Usage
 ### Step 1
 `make` the simulator.  
-`make`
+```sh
+$ make
+```
 
 ### Step 2
 Run the simulator.  
-`make run`
+```sh
+$ make run
+```
 
 ### Step 3
 Convert the execution results to video.  
-`make convert`
+```sh
+$ make convert
+```
 
 ### Step 4
 Check the converted video.  
-`make open`
+```sh
+$ make open
+```
   
   
 However, Step 1 ~ Step 4 can also be run together with `make all`.
