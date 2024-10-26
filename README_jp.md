@@ -1,4 +1,4 @@
-# CellNetworkShapeSimulation
+# Multicellular Molecular Communication System Simulator
 ![gif](https://github.com/saikiRA1011/CellNetworkShapeSimulation/blob/main/readme_img/sim.gif)
 
 # Overview
