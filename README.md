@@ -66,7 +66,7 @@ You can refer to ` UserSimulation::calcCellCellForce()` for a sample dynamics mo
 # Tips
 Since Doxygen is used to generate the documentation, you can easily view the description of each class and method by preparing the Doxygen environment.
 
-# Reference
+# References
 - S. Imanaka and T. Nakano, ``Algorithm Design for Multicellular Molecular Communication Simulations,'' 7th International Conference on Knowledge Innovation and Invention 2024 (ICKII 2024), Aichi, Aug. 2024.
 - S. Imanaka, T. Saiki and T. Nakano, ``Accelerating Multicellular Molecular Communication Simulations Using the Barnes-Hut Algorithm,'' 2024 IEEE 4th International Conference on Electronic Communications,Internet of Things and Big Data (ICIEB 2024),  Taiwan, April 2024.
 - T. Saiki and T. Nakano, ``A Simulation Platform for Dynamic Multicellular Molecular Communication Systems ,'' 2024 IEEE 4th International Conference on Electronic Communications,Internet of Things and Big Data (ICIEB 2024),  Taiwan, April 2024.
