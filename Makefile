@@ -9,7 +9,7 @@ DIR := result image video
 
 nowdate:=$(shell date +%Y%m%d_%H%M)
 
-FULL_ARCHIVE := 0# 0がfalse 1がtrue
+# FULL_ARCHIVE := 0# 0がfalse 1がtrue
 
 CORE := src/core
 UTIL := src/utils
@@ -139,20 +139,19 @@ convert: $(DIR)
 open:
 	open video/out.mp4
 
-ifeq (FULL_ARCHIVE,1)
-	ARCHIVE_COMMAND := cp image/* archive_$(nowdate)/image\
-	cp video/* archive_$(nowdate)/video
-endif
-
 data-archive:
 	mkdir archive_$(nowdate)
 	mkdir archive_$(nowdate)/result
 	mkdir archive_$(nowdate)/image
 	mkdir archive_$(nowdate)/video
 
+ifeq ($(FULL_ARCHIVE),1)
+	cp image/* archive_$(nowdate)/image/
+	cp video/* archive_$(nowdate)/video
+endif
 	cp result/* archive_$(nowdate)/result/
 
-	$(ARCHIVE_COMMAND)
+	# $(ARCHIVE_COMMAND)
 
 	zip -r archive_$(nowdate).zip archive_$(nowdate)
 
@@ -161,7 +160,7 @@ data-archive:
 PACKAGE_LIST := src/SimMain.cpp src/SimulationSettings.hpp src/UserSimulation.hpp src/UserSimulation.cpp src/UserRule.hpp
 
 packaging:
-	mkdir package/$(name)
+	mkdir -p package/$(name)
 
 	cp $(PACKAGE_LIST) package/$(name)
 
