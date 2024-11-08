@@ -120,9 +120,9 @@ data-cleanup:
 
 CONVERT := src/convert_tools
 
+# TODO : これに合わせてディレクトリ構成を変える
 reset:
-	cp $(BACKUP)/SimulationSettings.hpp $(BACKUP)/UserSimulation.cpp $(BACKUP)/UserSimulation.hpp $(USER)/
-	cp $(BACKUP)/create_image.py $(CONVERT)/
+	cp $(BACKUP)/config.yaml $(BACKUP)/SimulationSettings.hpp $(BACKUP)/SimulationSettings.cpp $(BACKUP)/UserSimulation.cpp $(BACKUP)/UserSimulation.hpp $(USER)/
 
 png: result image
 	$(PYTHON) $(CONVERT)/create_image.py
