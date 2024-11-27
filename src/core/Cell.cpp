@@ -11,6 +11,7 @@
 
 #include "Cell.hpp"
 
+// static変数の初期化
 int32_t Cell::upperOfCellCount  = 0;
 int32_t Cell::numberOfCellsBorn = 0;
 std::queue<int> Cell::cellPool  = std::queue<int>();
@@ -68,6 +69,163 @@ Cell::Cell(CellType _typeID, Vec3 pos, double radius, Vec3 v)
  */
 Cell::~Cell()
 {
+}
+
+/**
+ * @brief Cellの速度を計算する。引数には今までの速度を格納したキューを渡す。
+ * @note キューの長さは計算アルゴリズムによって変わる。ユーザ側はあまり考えなくていいが、コントリビューターは注意すること。
+ *
+ * @param velocities
+ * @return Vec3
+ */
+Vec3 Cell::calcVelocity(std::queue<Vec3>& velocities) noexcept
+{
+    // パラメータに合わせて計算方法を変える
+    switch (SimulationSettings::POSITION_UPDATE_METHOD) {
+        case PositionUpdateMethod::EULER:
+            return calcEuler(velocities);
+        case PositionUpdateMethod::AB2:
+            return calcAB2(velocities);
+        case PositionUpdateMethod::AB3:
+            return calcAB3(velocities);
+        case PositionUpdateMethod::AB4:
+            return calcAB4(velocities);
+        case PositionUpdateMethod::ORIGINAL:
+            return calcOriginal(velocities);
+        default:
+            std::cerr << "Error: Invalid PositionUpdateMethod" << std::endl;
+            exit(1);
+    }
+}
+
+/**
+ * @brief 速度を4次のAdams-Bashforth法で計算する。
+ * @note キューの長さは4である必要がある。また、Adams-Bashforth法は次数が高いほど精度も高くなる反面安定性が下がるので、荒い時間ステップで計算するときは別のアルゴリズムを用いる。
+ *       参考：https://www1.gifu-u.ac.jp/~tanaka/numerical_analysis.pdf
+ * @param velocities
+ * @return Vec3
+ */
+Vec3 Cell::calcAB4(std::queue<Vec3>& velocities) noexcept
+{
+    assert(velocities.size() == 4);
+
+    // 4次Adams-Bashforth法の係数 t-3, t-2,  t-1, t
+    double velocityWeight[4] = { -9.0, 37.0, -59.0, 55.0 };
+    Vec3 adjustedVelocity    = Vec3::zero();
+
+    u_int32_t velocitiesSize = velocities.size();
+    Vec3 velocity;
+    for (u_int32_t i = 0; i < velocitiesSize; i++) {
+        velocity = velocities.front();
+        velocities.pop();
+        velocities.push(velocity);
+
+        adjustedVelocity += velocity.timesScalar(velocityWeight[i]);
+    }
+    adjustedVelocity = adjustedVelocity.timesScalar(1.0 / 24.0);
+
+    return adjustedVelocity;
+}
+
+/**
+ * @brief 速度を3次のAdams-Bashforth法で計算する。
+ * @note 詳しいことはcalcAB4()を参照。
+ *
+ * @param velocities
+ * @return Vec3
+ */
+Vec3 Cell::calcAB3(std::queue<Vec3>& velocities) noexcept
+{
+    assert(velocities.size() == 3);
+
+    // 3次Adams-Bashforth法の係数 t-2, t-1, t
+    double velocityWeight[3] = { 5, -16, 23 };
+    Vec3 adjustedVelocity    = Vec3(0, 0, 0);
+
+    u_int32_t velocitiesSize = velocities.size();
+    Vec3 velocity;
+    for (u_int32_t i = 0; i < velocitiesSize; i++) {
+        velocity = velocities.front();
+        velocities.pop();
+        velocities.push(velocity);
+
+        adjustedVelocity += velocity.timesScalar(velocityWeight[i]);
+    }
+    adjustedVelocity = adjustedVelocity.timesScalar(1.0 / 12.0);
+
+    return adjustedVelocity;
+}
+
+/**
+ * @brief 速度を2次のAdams-Bashforth法で計算する。
+ * @note 詳しいことはcalcAB4()を参照。
+ *
+ * @param velocities
+ * @return Vec3
+ */
+Vec3 Cell::calcAB2(std::queue<Vec3>& velocities) noexcept
+{
+    assert(velocities.size() == 2);
+
+    // 2次Adams-Bashforth法の係数 t-1, t
+    double velocityWeight[2] = { -1, 3 };
+    Vec3 adjustedVelocity    = Vec3(0, 0, 0);
+
+    u_int32_t velocitiesSize = velocities.size();
+    Vec3 velocity;
+    for (u_int32_t i = 0; i < velocitiesSize; i++) {
+        velocity = velocities.front();
+        velocities.pop();
+        velocities.push(velocity);
+
+        adjustedVelocity += velocity.timesScalar(velocityWeight[i]);
+    }
+    adjustedVelocity = adjustedVelocity.timesScalar(1.0 / 2.0);
+
+    return adjustedVelocity;
+}
+
+/**
+ * @brief 速度をオイラー法で計算する。
+ * @note 精度は一番低いが、安定性はあるので荒い時間ステップで計算する場合はこれがいいかもしれない。
+ *
+ * @param velocities
+ * @return Vec3
+ */
+Vec3 Cell::calcEuler(std::queue<Vec3>& velocities) noexcept
+{
+    assert(velocities.size() == 1);
+    return velocities.front();
+}
+
+/**
+ * @brief オリジナルの方法で速度を計算する。実際のところはキューの長さに応じて上記の関数を呼び出しているだけ。あまり精度が良くないため使わないほうがいいかも
+ *
+ * @param velocities
+ * @return Vec3
+ */
+Vec3 Cell::calcOriginal(std::queue<Vec3>& velocities) noexcept
+{
+    assert(1 <= velocities.size() && velocities.size() <= 4);
+
+    switch (velocities.size()) {
+        case 1:
+            return calcEuler(velocities);
+            break;
+        case 2:
+            return calcAB2(velocities);
+            break;
+        case 3:
+            return calcAB3(velocities);
+            break;
+        case 4:
+            return calcAB4(velocities);
+            break;
+        default:
+            std::cerr << "Error: Cell::calcOriginal: velocities.size() is invalid." << std::endl;
+            exit(1);
+            break;
+    }
 }
 
 /**
@@ -179,10 +337,21 @@ Cell Cell::divide() noexcept
  *
  * @param moleculeId
  */
-void Cell::emitMolecule(int moleculeId) noexcept
+double Cell::emitMolecule(int moleculeId) noexcept
 {
-    std::cout << moleculeId << std::endl;
-    return;
+    return 0.0;
+}
+
+/**
+ * @brief moleculeId の分子を環境から吸収する
+ *
+ * @param moleculeId
+ * @param amountOnTheSpot
+ * @return double
+ */
+double Cell::absorbMolecule(int moleculeId, double amountOnTheSpot) noexcept
+{
+    return 0.0;
 }
 
 /**
@@ -215,6 +384,9 @@ void Cell::printCell() const noexcept
     std::cout << position.x << "\t" << position.y << "\t" << position.z << "\t" << velocity.x << "\t" << velocity.y << "\t" << velocity.z << "\t" << radius << "\t" << adhereCells.size() << "\t"
               << "_";
 
+    // std::cout << id << "\t";
+    // std::cout << position.x << "\t" << position.y;
+
     for (int i = 0; i < (int)adhereCells.size(); i++) {
         std::cout << adhereCells[i]->id;
 
@@ -222,7 +394,7 @@ void Cell::printCell() const noexcept
             std::cout << ",";
         }
     }
-    std::cout << std::endl;
+    std::cout << "\n";
 }
 
 /**

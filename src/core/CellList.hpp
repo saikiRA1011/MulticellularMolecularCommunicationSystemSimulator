@@ -26,6 +26,9 @@ class CellList
 
     std::tuple<int32_t, int32_t> getGridCoordinateByCellPos(const std::shared_ptr<UserCell> c) const;
 
+    const int32_t CELL_GRID_LEN_X;
+    const int32_t CELL_GRID_LEN_Y;
+
   public:
     CellList();
     ~CellList();

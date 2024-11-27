@@ -14,9 +14,18 @@ Simulation::Simulation()
   : cellList()
   , randomCellPosX(-SimulationSettings::FIELD_X_LEN / 2, SimulationSettings::FIELD_X_LEN / 2)
   , randomCellPosY(-SimulationSettings::FIELD_Y_LEN / 2, SimulationSettings::FIELD_Y_LEN / 2)
+  , moleculeSpaces(SimulationSettings::MOLECULE_TYPE_NUM)
 // , aroundCellSetList(SimulationSettings::FIELD_Y_LEN, std::unordered_set<int32_t>())
 {
-    consoleStream = std::cout.rdbuf();
+    consoleStream        = std::cout.rdbuf();
+    stepNumDigit         = (unsigned int)std::log10(SimulationSettings::SIM_STEP) + 1;          // ファイル名の0埋めに使う
+    moleculeTypeNumDigit = (unsigned int)std::log10(SimulationSettings::MOLECULE_TYPE_NUM) + 1; // ファイル名の0埋めに使う
+
+    for (int i = 0; i < SimulationSettings::MOLECULE_TYPE_NUM; i++) {
+        // cells はvector<UserCell*>& を渡すはずなのに、vector<shared_ptr<UserCEll>>& になっている。スマートポインタをやめるかスマートポインタを渡すようにするか考える
+        moleculeSpaces[i] = std::make_unique<UserMoleculeSpace>(SimulationSettings::DEFAULT_MOLECULE_NUMS[i], MoleculeDistributionType::UNIFORM, MoleculeSpaceBorderType::NEUMANN, cells, i);
+        // moleculeSpaces[i]->
+    }
 }
 
 /**
@@ -59,13 +68,28 @@ void Simulation::initCells() noexcept
     }
 }
 
+void Simulation::initDirectories()
+{
+    std::string command = "mkdir -p ./result";
+    system(command.c_str());
+
+    command = "mkdir -p ./molecule_result";
+    system(command.c_str());
+
+    for (int i = 0; i < SimulationSettings::MOLECULE_TYPE_NUM; i++) {
+        command = "mkdir -p ./molecule_result/" + std::string(moleculeTypeNumDigit, '0');
+        system(command.c_str());
+    }
+}
+
 /**
  * @brief ファイルにヘッダ情報を出力する。
  *
  */
 void Simulation::printHeader() const noexcept
 {
-    std::cout << "ID\ttypeID\tX\tY\tZ\tVx\tVy\tVz\tR\tN_contact\tContact_IDs" << std::endl;
+    // std::cout << "ID\ttypeID\tX\tY\tZ\tVx\tVy\tVz\tR\tN_contact\tContact_IDs" << std::endl;
+    std::cout << "ID\tX\tY" << std::endl;
 }
 
 /**
@@ -76,17 +100,38 @@ void Simulation::printHeader() const noexcept
 void Simulation::printCells(int32_t time) const
 {
     std::ostringstream sout;
-    sout << std::setfill('0') << std::setw(5) << time;
+    sout << std::setfill('0') << std::setw(stepNumDigit) << time;
 
     std::string outputPath = "./result/cells_" + sout.str();
     std::ofstream ofs(outputPath);
     std::cout.rdbuf(ofs.rdbuf()); // 標準出力の出力先を指定ファイルに変更
+                                  // ./result/cells_<stepNum>
 
     printHeader();
     for (int32_t i = 0; i < (int32_t)cells.size(); i++) {
         if (cells[i]->getCellType() == CellType::NONE)
             continue;
         cells[i]->printCell();
+    }
+
+    std::cout.rdbuf(consoleStream);
+}
+
+void Simulation::printMolecules(int32_t time) const
+{
+    std::ostringstream sout;
+    sout << std::setfill('0') << std::setw(stepNumDigit) << time;
+    std::string outputPath = "./molecule_result/" + std::string(moleculeTypeNumDigit, '0') + "/molecule_" + sout.str();
+
+    for (int32_t i = 0; i < SimulationSettings::MOLECULE_TYPE_NUM; i++) {
+        std::ostringstream typeSout;
+        typeSout << std::setfill('0') << std::setw(moleculeTypeNumDigit) << i;
+        outputPath.replace(18, moleculeTypeNumDigit, typeSout.str());
+        std::ofstream ofs(outputPath);
+        std::cout.rdbuf(ofs.rdbuf()); // 標準出力の出力先を指定ファイルに変更
+                                      // ./molecule_result/<moleculeTypeNum>/molecule_<stepNum>
+
+        moleculeSpaces[i]->print();
     }
 
     std::cout.rdbuf(consoleStream);
@@ -226,7 +271,6 @@ int32_t Simulation::nextStep() noexcept
         cellList.resetGrid();
         setCellList();
     }
-
     Vec3 force = Vec3::zero();
 
 // XXX: スレッド数を増やしてもメモリアクセスがボトルネックになってしまう。
@@ -239,8 +283,16 @@ int32_t Simulation::nextStep() noexcept
         cells[i]->addForce(force);
     }
 
+    for (int32_t i = 0; i < SimulationSettings::MOLECULE_TYPE_NUM; i++) {
+        moleculeSpaces[i]->calcConcentrationDiff();
+    }
+
     for (auto cell : cells) {
         cell->nextStep();
+    }
+
+    for (int32_t i = 0; i < SimulationSettings::MOLECULE_TYPE_NUM; i++) {
+        moleculeSpaces[i]->nextStep();
     }
 
     return 0;
@@ -257,6 +309,7 @@ int32_t Simulation::run()
     std::cout << "Open MP max threads: " << omp_get_max_threads() << std::endl;
 
     printCells(0);
+    printMolecules(0);
     auto sumTime = 0;
 
     std::cout << "initialized." << std::endl;
@@ -271,6 +324,7 @@ int32_t Simulation::run()
         const bool willOut = (step % SimulationSettings::OUTPUT_INTERVAL_STEP) == 0;
         if (willOut) {
             printCells(step / SimulationSettings::OUTPUT_INTERVAL_STEP);
+            printMolecules(step / SimulationSettings::OUTPUT_INTERVAL_STEP);
         }
         const bool wasOut = willOut;
 

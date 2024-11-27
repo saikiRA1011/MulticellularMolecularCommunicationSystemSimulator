@@ -1,10 +1,10 @@
 CC := g++-13
 PYTHON := python3.10
-CFLAGS := -std=c++20 -Wall -Wextra -O2 -mtune=native -march=native -fopenmp -I/usr/local/include -L/usr/local/lib -lyaml-cpp
-DEBUGF := -std=c++20 -Wall -Wextra -fopenmp -g -I/usr/local/include -L/usr/local/lib -lyaml-cpp
+CFLAGS := -std=c++20 -Wall -Wextra -O3 -mtune=native -march=native -fopenmp -I/usr/local/include -L/usr/local/lib -lyaml-cpp
+DEBUGF := -std=c++20 -Wall -Wextra -gdwarf-3 -fopenmp -g -I/usr/local/include -L/usr/local/lib -lyaml-cpp
 TESTFLAGS := -std=c++20 -Wall -Wextra -lgtest -lgtest_main  -I/usr/local/include  -L/usr/local/lib -lyaml-cpp
-OBJS := Vec3.o Cell.o Simulation.o CellList.o UserSimulation.o UserCell.o SimulationSettings.o
-DOBJS := D_Vec3.o D_Cell.o D_Simulation.o D_CellList.o D_UserSimulation.o D_UserCell.o D_SimulationSettings.o
+OBJS := Vec3.o Cell.o Simulation.o CellList.o UserSimulation.o UserCell.o SimulationSettings.o MoleculeSpace.o UserMoleculeSpace.o
+DOBJS := D_Vec3.o D_Cell.o D_Simulation.o D_CellList.o D_UserSimulation.o D_UserCell.o D_SimulationSettings.o D_MoleculeSpace.o D_UserMoleculeSpace.o
 DIR := result image video
 
 nowdate:=$(shell date +%Y%m%d_%H%M)
@@ -17,17 +17,21 @@ MAIN := src
 USER := src
 TEST := src/test
 BACKUP := src/backup
+DEBUG := src/debug
 
 DEBUGOBJS := $(UTIL)/Vec3.cpp Cell.o Simulation.o CellList.o UserSimulation.o
 
 SimMain: $(MAIN)/SimMain.cpp $(OBJS)
-	$(CC) -o $@ $(CFLAGS) $(OBJS) $(MAIN)/SimMain.cpp
+	$(CC) -o $@ $(CFLAGS) $(OBJS) $(MAIN)/SimMain.cpp  -lyaml-cpp
 
 Debug: $(MAIN)/SimMain.cpp $(DOBJS)
-	$(CC) -o $@ $(DEBUGF) $(DOBJS) $(MAIN)/SimMain.cpp
+	$(CC) -o $@ $(DEBUGF) $(DOBJS) $(MAIN)/SimMain.cpp -lyaml-cpp
 
 SpeedTest: $(MAIN)/SpeedTest.cpp $(OBJS)
 	$(CC) -o $@ $(CFLAGS) $(OBJS) $(MAIN)/SpeedTest.cpp
+
+MoleculeDebug: $(DEBUG)/MoleculeSpaceDebug.cpp D_MoleculeSpace.o D_SimulationSettings.o
+	$(CC) -o $@ $(DEBUGF) D_MoleculeSpace.o D_SimulationSettings.o $(DEBUG)/MoleculeSpaceDebug.cpp
 
 # プログラムの定数倍最適化を考える際に使う
 # 新しくプロファイリングしたいときは、result.traceを削除してから実行する
@@ -68,17 +72,29 @@ UserCell.o: $(UTIL)/Vec3.cpp $(UTIL)/Vec3.hpp $(CORE)/Cell.cpp $(CORE)/Cell.hpp 
 D_UserCell.o: $(UTIL)/Vec3.cpp $(UTIL)/Vec3.hpp $(CORE)/Cell.cpp $(CORE)/Cell.hpp $(USER)/UserCell.cpp $(USER)/UserCell.hpp D_SimulationSettings.o
 	$(CC) -c -o $@ $(DEBUGF) $(USER)/UserCell.cpp
 
-Simulation.o: $(CORE)/Simulation.cpp $(USER)/SimulationSettings.hpp $(CORE)/Simulation.hpp $(CORE)/Cell.hpp $(CORE)/Cell.cpp $(CORE)/CellList.hpp $(CORE)/CellList.cpp SimulationSettings.o
+Simulation.o: $(CORE)/Simulation.cpp $(USER)/SimulationSettings.hpp $(CORE)/Simulation.hpp $(CORE)/Cell.hpp $(CORE)/Cell.cpp $(CORE)/CellList.hpp $(CORE)/CellList.cpp SimulationSettings.o MoleculeSpace.o UserMoleculeSpace.o
 	$(CC) -c $(CFLAGS) $(CORE)/Simulation.cpp 
 
-D_Simulation.o: $(CORE)/Simulation.cpp $(USER)/SimulationSettings.hpp $(CORE)/Simulation.hpp $(CORE)/Cell.hpp $(CORE)/Cell.cpp $(CORE)/CellList.hpp $(CORE)/CellList.cpp D_SimulationSettings.o
+D_Simulation.o: $(CORE)/Simulation.cpp $(USER)/SimulationSettings.hpp $(CORE)/Simulation.hpp $(CORE)/Cell.hpp $(CORE)/Cell.cpp $(CORE)/CellList.hpp $(CORE)/CellList.cpp D_SimulationSettings.o D_MoleculeSpace.o UserMoleculeSpace.o
 	$(CC) -c -o $@ $(DEBUGF) $(CORE)/Simulation.cpp 
 
-UserSimulation.o: $(CORE)/Simulation.cpp $(CORE)/Simulation.hpp $(USER)/UserSimulation.cpp $(USER)/UserSimulation.hpp SimulationSettings.o
+UserSimulation.o: $(CORE)/Simulation.cpp $(CORE)/Simulation.hpp $(USER)/UserSimulation.cpp $(USER)/UserSimulation.hpp SimulationSettings.o MoleculeSpace.o
 	$(CC) -c $(CFLAGS) $(USER)/UserSimulation.cpp 
 
-D_UserSimulation.o: $(CORE)/Simulation.cpp $(CORE)/Simulation.hpp $(USER)/UserSimulation.cpp $(USER)/UserSimulation.hpp D_SimulationSettings.o
+D_UserSimulation.o: $(CORE)/Simulation.cpp $(CORE)/Simulation.hpp $(USER)/UserSimulation.cpp $(USER)/UserSimulation.hpp D_SimulationSettings.o D_MoleculeSpace.o
 	$(CC) -c -o $@ $(DEBUGF) $(USER)/UserSimulation.cpp 
+
+MoleculeSpace.o: $(CORE)/MoleculeSpace.cpp $(CORE)/MoleculeSpace.hpp SimulationSettings.o $(UTIL)/Util.hpp
+	$(CC) -c $(CFLAGS) $(CORE)/MoleculeSpace.cpp
+
+D_MoleculeSpace.o: $(CORE)/MoleculeSpace.cpp $(CORE)/MoleculeSpace.hpp D_SimulationSettings.o $(UTIL)/Util.hpp
+	$(CC) -c -o $@ $(DEBUGF) $(CORE)/MoleculeSpace.cpp
+	
+UserMoleculeSpace.o: $(CORE)/MoleculeSpace.cpp $(CORE)/MoleculeSpace.hpp $(USER)/UserMoleculeSpace.cpp $(USER)/UserMoleculeSpace.hpp SimulationSettings.o $(UTIL)/Util.hpp
+	$(CC) -c $(CFLAGS) $(USER)/UserMoleculeSpace.cpp
+
+D_UserMoleculeSpace.o: $(CORE)/MoleculeSpace.cpp $(CORE)/MoleculeSpace.hpp $(USER)/UserMoleculeSpace.cpp $(USER)/UserMoleculeSpace.hpp D_SimulationSettings.o $(UTIL)/Util.hpp
+	$(CC) -c -o $@ $(DEBUGF) $(USER)/UserMoleculeSpace.cpp
 
 SegmentTree.o: $(CORE)/SegmentTree.cpp
 	$(CC) -c $(CFLAGS) $(CORE)/SegmentTree.cpp
@@ -108,6 +124,7 @@ video:
 
 run: SimMain result
 	rm -f result/*
+	rm -fr molecule_result/*
 	./SimMain
 
 clean: 

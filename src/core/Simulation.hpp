@@ -15,6 +15,7 @@
 #include "Cell.hpp"
 // #include "UserRule.hpp"
 #include "../SimulationSettings.hpp"
+#include "../UserMoleculeSpace.hpp"
 #include "../utils/Util.hpp"
 #include "CellList.hpp"
 #include <chrono>
@@ -42,16 +43,19 @@ class Simulation
     std::vector<std::shared_ptr<UserCell>> cells; //!< シミュレーションで使うCellのリスト。
     std::streambuf* consoleStream;                //!< 標準出力のストリームバッファ
 
-  private:
+    std::vector<std::unique_ptr<UserMoleculeSpace>> moleculeSpaces; //!< 分子の空間を管理するクラス。分子の種類ごとに1つの空間を持つ。
+
     // random
     std::mt19937 rand_gen{ SimulationSettings::CELL_SEED }; //!< 乱数生成器(生成器はとりあえずメルセンヌ・ツイスタ)
     std::uniform_real_distribution<> randomCellPosX;        //!< Cellのx座標の生成器
     std::uniform_real_distribution<> randomCellPosY;        //!< Cellのy座標の生成器
 
+  private:
     Field<std::vector<std::shared_ptr<Cell>>> cellsInGrid; //!< グリッド内にcellのポインタを入れる。
 
     void printHeader() const noexcept;
-    void printCells(int32_t) const;
+    void printCells(int32_t time) const;
+    void printMolecules(int32_t time) const;
 
     //  std::vector<std::unordered_set<int32_t>> aroundCellSetList;
 
@@ -60,6 +64,9 @@ class Simulation
 
     int32_t debugCounter = 0;
 
+    int32_t stepNumDigit;
+    int32_t moleculeTypeNumDigit;
+
   public:
     Simulation(/* args */);
     ~Simulation();
@@ -67,6 +74,7 @@ class Simulation
     void exportConfig() const;
 
     virtual void initCells() noexcept;
+    void initDirectories();
 
     virtual Vec3 calcCellCellForce(std::shared_ptr<UserCell>) const noexcept;
     virtual void stepPreprocess() noexcept;

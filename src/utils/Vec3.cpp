@@ -53,10 +53,7 @@ Vec3 Vec3::operator-() const noexcept
  */
 Vec3 Vec3::operator+(Vec3 obj) const noexcept
 {
-    Vec3 tmp(x, y, z);
-    tmp += obj;
-
-    return tmp;
+    return Vec3(x + obj.x, y + obj.y, z + obj.z);
 }
 
 /**
@@ -67,10 +64,7 @@ Vec3 Vec3::operator+(Vec3 obj) const noexcept
  */
 Vec3 Vec3::operator-(Vec3 obj) const noexcept
 {
-    Vec3 tmp(x, y, z);
-    tmp -= obj;
-
-    return tmp;
+    return Vec3(x - obj.x, y - obj.y, z - obj.z);
 }
 
 Vec3 &Vec3::operator+=(const Vec3 &obj) noexcept

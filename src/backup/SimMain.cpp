@@ -25,7 +25,6 @@ int main(void)
 
     sim.exportConfig();
     sim.initCells();
-    sim.initDirectories();
 
     int32_t simResult = sim.run();
 

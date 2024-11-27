@@ -11,19 +11,36 @@
 
 #include "UserSimulation.hpp"
 
+/**
+ * @brief コンストラクタ。何も呼び出さない。
+ *
+ */
 UserSimulation::UserSimulation(/* args */)
 {
 }
 
+/**
+ * @brief デストラクタ。何もしない。
+ *
+ */
 UserSimulation::~UserSimulation()
 {
 }
 
+/**
+ * @brief シミュレーションで扱う細胞の初期化。ここで細胞を生成する。生成した細胞はcellsに格納する。
+ * @note 各細胞の初期状態はユーザが定義する。
+ *
+ */
 void UserSimulation::initCells() noexcept
 {
     Simulation::initCells();
 }
 
+/**
+ * @brief 各ステップの前処理。
+ *
+ */
 void UserSimulation::stepPreprocess() noexcept
 {
     int32_t preCellCount = cells.size();
@@ -37,18 +54,18 @@ void UserSimulation::stepPreprocess() noexcept
         if (cells[i]->getCellType() == CellType::DEAD || cells[i]->getCellType() == CellType::NONE) {
             continue;
         }
-
         cells[i]->metabolize();
     }
-    for (int i = 0; i < preCellCount; i++) {
-        if (cells[i]->getCellType() == CellType::DEAD || cells[i]->getCellType() == CellType::NONE) {
-            continue;
-        }
-        if (cells[i]->checkWillDie()) {
-            cells[i]->die();
-            continue;
-        }
-    }
+
+    // for (int i = 0; i < preCellCount; i++) {
+    //     if (cells[i]->getCellType() == CellType::DEAD || cells[i]->getCellType() == CellType::NONE) {
+    //         continue;
+    //     }
+    //     if (cells[i]->checkWillDie()) {
+    //         cells[i]->die();
+    //         continue;
+    //     }
+    // }
 
     for (int i = 0; i < preCellCount; i++) {
         if (cells[i]->getCellType() == CellType::DEAD || cells[i]->getCellType() == CellType::NONE) {
@@ -68,10 +85,28 @@ void UserSimulation::stepPreprocess() noexcept
     }
 }
 
+/**
+ * @brief 各ステップの後処理。
+ *
+ */
 void UserSimulation::stepEndProcess() noexcept
 {
+    for (int32_t i = 0; i < (int32_t)cells.size(); i++) {
+        if (cells[i]->getCellType() == CellType::DEAD || cells[i]->getCellType() == CellType::NONE) {
+            continue;
+        }
+
+        Vec3 pos = cells[i]->getPosition();
+        cells[i]->updateState(moleculeSpaces[0]->getMoleculeNum(pos));
+    }
 }
 
+/**
+ * @brief 細胞間作用の計算。細胞の種類に応じて計算を行う。
+ *
+ * @param c
+ * @return Vec3
+ */
 Vec3 UserSimulation::calcCellCellForce(std::shared_ptr<UserCell> c) const noexcept
 {
     auto aroundCells = cellList.aroundCellList(c);

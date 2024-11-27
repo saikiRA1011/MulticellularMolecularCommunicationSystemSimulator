@@ -17,12 +17,12 @@
 
 class UserSimulation : public Simulation
 {
-    private:
-    Vec3 calcCellCellForce(Cell &c) const noexcept override;
+  private:
+    Vec3 calcCellCellForce(std::shared_ptr<UserCell> c) const noexcept override;
     void stepPreprocess() noexcept override;
     void stepEndProcess() noexcept override;
 
-    public:
+  public:
     UserSimulation(/* args */);
     ~UserSimulation();
 

@@ -16,6 +16,8 @@
  *
  */
 CellList::CellList()
+  : CELL_GRID_LEN_X(SimulationSettings::FIELD_X_LEN / SimulationSettings::GRID_SIZE_MAGNIFICATION)
+  , CELL_GRID_LEN_Y(SimulationSettings::FIELD_Y_LEN / SimulationSettings::GRID_SIZE_MAGNIFICATION)
 {
     init();
 }
@@ -30,9 +32,6 @@ CellList::~CellList()
  */
 void CellList::init()
 {
-    const int32_t CELL_GRID_LEN_X = SimulationSettings::FIELD_X_LEN / SimulationSettings::GRID_SIZE_MAGNIFICATION;
-    const int32_t CELL_GRID_LEN_Y = SimulationSettings::FIELD_Y_LEN / SimulationSettings::GRID_SIZE_MAGNIFICATION;
-
     cellField.resize(CELL_GRID_LEN_Y);
     for (int32_t y = 0; y < CELL_GRID_LEN_Y; y++) {
         cellField[y].resize(CELL_GRID_LEN_X);
@@ -98,10 +97,8 @@ std::vector<int32_t> CellList::aroundCellList(const std::shared_ptr<UserCell> c)
  */
 bool CellList::isInGrid(const int32_t x, const int32_t y) const
 {
-    const int32_t GRID_X_WIDTH = SimulationSettings::FIELD_X_LEN / SimulationSettings::GRID_SIZE_MAGNIFICATION;
-    const int32_t GRID_Y_WIDTH = SimulationSettings::FIELD_Y_LEN / SimulationSettings::GRID_SIZE_MAGNIFICATION;
     // 範囲外の場合は空のvectorを返す
-    if (x < 0 || GRID_X_WIDTH <= x || y < 0 || GRID_Y_WIDTH <= y) {
+    if (x < 0 || CELL_GRID_LEN_X <= x || y < 0 || CELL_GRID_LEN_Y <= y) {
         return false;
     }
 
@@ -135,12 +132,8 @@ bool CellList::checkInSearchRadius(const Vec3 v, const Vec3 u) const
  */
 void CellList::resetGrid() noexcept
 {
-    const int32_t GRID_X_WIDTH = SimulationSettings::FIELD_X_LEN / SimulationSettings::GRID_SIZE_MAGNIFICATION;
-    const int32_t GRID_Y_WIDTH = SimulationSettings::FIELD_Y_LEN / SimulationSettings::GRID_SIZE_MAGNIFICATION;
-
-    // グリッドに保存されているCellのリストを初期化する。O(n^2) nは1辺の長さ
-    for (int32_t y = 0; y < GRID_Y_WIDTH; y++) {
-        for (int32_t x = 0; x < GRID_X_WIDTH; x++) {
+    for (int32_t y = 0; y < CELL_GRID_LEN_Y; y++) {
+        for (int32_t x = 0; x < CELL_GRID_LEN_X; x++) {
             cellField[y][x].clear();
         }
     }

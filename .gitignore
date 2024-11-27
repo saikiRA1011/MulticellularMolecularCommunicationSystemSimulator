@@ -5,8 +5,7 @@ latex
 out_mac
 out_win
 result/*
-SimMain.dSYM
-Debug.dSYM
+*.dSYM
 Doxifile.bak
 out.mp4
 video/*
@@ -24,6 +23,14 @@ README_tmp.html
 tutorial/out/*.log
 package
 src/convert_tools/__pycache__
+src/debug
 *Test
 !/src/test/
 *.trace
+other/*
+MoleculeDebug
+molecule_result/*
+molecule_image/*
+sample
+figs/*
+molecule_result_full/*
