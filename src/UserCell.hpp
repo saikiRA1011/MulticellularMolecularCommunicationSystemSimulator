@@ -21,30 +21,9 @@ class UserCell : public Cell
     double divisionGauge = 0; //!< 細胞の分裂周期のゲージ。divisionTimeを超えたら分裂する。
     double dieGauge      = 0; //!< 細胞の死滅周期のゲージ。dieTimeを超えたら死滅する。
 
-    double cAMP               = 0;   //!< 細胞内のcAMP濃度
-    double activeReceptor     = 1.0; //!< 細胞内の活性受容体の数。割合なので1が最大
-    double diffCamp           = 0;
-    double diffActiveReceptor = 0;
-
     static std::mt19937 randomEngine;
     static std::exponential_distribution<> divisionDist;
     static std::exponential_distribution<> dieDist;
-
-    static constexpr double C       = 10;
-    static constexpr double K1      = 0.036;
-    static constexpr double K2      = 0.666;
-    static constexpr double L1      = 10;
-    static constexpr double L2      = 0.005;
-    static constexpr double Q       = 4000;
-    static constexpr double SIGMA   = 6.0;
-    static constexpr double Ki      = 1.7;
-    static constexpr double Ke      = 5.4;
-    static constexpr double Kt      = 0.9;
-    static constexpr double ALPHA   = 1;
-    static constexpr double H       = 5;
-    static constexpr double THETA   = 0.01;
-    static constexpr double LAMBDA  = 0.01;
-    static constexpr double EPSILON = 1;
 
   public:
     UserCell();
@@ -61,16 +40,6 @@ class UserCell : public Cell
 
     double emitMolecule(int32_t moleculeId) noexcept override;
     double absorbMolecule(int32_t moleculeId, double amountOnTheSpot) noexcept override;
-    double calcSynthesis(double extracellularCAMP) const noexcept;
-    double f1(double cAMP) const noexcept;
-    double f2(double cAMP) const noexcept;
-    double calcInactiveReceptor(double extracellularCAMP) const noexcept;
-    double calcActiveReceptor(double extracellularCAMP) const noexcept;
-
-    void setDiffState(double extracellularCAMP) noexcept;
-    void updateState(double extracellularCAMP) noexcept;
-
-    void test(double cAMP) const noexcept;
 };
 
 // TODO: 以下のメモをチェックして細胞間相互作用をまとめるクラスを作成する

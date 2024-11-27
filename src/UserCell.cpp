@@ -127,54 +127,10 @@ UserCell UserCell::divide() noexcept
 
 double UserCell::emitMolecule(int32_t moleculeId) noexcept
 {
-    return cAMP * Kt / H;
+    return 0;
 }
 
 double UserCell::absorbMolecule(int32_t moleculeId, double amountOnTheSpot) noexcept
 {
     return 0;
-}
-
-double UserCell::calcSynthesis(double extracellularCAMP) const noexcept
-{
-    const double y   = (activeReceptor * extracellularCAMP) / (1.0 + extracellularCAMP);
-    const double num = ALPHA * (LAMBDA * THETA + EPSILON * y * y);
-    const double den = 1 + ALPHA * THETA + EPSILON * y * y * (1 + ALPHA);
-    const double phi = num / den;
-
-    return Q * SIGMA * phi / (Ki + Kt);
-}
-
-// f1とf2は正常版と一致する
-double UserCell::f1(double cAMP) const noexcept
-{
-    return (K1 + K2 * cAMP) / (1 + cAMP);
-}
-
-double UserCell::f2(double cAMP) const noexcept
-{
-    return (K1 * L1 + K2 * L2 * C * cAMP) / (1 + C * cAMP);
-}
-
-void UserCell::setDiffState(double extracellularCAMP) noexcept
-{
-    diffCamp = calcSynthesis(extracellularCAMP);
-
-    // この計算は正しい
-    diffActiveReceptor = (-activeReceptor * f1(extracellularCAMP) + (1.0 - activeReceptor) * f2(extracellularCAMP));
-}
-
-void UserCell::test(double cAMP) const noexcept
-{
-    for (double ar = 0.0; ar <= 1.0; ar += 0.1) {
-        std::cout << "cAMP : " << cAMP << " activeReceptor : " << ar << " diffActive : " << (-ar * f1(cAMP) + (1.0 - ar) * f2(cAMP)) << std::endl;
-    }
-}
-
-void UserCell::updateState(double extracellularCAMP) noexcept
-{
-    cAMP = diffCamp;
-    cAMP = std::min(cAMP, 1.0);
-    activeReceptor += diffActiveReceptor * SimulationSettings::DELTA_TIME;
-    activeReceptor = std::max(0.0, activeReceptor);
 }

@@ -57,16 +57,6 @@ void UserSimulation::stepPreprocess() noexcept
         cells[i]->metabolize();
     }
 
-    // for (int i = 0; i < preCellCount; i++) {
-    //     if (cells[i]->getCellType() == CellType::DEAD || cells[i]->getCellType() == CellType::NONE) {
-    //         continue;
-    //     }
-    //     if (cells[i]->checkWillDie()) {
-    //         cells[i]->die();
-    //         continue;
-    //     }
-    // }
-
     for (int i = 0; i < preCellCount; i++) {
         if (cells[i]->getCellType() == CellType::DEAD || cells[i]->getCellType() == CellType::NONE) {
             continue;
@@ -91,14 +81,6 @@ void UserSimulation::stepPreprocess() noexcept
  */
 void UserSimulation::stepEndProcess() noexcept
 {
-    for (int32_t i = 0; i < (int32_t)cells.size(); i++) {
-        if (cells[i]->getCellType() == CellType::DEAD || cells[i]->getCellType() == CellType::NONE) {
-            continue;
-        }
-
-        Vec3 pos = cells[i]->getPosition();
-        cells[i]->updateState(moleculeSpaces[0]->getMoleculeNum(pos));
-    }
 }
 
 /**
