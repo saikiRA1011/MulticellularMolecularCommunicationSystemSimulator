@@ -139,7 +139,7 @@ CONVERT := src/convert_tools
 
 # TODO : これに合わせてディレクトリ構成を変える
 reset:
-	cp $(BACKUP)/config.yaml $(BACKUP)/SimulationSettings.hpp $(BACKUP)/SimulationSettings.cpp $(BACKUP)/UserSimulation.cpp $(BACKUP)/UserSimulation.hpp $(USER)/
+	cp $(BACKUP)/* $(USER)/
 
 png: result image
 	$(PYTHON) $(CONVERT)/create_image.py

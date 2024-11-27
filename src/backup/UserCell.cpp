@@ -1,7 +1,7 @@
 #include "UserCell.hpp"
 
 std::mt19937 UserCell::randomEngine(1231);
-std::exponential_distribution<> UserCell::divisionDist(1.0 / 100.0);
+std::exponential_distribution<> UserCell::divisionDist(1.0 / 130.0);
 std::exponential_distribution<> UserCell::dieDist(1.0 / 150.0);
 
 UserCell::UserCell()
@@ -41,6 +41,12 @@ UserCell::UserCell(CellType _typeID, Vec3 pos, double radius, Vec3 v)
     dieTime      = dieDist(randomEngine);
 }
 
+/**
+ * @brief 細胞が分裂するかどうかの判定を行う。
+ *
+ * @return true
+ * @return false
+ */
 bool UserCell::checkWillDivide() const noexcept
 {
     if (divisionGauge >= divisionTime) {
@@ -49,6 +55,12 @@ bool UserCell::checkWillDivide() const noexcept
     return false;
 }
 
+/**
+ * @brief 細胞が死滅するかどうかの判定を行う。
+ *
+ * @return true
+ * @return false
+ */
 bool UserCell::checkWillDie() const noexcept
 {
     if (dieGauge >= dieTime) {
@@ -57,18 +69,27 @@ bool UserCell::checkWillDie() const noexcept
     return false;
 }
 
+/**
+ * @brief 細胞の代謝を行う。
+ *
+ */
 void UserCell::metabolize() noexcept
 {
     divisionGauge += SimulationSettings::DELTA_TIME; // DELTA_TIMEをかけて時間スケールを合わせる
     dieGauge += SimulationSettings::DELTA_TIME;      // DELTA_TIMEをかけて時間スケールを合わせる
 
     double r               = this->getRadius();
-    const double newVolume = calcVolumeFromRadius(r) + 200.0 * SimulationSettings::DELTA_TIME;
+    const double newVolume = calcVolumeFromRadius(r) + 50.0 * SimulationSettings::DELTA_TIME;
     const double newRadius = calcRadiusFromVolume(newVolume);
 
     this->setRadius(newRadius);
 }
 
+/**
+ * @brief 細胞死。死亡時の処理(細胞を残すのか、消滅させるのか、あるいは分解されるのか)はユーザが定義する。
+ *
+ * @return int32_t
+ */
 int32_t UserCell::die() noexcept
 {
     dieGauge = 0;
@@ -76,6 +97,11 @@ int32_t UserCell::die() noexcept
     return Cell::die();
 }
 
+/**
+ * @brief 細胞分裂。分裂時の処理(分裂後の細胞の初期化など)はユーザが定義する。
+ *
+ * @return UserCell
+ */
 UserCell UserCell::divide() noexcept
 {
     divisionGauge = 0;
@@ -97,4 +123,14 @@ UserCell UserCell::divide() noexcept
     // this->addForce(-childDirection);
 
     return c;
+}
+
+double UserCell::emitMolecule(int32_t moleculeId) noexcept
+{
+    return 0;
+}
+
+double UserCell::absorbMolecule(int32_t moleculeId, double amountOnTheSpot) noexcept
+{
+    return 0;
 }

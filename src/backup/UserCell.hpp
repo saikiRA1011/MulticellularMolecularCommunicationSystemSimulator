@@ -37,6 +37,9 @@ class UserCell : public Cell
     // TODO: Simulation, UserSimulationにおいて、UserCellをどのように使うのかよく考える
     // TODO: これの挙動をよく考える！
     UserCell divide() noexcept;
+
+    double emitMolecule(int32_t moleculeId) noexcept override;
+    double absorbMolecule(int32_t moleculeId, double amountOnTheSpot) noexcept override;
 };
 
 // TODO: 以下のメモをチェックして細胞間相互作用をまとめるクラスを作成する
