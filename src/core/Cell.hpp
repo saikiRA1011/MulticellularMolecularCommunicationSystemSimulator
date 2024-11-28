@@ -20,6 +20,8 @@
 #include <queue>
 #include <random>
 
+class MoleculeSpace;
+
 /**
  * @class Cell
  * @brief Cell単体の状態を管理するクラス
@@ -27,25 +29,33 @@
 class Cell
 {
   protected:
-    CellType typeID;
-    Vec3 position; //!< Cellの座標(x,y,z)
-    Vec3 velocity; //!< Cellの速度(x,y,z)
-    double weight; //!< Cellの質量
-    double radius; //!< Cellの半径
+    CellType typeID; //!< Cellの種類
+    Vec3 position;   //!< Cellの座標(x,y,z)
+    Vec3 velocity;   //!< Cellの速度(x,y,z)
+    double weight;   //!< Cellの質量
+    double radius;   //!< Cellの半径
 
-    std::vector<const Cell*> adhereCells;
+    std::vector<const Cell*> adhereCells; //!< 接着しているCellのポインタを格納する配列
 
-    std::vector<int> molecularStocks; //!< 細胞の保持している分子数。配列の添字は分子の種類。
+    std::vector<MoleculeSpace*> moleculeSpaces; //!< 分子空間のポインタを格納する配列
+    std::vector<int> molecularStocks;           //!< 細胞の保持している分子数。配列の添字は分子の種類。
 
     int32_t releaseIndex() noexcept;
 
     void adjustPosInField() noexcept;
 
   private:
-    static int32_t upperOfCellCount;
-    std::queue<Vec3> preVelocitiesQueue;
+    static int32_t upperOfCellCount; //!< 同時に存在していた細胞の上限数。static変数。
+
+    std::queue<Vec3> preVelocitiesQueue; //!< 速度計算用のキュー
 
     // Simulation *sim; //!< Cellの呼び出し元になるSimulationインスタンスのポインタ
+    static Vec3 calcVelocity(std::queue<Vec3>& velocities) noexcept;
+    static Vec3 calcAB4(std::queue<Vec3>& velocities) noexcept;
+    static Vec3 calcAB3(std::queue<Vec3>& velocities) noexcept;
+    static Vec3 calcAB2(std::queue<Vec3>& velocities) noexcept;
+    static Vec3 calcEuler(std::queue<Vec3>& velocities) noexcept;
+    static Vec3 calcOriginal(std::queue<Vec3>& velocities) noexcept;
 
   public:
     Cell();
@@ -75,17 +85,18 @@ class Cell
     virtual bool checkWillDivide() const noexcept; // ユーザが定義
     virtual void metabolize() noexcept;            // ユーザが定義
     virtual int32_t die() noexcept;                // ユーザが定義
-    Cell divide() noexcept;                        // オーバーロードして使う。
+    Cell divide() noexcept;                        // オーバーライドして使う。
 
-    void emitMolecule(int moleculeId) noexcept;
+    virtual double emitMolecule(int moleculeId) noexcept;
+    virtual double absorbMolecule(int moleculeId, double amountOnTheSpot) noexcept;
 
     static int32_t getNewCellIndex() noexcept;
 
     void printCell() const noexcept;
     void printDebug() const noexcept; // デバッグ用
 
-    static int32_t numberOfCellsBorn;
-    static std::queue<int> cellPool; //!< CellのIDを管理するためのキュー
+    static int32_t numberOfCellsBorn; //!< 今までに生成した生きているCellの数。static変数。
+    static std::queue<int> cellPool;  //!< CellのIDを管理するためのキュー
 
     const int id;         //!< CellのID
     const int arrayIndex; //!< 配列のどこに入るか
@@ -195,46 +206,39 @@ inline void Cell::addForce(Vec3 f) noexcept
  */
 inline void Cell::nextStep() noexcept
 {
-    // this->position += velocity;
-
-    int32_t preVelocitiesNum = preVelocitiesQueue.size();
-
-    assert(0 <= preVelocitiesNum && preVelocitiesNum <= 3);
-
     Vec3 adjustedVelocity = Vec3::zero();
 
-    // 4次Adams-Bashforth法の係数 t-3, t-2,  t-1,   t
-    double velocityWeight[4] = { -9.0, 37.0, -59.0, 55.0 };
+    u_int32_t queueSize;
+    switch (SimulationSettings::POSITION_UPDATE_METHOD) {
+        case PositionUpdateMethod::AB4:
+            queueSize = 4;
+            break;
+        case PositionUpdateMethod::AB3:
+            queueSize = 3;
+            break;
+        case PositionUpdateMethod::AB2:
+            queueSize = 2;
+            break;
+        default:
+            queueSize = 1;
+            break;
+    }
 
-    // TODO: adams-bashforth法を用いると細胞の挙動がおかしくなる。原因を調べる。
-    // https://www1.gifu-u.ac.jp/~tanaka/numerical_analysis.pdf Adams-bashforth法は安定性があまりよくないらしい
-
-    // 初回は過去の速度がないので、現在の速度で初期化する。
-    // 本当ならルンゲクッタ法を使って初期化したほうがいい
-    if (preVelocitiesNum == 0) {
-        for (int32_t i = 0; i < 3; i++) {
+    // 初回は過去の速度がないので、現在の速度をキューに追加する
+    if (preVelocitiesQueue.empty()) {
+        for (u_int32_t i = 0; i < queueSize - 1; i++) {
             preVelocitiesQueue.push(velocity);
         }
     }
 
-    // 4次のAdams-Bashforth法
-    adjustedVelocity += velocity.timesScalar(velocityWeight[3]);
-    Vec3 preVelocity;
-    for (int32_t i = 0; i < 3; i++) {
-        preVelocity = preVelocitiesQueue.front();
-        preVelocitiesQueue.pop();
+    preVelocitiesQueue.push(velocity); // 現在の速度をキューに追加
 
-        if (i != 0) { // キューの先頭(一番古いデータ)以外は再びキューに追加する。一番古いデータはもう使わないので削除
-            preVelocitiesQueue.push(preVelocity);
-        }
+    adjustedVelocity = calcVelocity(preVelocitiesQueue); // 過去+現在の速度を用いて、調整された速度を計算
 
-        adjustedVelocity += preVelocity.timesScalar(velocityWeight[i]); // 重みをかけて足す
-    }
+    if (!(SimulationSettings::POSITION_UPDATE_METHOD == PositionUpdateMethod::ORIGINAL && preVelocitiesQueue.size() < 4))
+        preVelocitiesQueue.pop(); // 一番古い速度をキューから削除
 
-    adjustedVelocity = adjustedVelocity.timesScalar(1.0 / 24.0);
-    position += adjustedVelocity; // 2次のルンゲクッタ法
+    position += adjustedVelocity; // 位置を更新
 
-    preVelocitiesQueue.push(velocity); // 今回の速度をキューに追加(調整前)
-
-    adjustPosInField();
+    adjustPosInField(); // 枠外にはみ出さないように調整
 }
