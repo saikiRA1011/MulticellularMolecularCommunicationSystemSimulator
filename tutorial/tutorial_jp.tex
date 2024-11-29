@@ -160,26 +160,46 @@ Pythonで用いるライブラリは以下のコマンドから一括でイン�
 また、ファイルの内容をデフォルトに戻したい場合は、\ref{make}で解説している\code{make reset}を実行することで初期化できます。
 ここでは、ユーザが編集するファイルごとにシミュレーションの自作に必要な知識を説明します。
 
-\subsection{SimulationSettings.hpp(.cpp)}
-SimulationSettings.hpp(.cpp)にはシミュレーションに必要となるパラメータを定義します。例えば、シミュレーションのステップ数や、
+\subsection{config.yml, SimulationSettings.hpp(.cpp)}
+config.ymlとSimulationSettings.hpp(.cpp)にはシミュレーションに必要となるパラメータを定義します。例えば、シミュレーションのステップ数や、
 Cell(バイオナノマシン)の個数、シミュレーションのstepあたりの単位時間です。
 それぞれのパラメータの説明は当該ファイルにコメントとして記述されているので、それらを参考にしてください。
 
 また、必要であればパラメータを増やすことも可能です。
 自身で必要だと思ったシミュレーションのパラメータをSimulationSettings.hppに追加し、SimulationSettings.cppにyamlファイルからの読み取り用コードをtryブロック内に追記してください。
-初期値を設定してください。またこれらパラメータはstatic変数として定義されるので、必ずSimulationSettings.cpp末尾で初期化してください。
+またこれらパラメータはstatic変数として定義されるので、必ずSimulationSettings.cpp末尾で初期化してください。
 
-パラメータを設定したい場合は、config.yamlにパラメータを記述してください。また、自身で定義したパラメータがある場合は、このファイルにも追記することを忘れないでください。
+パラメータを設定したい場合は、config.yamlにkeyと値を記述してください。また、自身で定義したパラメータがある場合は、このファイルにも追記することを忘れないでください。
 
 \text{\color{red} デフォルトで用意されているパラメータを削除することはできません。}
 
 \subsection{UserSimulation.hpp(.cpp)}
 UserSimulation.hpp(.cpp)にはシミュレーションのモデルや初期条件(Cellの分布など)を定義することができます。
-現在定義可能な関数は、Cellの初期化(initCells)、ステップ実行前処理(stepPreprocess)、細胞間に働く力学モデル(calcCellCellForce)、ステップ実行後処理(stepEndProcess)のみです。
+現在定義可能な関数は、Cellの初期化(initCells)、ステップ実行前処理(stepPreprocess)、細胞間に働く力学モデル(calcCellCellForce)、ステップ実行後処理(stepEndProcess)に加え、細胞間相互作用の計算(calcCellCellForce)のみです。
 
-このファイルもSimulationSettings.hppと同様、ユーザが独自に変数・関数を定義することができるので、
-Cellの種類ごとに力学モデルを定義したい場合はそれぞれのモデルを別の関数に分けて記述することができます。
+シミュレーションで用いる細胞の種類や分子の種類などもここで定義します。
 
+このファイルもSimulationSettings.hppと同様、ユーザが独自に変数・関数を定義することができるます。実装したいモデルに合わせて
+関数を追加・変更してください。
+
+\subsection{UserCell.hpp(.cpp)}
+UserCell.hpp(.cpp)には細胞の挙動を定義することができます。
+
+例えば、細胞の死滅タイミングや、分裂タイミング、代謝によるエネルギーや保有分子濃度の変化等を実装することができます。
+
+細胞の増減を実装するにあたりユーザが最も苦労することは現存する細胞のリストをどのように管理するかです。
+MMCSSではこの面倒な管理をCell.hpp(.cpp)内で実装しているため、ユーザは細胞がいつ・どのような状況で増減するかのみを実装することで
+シチュエーションを再現できます。
+
+\subsection{UserMoleculeSpace.hpp(.cpp)}
+UserMoleculeSpace.hpp(.cpp)にはシミュレーションで扱いたい分子の系を定義することができます。
+
+親クラスであるMoleculeSpaceにいくつかの境界条件(ノイマン条件や、ディリクレ条件、PBC)が実装されているため、
+これらの境界条件を用いる際はユーザが処理を追加する必要はありません。
+
+またMoleculeSpaceはCellと相互的に作用させることができるように、お互いに参照を持つように実装してあります。
+この機能はUserMoleculeSpaceとUserCellにも引き継がれているため、細胞と分子の複雑な相互作用をシミュレーションする際でも、ユーザは
+面倒なクラス間の参照関係を実装する必要はありません。
 
 \newpage
 \section{付録}
