@@ -34,7 +34,7 @@ for file in files:
         x = float(cell[2])*scale+IMAGE_LEN/2
         y = float(cell[3])*scale+IMAGE_LEN/2
         z = float(cell[4])*scale+IMAGE_LEN/2
-        r = float(cell[8])*scale
+        r = float(cell[8])*scale/3
 
         if x < 0 or x > IMAGE_LEN or y < 0 or y > IMAGE_LEN:
             print('out of range')
