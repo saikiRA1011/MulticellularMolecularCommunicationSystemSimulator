@@ -1,5 +1,5 @@
-CC := g++
-PYTHON := python3
+CC := g++-14
+PYTHON := python3.10
 CFLAGS := -std=c++20 -Wall -Wextra -O3 -mtune=native -march=native -fopenmp -I/usr/local/include -L/usr/local/lib -lyaml-cpp
 DEBUGF := -std=c++20 -Wall -Wextra -gdwarf-3 -fopenmp -g -I/usr/local/include -L/usr/local/lib -lyaml-cpp
 TESTFLAGS := -std=c++20 -Wall -Wextra -lgtest -lgtest_main  -I/usr/local/include  -L/usr/local/lib -lyaml-cpp

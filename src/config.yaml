@@ -4,7 +4,7 @@ cell:
     position_update_method: EULER # AB4, AB3, AB2, EULER から選択
 
 simulation:
-    sim_step: 10000 # シミュレーションの総ステップ数
+    sim_step: 5000 # シミュレーションの総ステップ数
     output_interval: 20 # 出力間隔
     field_x_len: 1024 # シミュレーションフィールドのx座標の長さ
     field_y_len: 1024 # シミュレーションフィールドのy座標の長さ
@@ -50,6 +50,6 @@ molecule:
         zx2: NEUMANN
 
 cell_list:
-    use_cell_list: true # cell listを用いるかどうか
+    use_cell_list: false # cell listを用いるかどうか
     grid_size_mag: 32 # cell listにおけるグリッドの分割倍率。最小は1、値は2^nである必要がある。
     search_radius: 64 # この半径内(positionの差)にあるcellを力の計算対象とする。
