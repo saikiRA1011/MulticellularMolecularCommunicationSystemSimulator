@@ -28,6 +28,9 @@ for file in files:
         cells = f.read().split('\n')
 
     # cell[id, typeID, x, y, z, vx, vy, vz, r, contact num, contact id...]
+
+    cell_objs = []
+
     for cell in cells[1:-1]:
         cell = cell.split('\t')
         cell_type = cell[1]
@@ -35,19 +38,36 @@ for file in files:
         y = float(cell[3])*scale+IMAGE_LEN/2
         z = float(cell[4])*scale+IMAGE_LEN/2
         r = float(cell[8])*scale
+        adhere_cells_str = cell[10]
+
+        cell_objs.append((cell_type, x, y, r, adhere_cells_str))
 
         if x < 0 or x > IMAGE_LEN or y < 0 or y > IMAGE_LEN:
             print('out of range')
 
         if cell_type == 'WORKER':
-            cell_color = (0,200,0)
+            cell_color = (0, 200, 0)
         elif cell_type == 'DEAD':
-            cell_color = (0,0,0)
+            cell_color = (0, 0, 0)
         elif cell_type == 'NONE':
             continue
-            
+
         cv2.circle(img, (math.floor(x), math.floor(y)),
                    math.floor(r), cell_color, thickness=1)
+
+    for cell_obj in cell_objs:
+        adhere_list = cell_obj[4].split(',')
+        for adhere_id in adhere_list:
+            if adhere_id == '_':
+                continue
+            adhere_id = int(adhere_id)
+            adhere_obj = cell_objs[adhere_id]
+            x1 = cell_obj[1]
+            y1 = cell_obj[2]
+            x2 = adhere_obj[1]
+            y2 = adhere_obj[2]
+            cv2.line(img, (math.floor(x1), math.floor(y1)),
+                     (math.floor(x2), math.floor(y2)), (0, 0, 255), thickness=1)
 
     cv2.imwrite(f'./image/cells_{file[-5:]}.png', img)
 
