@@ -18,7 +18,6 @@
 UserSimulation::UserSimulation(/* args */)
 {
     bondMatrix.resize(SimulationSettings::CELL_NUM, std::vector<bool>(SimulationSettings::CELL_NUM, false));
-    bondCount.resize(SimulationSettings::CELL_NUM, 0);
 }
 
 /**
@@ -65,6 +64,7 @@ void UserSimulation::stepPreprocess() noexcept
 
     // 細胞間の結合状態を更新する
     for (int i = 0; i < preCellCount; i++) {
+        cells[i]->clearAdhereCells();
         for (int j = 0; j < preCellCount; j++) {
             if (i == j) {
                 continue;
@@ -78,16 +78,6 @@ void UserSimulation::stepPreprocess() noexcept
 
             if (bondMatrix[i][j] && dist >= dMax) {
                 bondMatrix[i][j] = false;
-            }
-        }
-    }
-
-    for (int i = 0; i < preCellCount; i++) {
-        cells[i]->clearAdhereCells();
-
-        for (int j = 0; j < preCellCount; j++) {
-            if (i == j) {
-                continue;
             }
 
             if (bondMatrix[i][j]) {
