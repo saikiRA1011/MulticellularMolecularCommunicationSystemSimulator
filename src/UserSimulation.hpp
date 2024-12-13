@@ -22,6 +22,12 @@ class UserSimulation : public Simulation
     void stepPreprocess() noexcept override;
     void stepEndProcess() noexcept override;
 
+    std::vector<std::vector<bool>> bondMatrix;
+    const double dMax   = 150.0;
+    const double dMin   = 80.0;
+    const double dCont  = 20.0;
+    const double lambda = 20.0;
+
   public:
     UserSimulation(/* args */);
     ~UserSimulation();

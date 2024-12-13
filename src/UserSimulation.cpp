@@ -17,6 +17,7 @@
  */
 UserSimulation::UserSimulation(/* args */)
 {
+    bondMatrix.resize(SimulationSettings::CELL_NUM, std::vector<bool>(SimulationSettings::CELL_NUM, false));
 }
 
 /**
@@ -34,7 +35,18 @@ UserSimulation::~UserSimulation()
  */
 void UserSimulation::initCells() noexcept
 {
-    Simulation::initCells();
+    std::uniform_real_distribution<double> rand_r(0, 150);
+    std::uniform_real_distribution<double> rand_theta(0, 2 * M_PI);
+    for (int i = 0; i < SimulationSettings::CELL_NUM; i++) {
+        double r     = rand_r(rand_gen);
+        double theta = rand_theta(rand_gen);
+
+        double x = r * std::cos(theta);
+        double y = r * std::sin(theta);
+
+        UserCell c(CellType::WORKER, x, y, 10);
+        cells.push_back(std::make_shared<UserCell>(c));
+    }
 }
 
 /**
@@ -50,26 +62,26 @@ void UserSimulation::stepPreprocess() noexcept
         cells[i]->initForce();
     }
 
+    // 細胞間の結合状態を更新する
     for (int i = 0; i < preCellCount; i++) {
-        if (cells[i]->getCellType() == CellType::DEAD || cells[i]->getCellType() == CellType::NONE) {
-            continue;
-        }
-        cells[i]->metabolize();
-    }
+        cells[i]->clearAdhereCells();
+        for (int j = 0; j < preCellCount; j++) {
+            if (i == j) {
+                continue;
+            }
 
-    for (int i = 0; i < preCellCount; i++) {
-        if (cells[i]->getCellType() == CellType::DEAD || cells[i]->getCellType() == CellType::NONE) {
-            continue;
-        }
+            const Vec3 diff   = cells[i]->getPosition() - cells[j]->getPosition();
+            const double dist = diff.length();
+            if (dist <= dCont) {
+                bondMatrix[i][j] = true;
+            }
 
-        if (cells[i]->checkWillDivide()) {
-            auto c = std::make_shared<UserCell>(cells[i]->divide());
+            if (bondMatrix[i][j] && dist >= dMax) {
+                bondMatrix[i][j] = false;
+            }
 
-            // 分裂した場合は配列に新しいCellを上書き(あるいは追加)する。
-            if (c->arrayIndex >= (int32_t)cells.size()) {
-                cells.push_back(c);
-            } else {
-                cells[c->arrayIndex] = c;
+            if (bondMatrix[i][j]) {
+                cells[i]->adhere(*cells[j]);
             }
         }
     }
@@ -91,39 +103,31 @@ void UserSimulation::stepEndProcess() noexcept
  */
 Vec3 UserSimulation::calcCellCellForce(std::shared_ptr<UserCell> c) const noexcept
 {
-    auto aroundCells = cellList.aroundCellList(c);
-    Vec3 force       = Vec3::zero();
+    Vec3 force = Vec3::zero();
 
-    switch (c->getCellType()) {
-        case CellType::WORKER:
-            for (auto i : aroundCells) {
-                if (cells[i]->getCellType() == CellType::WORKER) {
-                    force += Simulation::calcRemoteForce(c, cells[i]);
-                }
+    for (auto cell : cells) {
+        if (c->id == cell->id)
+            continue;
+
+        const Vec3 diff   = c->getPosition() - cell->getPosition();
+        const double dist = diff.length();
+
+        if (bondMatrix[c->id][cell->id]) {
+            if (c->adhereCells.size() <= 3) {
+                force += diff.normalize().timesScalar((dMax - dist) / dMax).timesScalar(2.0);
+            } else {
+                force += -diff.normalize().timesScalar(std::max(0.0, (dist - dMin) / (dMax - dMin))).timesScalar(2.0);
             }
-            force = force.normalize();
+        }
 
-            for (auto i : aroundCells) {
-                if (cells[i]->getCellType() != CellType::NONE) {
-                    force += Simulation::calcVolumeExclusion(c, cells[i]);
-                }
-            }
+        force += -diff.normalize().timesScalar(std::exp(-dist / lambda)).timesScalar(0.05);
 
-            return force.timesScalar(SimulationSettings::DELTA_TIME);
-
-        case CellType::DEAD:
-            for (auto i : aroundCells) {
-                if (cells[i]->getCellType() != CellType::NONE) {
-                    force += Simulation::calcVolumeExclusion(c, cells[i]);
-                }
-            }
-
-            return force.timesScalar(SimulationSettings::DELTA_TIME);
-
-        case CellType::NONE:
-            return Vec3::zero();
-        default:
-            std::cerr << "CellType is Wrong: " << NAMEOF_ENUM(c->getCellType()) << std::endl;
-            exit(1);
+        if (dist < dCont) {
+            force += diff.normalize().timesScalar((dCont - dist) / dCont).timesScalar(10.0);
+        }
     }
+
+    force = force.timesScalar(SimulationSettings::DELTA_TIME);
+
+    return force;
 }

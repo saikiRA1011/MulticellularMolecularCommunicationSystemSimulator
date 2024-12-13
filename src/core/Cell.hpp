@@ -28,14 +28,15 @@ class MoleculeSpace;
  */
 class Cell
 {
+  public:
+    std::vector<const Cell*> adhereCells; //!< 接着しているCellのポインタを格納する配列
+
   protected:
     CellType typeID; //!< Cellの種類
     Vec3 position;   //!< Cellの座標(x,y,z)
     Vec3 velocity;   //!< Cellの速度(x,y,z)
     double weight;   //!< Cellの質量
     double radius;   //!< Cellの半径
-
-    std::vector<const Cell*> adhereCells; //!< 接着しているCellのポインタを格納する配列
 
     std::vector<MoleculeSpace*> moleculeSpaces; //!< 分子空間のポインタを格納する配列
     std::vector<int> molecularStocks;           //!< 細胞の保持している分子数。配列の添字は分子の種類。
