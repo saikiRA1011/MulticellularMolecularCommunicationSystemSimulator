@@ -24,9 +24,9 @@ class UserSimulation : public Simulation
 
     std::vector<std::vector<bool>> bondMatrix;
     std::vector<int> bondCount;
-    const double d_max  = 150.0;
-    const double d_min  = 80.0;
-    const double d_cont = 20.0;
+    const double dMax   = 150.0;
+    const double dMin   = 80.0;
+    const double dCont  = 20.0;
     const double lambda = 20.0;
 
   public:
