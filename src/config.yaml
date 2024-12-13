@@ -1,6 +1,6 @@
 cell:
     cell_seed: 0 # cellの位置などを設定する際に用いるシード値
-    cell_num: 500 # cellの初期個数。TODO: 複数種類の細胞に対応する。細胞数を増やすとやたら重くなる。理由を調べる
+    cell_num: 1000 # cellの初期個数。TODO: 複数種類の細胞に対応する。細胞数を増やすとやたら重くなる。理由を調べる
     position_update_method: EULER # AB4, AB3, AB2, EULER から選択
 
 simulation:
@@ -9,7 +9,7 @@ simulation:
     field_x_len: 1024 # シミュレーションフィールドのx座標の長さ
     field_y_len: 1024 # シミュレーションフィールドのy座標の長さ
     field_z_len: 0 # シミュレーションフィールドのz座標の長さ
-    delta_time: 0.1 # 1ステップあたりのシミュレーション内時間
+    delta_time: 0.01 # 1ステップあたりのシミュレーション内時間
 
 molecule:
     default_molecule_nums: # 各分子の初期個数(リストで表現する)
