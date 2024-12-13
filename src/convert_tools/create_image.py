@@ -40,8 +40,7 @@ for file in files:
         r = float(cell[8])*scale
         adhere_cells_str = cell[10]
 
-        if adhere_cells_str not in ['_', '']:
-            cell_objs.append((cell_type, x, y, r, adhere_cells_str))
+        cell_objs.append((cell_type, x, y, r, adhere_cells_str))
 
         if x < 0 or x > IMAGE_LEN or y < 0 or y > IMAGE_LEN:
             print('out of range')
