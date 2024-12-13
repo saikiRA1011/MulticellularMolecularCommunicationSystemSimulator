@@ -88,8 +88,8 @@ void Simulation::initDirectories()
  */
 void Simulation::printHeader() const noexcept
 {
-    // std::cout << "ID\ttypeID\tX\tY\tZ\tVx\tVy\tVz\tR\tN_contact\tContact_IDs" << std::endl;
-    std::cout << "ID\tX\tY" << std::endl;
+    std::cout << "ID\ttypeID\tX\tY\tZ\tVx\tVy\tVz\tR\tN_contact\tContact_IDs" << std::endl;
+    // std::cout << "ID\tX\tY" << std::endl;
 }
 
 /**
