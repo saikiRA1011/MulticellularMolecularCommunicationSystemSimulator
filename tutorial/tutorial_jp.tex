@@ -292,7 +292,7 @@ MMCSSではシミュレーションの実行から結果の確認に関わるmak
 \end{lstlisting}
 
 \subsubsection{成長モデル}
-\begin{lstlisting}[caption=class UserCell]
+\begin{lstlisting}[caption=UserSimulation.hpp]
   // add member variables
   private:
   std::vector<std::vector<bool>> bondMatrix;
@@ -386,6 +386,78 @@ MMCSSではシミュレーションの実行から結果の確認に関わるmak
           if (dist < dCont) {
               force += diff.normalize().timesScalar((dCont - dist) / dCont).timesScalar(10.0);
           }
+      }
+  
+      force = force.timesScalar(SimulationSettings::DELTA_TIME);
+  
+      return force;
+  }
+\end{lstlisting}
+
+\subsection{ネットワークモデル}
+\begin{lstlisting}[caption=UserSimulation.hpp]
+  // add member variables
+  std::vector<std::vector<bool>> bondMatrix;
+  const double dMax   = 100.0;
+  const double dMin   = 40.0;
+  const double dEx    = 20.0;
+  const double lambda = 20.0;
+\end{lstlisting}
+
+\begin{lstlisting}[caption=UserSimulation()]
+  UserSimulation::UserSimulation(/* args */)
+  {
+      bondMatrix.resize(SimulationSettings::CELL_NUM, std::vector<bool>(SimulationSettings::CELL_NUM, false));
+  }
+\end{lstlisting}
+
+\begin{lstlisting}[caption=stepEndProcess()]
+  void UserSimulation::stepEndProcess() noexcept
+  {
+      for (int i = 0; i < cells.size(); i++) {
+          cells[i]->clearAdhereCells();
+          for (int j = 0; j < cells.size(); j++) {
+              if (i == j) {
+                  continue;
+              }
+
+              const Vec3 diff   = cells[i]->getPosition() - cells[j]->getPosition();
+              const double dist = diff.length();
+              if (dist <= dMin) {
+                  bondMatrix[i][j] = true;
+              }
+
+              if (bondMatrix[i][j] && dist >= dMax) {
+                  bondMatrix[i][j] = false;
+              }
+
+              if (bondMatrix[i][j]) {
+                  cells[i]->adhere(*cells[j]);
+              }
+          }
+      }
+  }
+\end{lstlisting}
+
+\begin{lstlisting}[caption=calcCellCellForce()]
+  Vec3 UserSimulation::calcCellCellForce(std::shared_ptr<UserCell> c) const noexcept
+  {
+      Vec3 force = Vec3::zero();
+  
+      for (auto cell : cells) {
+          if (c->id == cell->id)
+              continue;
+  
+          const Vec3 diff   = c->getPosition() - cell->getPosition();
+          const double dist = diff.length();
+  
+          force += -diff.normalize().timesScalar(std::exp(-dist / lambda)).timesScalar(1.0);
+  
+          if (bondMatrix[c->id][cell->id]) {
+              force += -diff.normalize().timesScalar(std::max((dist - dMin) / (dMax - dMin), 0.0)).timesScalar(30.0);
+          }
+  
+          force += diff.normalize().timesScalar(std::max((dEx - dist) / dEx, 0.0)).timesScalar(30.0);
       }
   
       force = force.timesScalar(SimulationSettings::DELTA_TIME);
