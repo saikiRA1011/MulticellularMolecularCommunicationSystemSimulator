@@ -466,4 +466,183 @@ MMCSSではシミュレーションの実行から結果の確認に関わるmak
   }
 \end{lstlisting}
 
+\subsection{信号分子拡散モデル}
+\begin{lstlisting}[caption=stepEndProcess()]
+void UserSimulation::stepEndProcess() noexcept
+{
+    for (int32_t i = 0; i < (int32_t)cells.size(); i++) {
+        if (cells[i]->getCellType() == CellType::DEAD || cells[i]->getCellType() == CellType::NONE) {
+            continue;
+        }
+
+        Vec3 pos = cells[i]->getPosition();
+        cells[i]->updateState(moleculeSpaces[0]->getMoleculeNum(pos));
+    }
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption=calcCellCellForce()]
+Vec3 UserSimulation::calcCellCellForce(std::shared_ptr<UserCell> c) const noexcept
+{
+    return Vec3::zero();
+}
+\end{lstlisting}
+
+class UserCellのメンバ変数・メンバ関数に以下を追加する。
+
+\begin{lstlisting}[caption=class UserCell(UserCell.hpp)]
+    private:
+    double cAMP               = 0;
+    double activeReceptor     = 0.0;
+    double diffCamp           = 0;
+    double diffActiveReceptor = 0;
+    static constexpr double C       = 10;
+    static constexpr double K1      = 0.036;
+    static constexpr double K2      = 0.666;
+    static constexpr double L1      = 10;
+    static constexpr double L2      = 0.005;
+    static constexpr double Q       = 4000;
+    static constexpr double SIGMA   = 6.0;
+    static constexpr double Ki      = 1.7;
+    static constexpr double Ke      = 5.4;
+    static constexpr double Kt      = 0.9;
+    static constexpr double ALPHA   = 1;
+    static constexpr double H       = 5;
+    static constexpr double THETA   = 0.01;
+    static constexpr double LAMBDA  = 0.01;
+    static constexpr double EPSILON = 1;
+
+    public:
+    double emitMolecule(int32_t moleculeId) noexcept override;
+    double calcSynthesis(double extracellularCAMP) const noexcept;
+    double f1(double cAMP) const noexcept;
+    double f2(double cAMP) const noexcept;
+    double calcInactiveReceptor(double extracellularCAMP) const noexcept;
+    double calcActiveReceptor(double extracellularCAMP) const noexcept;
+
+    void setDiffState(double extracellularCAMP) noexcept;
+    void updateState(double extracellularCAMP) noexcept;
+\end{lstlisting}
+
+class UserCellの追加したメンバ関数の定義を以下に示す。
+
+\begin{lstlisting}[caption=class UserCell(UserCell.cpp)]
+double UserCell::emitMolecule(int32_t moleculeId) noexcept
+{
+    return cAMP * Kt / H;
+}
+
+double UserCell::calcSynthesis(double extracellularCAMP) const noexcept
+{
+    const double y   = (activeReceptor * extracellularCAMP) / (1.0 + extracellularCAMP);
+    const double num = ALPHA * (LAMBDA * THETA + EPSILON * y * y);
+    const double den = 1 + ALPHA * THETA + EPSILON * y * y * (1 + ALPHA);
+    const double phi = num / den;
+
+    return Q * SIGMA * phi / (Ki + Kt);
+}
+
+double UserCell::f1(double cAMP) const noexcept
+{
+    return (K1 + K2 * cAMP) / (1 + cAMP);
+}
+
+double UserCell::f2(double cAMP) const noexcept
+{
+    return (K1 * L1 + K2 * L2 * C * cAMP) / (1 + C * cAMP);
+}
+
+void UserCell::setDiffState(double extracellularCAMP) noexcept
+{
+    diffCamp = calcSynthesis(extracellularCAMP);
+    diffActiveReceptor = (-activeReceptor * f1(extracellularCAMP) + (1.0 - activeReceptor) * f2(extracellularCAMP));
+}
+
+void UserCell::updateState(double extracellularCAMP) noexcept
+{
+    cAMP = diffCamp;
+    activeReceptor += diffActiveReceptor * SimulationSettings::DELTA_TIME;
+    activeReceptor = std::max(0.0, activeReceptor);
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption=class UserMoleculeSpace(UserMoleculeSpace.hpp)]
+private:
+    const double _D = 0.024 * 1000000.0;
+\end{lstlisting}
+
+\begin{lstlisting}[caption=calcConcentrationDiff()]
+void UserMoleculeSpace::calcConcentrationDiff() noexcept
+{
+    constexpr double hydrolysisCoefficient = 5.4;
+
+    for (u_int32_t x = 1; x <= width; x++) {
+        for (u_int32_t y = 1; y <= height; y++) {
+            for (u_int32_t z = 1; z <= depth; z++) {
+                deltaMoleculeSpace[x][y][z] = diffuse(x, y, z);
+                deltaMoleculeSpace[x][y][z] += -hydrolysisCoefficient * moleculeSpace[x][y][z];
+            }
+        }
+    }
+
+    const int32_t width  = SimulationSettings::FIELD_X_LEN;
+    const int32_t height = SimulationSettings::FIELD_Y_LEN;
+    const int32_t depth  = SimulationSettings::FIELD_Z_LEN;
+    
+    for (u_int32_t i = 0; i < cells.size(); i++) {
+        std::shared_ptr<UserCell>& cell = cells[i];
+            
+        int32_t x = (int32_t)((cell->getPosition().x + width / 2)) + 1;
+        int32_t y = (int32_t)((cell->getPosition().y + height / 2)) + 1;
+        int32_t z = (int32_t)((cell->getPosition().z + depth / 2)) + 1;
+
+        deltaMoleculeSpace[x][y][z] += cell->emitMolecule(ID);
+    }
+
+    for (u_int32_t i = 0; i < cells.size(); i++) {
+        int32_t x = (int32_t)((cells[i]->getPosition().x + width / 2)) + 1;
+        int32_t y = (int32_t)((cells[i]->getPosition().y + height / 2)) + 1;
+        int32_t z = (int32_t)((cells[i]->getPosition().z + depth / 2)) + 1;
+
+        cells[i]->setDiffState(moleculeSpace[x][y][z]);
+    }
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption=config.yaml]
+cell:
+    cell_seed: 10 # cellの位置などを設定する際に用いるシード値
+    cell_num: 500000 # cellの初期個数。TODO: 複数種類の細胞に対応する。細胞数を増やすとやたら重くなる。理由を調べる
+    position_update_method: EULER # AB4, AB3, AB2, EULER から選択
+
+simulation:
+    sim_step: 100000 # シミュレーションの総ステップ数
+    output_interval: 100 # 出力間隔
+    field_x_len: 1024 # シミュレーションフィールドのx座標の長さ
+    field_y_len: 1024 # シミュレーションフィールドのy座標の長さ
+    field_z_len: 0 # シミュレーションフィールドのz座標の長さ
+    delta_time: 0.001 # 1ステップあたりのシミュレーション内時間
+
+molecule:
+    default_molecule_nums: # 各分子の初期個数(リストで表現する)
+        - 3000
+    delta_time: 0.001
+    field_x_len: 1024 # 分子管理用フィールドのx座標の長さ >= 1
+    field_y_len: 1024 # 分子管理用フィールドのy座標の長さ >= 1
+    field_z_len: 1 # 分子管理用フィールドのz座標の長さ >= 1
+    boundary_condition: # 分子管理用フィールドの境界条件
+        xy1: NEUMANN
+        xy2: NEUMANN
+        yz1: NEUMANN
+        yz2: NEUMANN
+        zx1: NEUMANN
+        zx2: NEUMANN
+
+# 今回は使用しないので関係なし
+cell_list:
+    use_cell_list: false # cell listを用いるかどうか
+    grid_size_mag: 32 # cell listにおけるグリッドの分割倍率。最小は1、値は2^nである必要がある。
+    search_radius: 256 # この半径内(positionの差)にあるcellを力の計算対象とする。
+\end{lstlisting}
+
 \end{document}
