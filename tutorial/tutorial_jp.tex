@@ -90,14 +90,14 @@ lineskip=-0.5ex
 \section{はじめに}
 MMCSS(Multicellular Molecular Communication System Simulator)は多細胞分子通信系のシミュレーションを実施する汎用シミュレータです。
 シミュレーションにおいて基盤となるプログラムは用意されているので、ユーザはパラメータを変更することで、
-あるいは独自に拡張をおこなうことで自身の考えたシミュレーションモデルを簡単に実装することができます。
+あるいは独自に拡張することで自身の考えたシミュレーションモデルを簡単に実装できます。
 
 \section{導入}
 ここでは、MMCSSを導入するための手順を説明します。使用環境はMac OSかLinuxを想定していますが、
 いくつかのツールを揃えることでWindowsでも実行可能になります。
 
 \subsection{ダウンロード}
-GitHubのMMCSSのページ(\href{https://github.com/saikiRA1011/CellNetworkShapeSimulation}{https://github.com/saikiRA1011/CellNetworkShapeSimulation})
+GitHubのMMCSSのページ(\verb|https://github.com/saikiRA1011/CellNetworkShapeSimulation|)
 からソフトウェアをダウンロードします。ダウンロード先はどこでも良いですが、シミュレーションの実行後に画像ファイルや
 動画ファイルが作成されるため容量の余裕があるドライブに配置しましょう。
 
@@ -132,7 +132,7 @@ Pythonで用いるライブラリは以下のコマンドから一括でイン�
 % シミュレーションの設定を変更した際は、そのまま\code{make}すると修正前のオブジェクトファイルを参照してしまうことがあるので、
 % 事前に\code{make clean}を実行してすべてのオブジェクトファイルを削除してください。
 
-また、これらの一連の処理は\code{make all}でまとめて実行可能です。図\ref{fig:appMake}に一連の流れを示します。
+また、これらの一連の処理は\code{make all}でまとめて実行できます。図\ref{fig:appMake}に一連の流れを示します。
 
 \begin{figure}[tbp]
   \centering
@@ -157,48 +157,48 @@ Pythonで用いるライブラリは以下のコマンドから一括でイン�
 \end{figure}
 
 \section{シミュレーションの自作}
-ユーザは自身でプログラムを書くことで(あるいはパラメータを変更することで)、シミュレーションを自作することができます。
+ユーザは自身でプログラムを書くことで(あるいはパラメータを変更することで)、シミュレーションを自作できる。
 また、ファイルの内容をデフォルトに戻したい場合は、\ref{make}で解説している\code{make reset}を実行することで初期化できます。
 ここでは、ユーザが編集するファイルごとにシミュレーションの自作に必要な知識を説明します。
 
 \subsection{config.yml, SimulationSettings.hpp(.cpp)}
 config.ymlとSimulationSettings.hpp(.cpp)にはシミュレーションに必要となるパラメータを定義します。例えば、シミュレーションのステップ数や、
-Cell(バイオナノマシン)の個数、シミュレーションのstepあたりの単位時間です。
+Cell(細胞)の個数、シミュレーションのstepあたりの単位時間です。
 それぞれのパラメータの説明は当該ファイルにコメントとして記述されているので、それらを参考にしてください。
 
-また、必要であればパラメータを増やすことも可能です。
+また、必要であればパラメータを増やせます。
 自身で必要だと思ったシミュレーションのパラメータをSimulationSettings.hppに追加し、SimulationSettings.cppにyamlファイルからの読み取り用コードをtryブロック内に追記してください。
 またこれらパラメータはstatic変数として定義されるので、必ずSimulationSettings.cpp末尾で初期化してください。
 
 パラメータを設定したい場合は、config.yamlにkeyと値を記述してください。また、自身で定義したパラメータがある場合は、このファイルにも追記することを忘れないでください。
 
-\text{\color{red} デフォルトで用意されているパラメータを削除することはできません。}
+*デフォルトで用意されているパラメータの削除はできません。
 
 \subsection{UserSimulation.hpp(.cpp)}
-UserSimulation.hpp(.cpp)にはシミュレーションのモデルや初期条件(Cellの分布など)を定義することができます。
+UserSimulation.hpp(.cpp)にはシミュレーションのモデルや初期条件(Cellの分布など)を定義できます。
 現在定義可能な関数は、Cellの初期化(initCells)、ステップ実行前処理(stepPreprocess)、細胞間に働く力学モデル(calcCellCellForce)、ステップ実行後処理(stepEndProcess)に加え、細胞間相互作用の計算(calcCellCellForce)のみです。
 
 シミュレーションで用いる細胞の種類や分子の種類などもここで定義します。
 
-このファイルもSimulationSettings.hppと同様、ユーザが独自に変数・関数を定義することができるます。実装したいモデルに合わせて
+このファイルもSimulationSettings.hppと同様、ユーザが独自に変数・関数を定義できます。実装したいモデルに合わせて
 関数を追加・変更してください。
 
 \subsection{UserCell.hpp(.cpp)}
-UserCell.hpp(.cpp)には細胞の挙動を定義することができます。
+UserCell.hpp(.cpp)には細胞の挙動を定義できます。
 
-例えば、細胞の死滅タイミングや、分裂タイミング、代謝によるエネルギーや保有分子濃度の変化等を実装することができます。
+例えば、細胞の死滅タイミングや、分裂タイミング、代謝によるエネルギーや保有分子濃度の変化等を実装できます。
 
 細胞の増減を実装するにあたりユーザが最も苦労することは現存する細胞のリストをどのように管理するかです。
 MMCSSではこの面倒な管理をCell.hpp(.cpp)内で実装しているため、ユーザは細胞がいつ・どのような状況で増減するかのみを実装することで
 シチュエーションを再現できます。
 
 \subsection{UserMoleculeSpace.hpp(.cpp)}
-UserMoleculeSpace.hpp(.cpp)にはシミュレーションで扱いたい分子の系を定義することができます。
+UserMoleculeSpace.hpp(.cpp)にはシミュレーションで扱いたい分子の系を定義できます。
 
-親クラスであるMoleculeSpaceにいくつかの境界条件(ノイマン条件や、ディリクレ条件、PBC)が実装されているため、
+親クラスであるMoleculeSpaceにいくつかの境界条件(ノイマン条件や、ディリクレ条件、周期境界条件)が実装されているため、
 これらの境界条件を用いる際はユーザが処理を追加する必要はありません。
 
-またMoleculeSpaceはCellと相互的に作用させることができるように、お互いに参照を持つように実装してあります。
+またMoleculeSpaceはCellと相互的に作用させることができるように、お互いに参照をもつように実装してあります。
 この機能はUserMoleculeSpaceとUserCellにも引き継がれているため、細胞と分子の複雑な相互作用をシミュレーションする際でも、ユーザは
 面倒なクラス間の参照関係を実装する必要はありません。
 
@@ -206,7 +206,7 @@ UserMoleculeSpace.hpp(.cpp)にはシミュレーションで扱いたい分子�
 \section{付録A}
 \subsection{シミュレーションの結果のファイル}
 シミュレーションを実行するとresultディレクトリに cells\_step番号 のファイル名で複数のテキストファイルが出力されます。
-これがシミュレーションの結果を出力したものです。
+これがシミュレーションの結果を出力したファイルです。
 
 テキストファイルの中身はタブ文字区切りで、以下の形式でシミュレーション結果が記されています。
 
@@ -218,7 +218,7 @@ UserMoleculeSpace.hpp(.cpp)にはシミュレーションで扱いたい分子�
 それぞれのデータの説明は以下の通りです。
 
 \begin{itemize}
-  \item ID : Cellの識別子。唯一無二のものが割り当てられる
+  \item ID : Cellの識別子。唯一無二の値が割り当てられる
   \item typeID : Cellの種類の識別子。種類ごとに異なる動作を定義できる
   \item X : CellのX座標の位置
   \item Y : CellのY座標の位置
@@ -241,7 +241,7 @@ MMCSSではシミュレーションの実行から結果の確認に関わるmak
   \item \code{make convert} : シミュレーション結果を動画ファイルに変換する。
   \item \code{make open} : シミュレーション結果の動画ファイルを確認する。
   \item \code{make clean} : オブジェクトファイルをすべて削除する。
-  \item \code{make all} : オブジェクトファイルをすべて削除してから、シミュレーションのビルド、実行、動画の生成、確認を一通りおこなう。
+  \item \code{make all} : オブジェクトファイルをすべて削除してから、シミュレーションのビルド、実行、動画の生成、確認を一通りする。
   \item \code{make reset} : シミュレーションのユーザ設定ファイルをデフォルトに戻す。
   \item \code{make data-cleanup} : シミュレーションの生成物(テキスト、画像、動画)をすべて削除する。
   \item \code{make data-archive} : 現在保存されてあるシミュレーション結果をzipアーカイブする。
@@ -251,44 +251,425 @@ MMCSSではシミュレーションの実行から結果の確認に関わるmak
 \end{itemize}
 
 \section{付録B : サンプルコード}
-\subsubsection{回転モデル}
+\subsubsection{クラスタ形成モデル}
 \begin{lstlisting}[caption=calcCellCellForce()]
-  auto aroundCells            = cellList.aroundCellList(c);
-  Vec3 force                  = Vec3::zero();
-  const Vec3 center           = Vec3(0, 0, 0);
-  const Vec3 diff_from_center = c->getPosition() - center;
-  Vec3 force_cont             = Vec3::zero();
+Vec3 UserSimulation::calcCellCellForce(std::shared_ptr<UserCell> c) const noexcept
+{
+    auto aroundCells = cellList.aroundCellList(c);
+    Vec3 force       = Vec3::zero();
 
-  constexpr double COEFFICIENT   = 1.0;
-  constexpr double REPUlSION_C   = 0.20;
-  constexpr double REPULSION_LEN = 15;
-  constexpr double BONDING_LEN   = 5;
+    for (auto i : aroundCells) {
+        if (cells[i]->getCellType() == CellType::WORKER) {
+            force += Simulation::calcRemoteForce(c, cells[i]);
+        }
+    }
+    force = force.normalize();
 
-  force += -diff_from_center.normalize().timesScalar(COEFFICIENT);
+    for (auto i : aroundCells) {
+        if (cells[i]->getCellType() != CellType::NONE) {
+            force += Simulation::calcVolumeExclusion(c, cells[i]);
+        }
+    }
 
-  for (auto i : aroundCells) {
-      auto cell = cells[i];
+    return force.timesScalar(SimulationSettings::DELTA_TIME);
+}
+\end{lstlisting}
 
-      if (c->id == cell->id)
-          continue;
+\subsection{ネットワーク形成モデル}
+\begin{lstlisting}[caption=UserSimulation.hpp]
+  // add member variables
+  std::vector<std::vector<bool>> bondMatrix;
+  const double dMax   = 100.0;
+  const double dMin   = 40.0;
+  const double dEx    = 20.0;
+  const double lambda = 20.0;
+\end{lstlisting}
 
-      const Vec3 diff   = c->getPosition() - cell->getPosition();
-      const double dist = diff.length();
+\begin{lstlisting}[caption=UserSimulation()]
+  UserSimulation::UserSimulation(/* args */)
+  {
+      bondMatrix.resize(SimulationSettings::CELL_NUM, std::vector<bool>(SimulationSettings::CELL_NUM, false));
+  }
+\end{lstlisting}
 
-      if (dist < REPULSION_LEN) {
-          force += diff.timesScalar(1.0 / dist).timesScalar(REPUlSION_C).timesScalar((REPULSION_LEN - dist) / REPULSION_LEN);
-      }
+\begin{lstlisting}[caption=stepEndProcess()]
+  void UserSimulation::stepEndProcess() noexcept
+  {
+      for (int i = 0; i < cells.size(); i++) {
+          cells[i]->clearAdhereCells();
+          for (int j = 0; j < cells.size(); j++) {
+              if (i == j) {
+                  continue;
+              }
 
-      const Vec3 v = cell->getVelocity();
-      if (dist < BONDING_LEN) {
-          force_cont += v;
+              const Vec3 diff   = cells[i]->getPosition() - cells[j]->getPosition();
+              const double dist = diff.length();
+              if (dist <= dMin) {
+                  bondMatrix[i][j] = true;
+              }
+
+              if (bondMatrix[i][j] && dist >= dMax) {
+                  bondMatrix[i][j] = false;
+              }
+
+              if (bondMatrix[i][j]) {
+                  cells[i]->adhere(*cells[j]);
+              }
+          }
       }
   }
+\end{lstlisting}
 
-  force += force_cont.normalize().timesScalar(0.2);
-  force = force.timesScalar(SimulationSettings::DELTA_TIME);
+\begin{lstlisting}[caption=calcCellCellForce()]
+  Vec3 UserSimulation::calcCellCellForce(std::shared_ptr<UserCell> c) const noexcept
+  {
+      Vec3 force = Vec3::zero();
+  
+      for (auto cell : cells) {
+          if (c->id == cell->id)
+              continue;
+  
+          const Vec3 diff   = c->getPosition() - cell->getPosition();
+          const double dist = diff.length();
+  
+          force += -diff.normalize().timesScalar(std::exp(-dist / lambda)).timesScalar(1.0);
+  
+          if (bondMatrix[c->id][cell->id]) {
+              force += -diff.normalize().timesScalar(std::max((dist - dMin) / (dMax - dMin), 0.0)).timesScalar(30.0);
+          }
+  
+          force += diff.normalize().timesScalar(std::max((dEx - dist) / dEx, 0.0)).timesScalar(30.0);
+      }
+  
+      force = force.timesScalar(SimulationSettings::DELTA_TIME);
+  
+      return force;
+  }
+\end{lstlisting}
 
-  return force;
+\subsubsection{細胞塊成長モデル}
+\begin{lstlisting}[caption=UserSimulation.hpp]
+  // add member variables
+  private:
+  std::vector<std::vector<bool>> bondMatrix;
+    const double dMax   = 150.0;
+    const double dMin   = 80.0;
+    const double dCont  = 20.0;
+    const double lambda = 20.0;
+\end{lstlisting}
+
+\begin{lstlisting}[caption=UserSimulation()]
+  UserSimulation::UserSimulation(/* args */)
+  {
+    bondMatrix.resize(SimulationSettings::CELL_NUM, std::vector<bool>(SimulationSettings::CELL_NUM, false));
+  }
+\end{lstlisting}
+
+\begin{lstlisting}[caption=initCells()]
+  void UserSimulation::initCells() noexcept
+  {
+    std::uniform_real_distribution<double> rand_r(0, 150);
+    std::uniform_real_distribution<double> rand_theta(0, 2 * M_PI);
+    for (int i = 0; i < SimulationSettings::CELL_NUM; i++) {
+        double r     = rand_r(rand_gen);
+        double theta = rand_theta(rand_gen);
+
+        double x = r * std::cos(theta);
+        double y = r * std::sin(theta);
+
+        UserCell c(CellType::WORKER, x, y, 10);
+        cells.push_back(std::make_shared<UserCell>(c));
+    }
+  }
+\end{lstlisting}
+
+\begin{lstlisting}[caption=stepPreprocess()]
+  void UserSimulation::stepPreprocess() noexcept
+  {
+      int32_t preCellCount = cells.size();
+  
+      for (int i = 0; i < preCellCount; i++) {
+          cells[i]->initForce();
+      }
+  
+      for (int i = 0; i < preCellCount; i++) {
+          cells[i]->clearAdhereCells();
+          for (int j = 0; j < preCellCount; j++) {
+              if (i == j) {
+                  continue;
+              }
+  
+              const Vec3 diff   = cells[i]->getPosition() - cells[j]->getPosition();
+              const double dist = diff.length();
+              if (dist <= dCont) {
+                  bondMatrix[i][j] = true;
+              }
+  
+              if (bondMatrix[i][j] && dist >= dMax) {
+                  bondMatrix[i][j] = false;
+              }
+  
+              if (bondMatrix[i][j]) {
+                  cells[i]->adhere(*cells[j]);
+              }
+          }
+      }
+  }
+\end{lstlisting}
+
+\begin{lstlisting}[caption=calcCellCellForce()]
+  Vec3 UserSimulation::calcCellCellForce(std::shared_ptr<UserCell> c) const noexcept
+  {
+      Vec3 force = Vec3::zero();
+  
+      for (auto cell : cells) {
+          if (c->id == cell->id)
+              continue;
+  
+          const Vec3 diff   = c->getPosition() - cell->getPosition();
+          const double dist = diff.length();
+  
+          if (bondMatrix[c->id][cell->id]) {
+              if (c->adhereCells.size() <= 3) {
+                  force += diff.normalize().timesScalar((dMax - dist) / dMax).timesScalar(2.0);
+              } else {
+                  force += -diff.normalize().timesScalar(std::max(0.0, (dist - dMin) / (dMax - dMin))).timesScalar(2.0);
+              }
+          }
+  
+          force += -diff.normalize().timesScalar(std::exp(-dist / lambda)).timesScalar(0.05);
+  
+          if (dist < dCont) {
+              force += diff.normalize().timesScalar((dCont - dist) / dCont).timesScalar(10.0);
+          }
+      }
+  
+      force = force.timesScalar(SimulationSettings::DELTA_TIME);
+  
+      return force;
+  }
+\end{lstlisting}
+
+\subsubsection{細胞塊回転モデル}
+\begin{lstlisting}[caption=calcCellCellForce()]
+Vec3 UserSimulation::calcCellCellForce(std::shared_ptr<UserCell> c) const noexcept
+{
+    auto aroundCells            = cellList.aroundCellList(c);
+    Vec3 force                  = Vec3::zero();
+    const Vec3 center           = Vec3(0, 0, 0);
+    const Vec3 diff_from_center = c->getPosition() - center;
+    Vec3 force_cont             = Vec3::zero();
+
+    constexpr double COEFFICIENT   = 1.0;
+    constexpr double REPUlSION_C   = 0.20;
+    constexpr double REPULSION_LEN = 15;
+    constexpr double BONDING_LEN   = 5;
+
+    force += -diff_from_center.normalize().timesScalar(COEFFICIENT);
+
+    for (auto i : aroundCells) {
+        auto cell = cells[i];
+
+        if (c->id == cell->id)
+            continue;
+
+        const Vec3 diff   = c->getPosition() - cell->getPosition();
+        const double dist = diff.length();
+
+        if (dist < REPULSION_LEN) {
+            force += diff.timesScalar(1.0 / dist).timesScalar(REPUlSION_C).timesScalar((REPULSION_LEN - dist) / REPULSION_LEN);
+        }
+
+        const Vec3 v = cell->getVelocity();
+        if (dist < BONDING_LEN) {
+            force_cont += v;
+        }
+    }
+
+    force += force_cont.normalize().timesScalar(0.2);
+    force = force.timesScalar(SimulationSettings::DELTA_TIME);
+
+    return force;
+}
+\end{lstlisting}
+
+\subsection{信号分子拡散モデル}
+\begin{lstlisting}[caption=stepEndProcess()]
+void UserSimulation::stepEndProcess() noexcept
+{
+    for (int32_t i = 0; i < (int32_t)cells.size(); i++) {
+        if (cells[i]->getCellType() == CellType::DEAD || cells[i]->getCellType() == CellType::NONE) {
+            continue;
+        }
+
+        Vec3 pos = cells[i]->getPosition();
+        cells[i]->updateState(moleculeSpaces[0]->getMoleculeNum(pos));
+    }
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption=calcCellCellForce()]
+Vec3 UserSimulation::calcCellCellForce(std::shared_ptr<UserCell> c) const noexcept
+{
+    return Vec3::zero();
+}
+\end{lstlisting}
+
+class UserCellのメンバ変数・メンバ関数に以下を追加する。
+
+\begin{lstlisting}[caption=class UserCell(UserCell.hpp)]
+    private:
+    double cAMP               = 0;
+    double activeReceptor     = 0.0;
+    double diffCamp           = 0;
+    double diffActiveReceptor = 0;
+    static constexpr double C       = 10;
+    static constexpr double K1      = 0.036;
+    static constexpr double K2      = 0.666;
+    static constexpr double L1      = 10;
+    static constexpr double L2      = 0.005;
+    static constexpr double Q       = 4000;
+    static constexpr double SIGMA   = 6.0;
+    static constexpr double Ki      = 1.7;
+    static constexpr double Ke      = 5.4;
+    static constexpr double Kt      = 0.9;
+    static constexpr double ALPHA   = 1;
+    static constexpr double H       = 5;
+    static constexpr double THETA   = 0.01;
+    static constexpr double LAMBDA  = 0.01;
+    static constexpr double EPSILON = 1;
+
+    public:
+    double emitMolecule(int32_t moleculeId) noexcept override;
+    double calcSynthesis(double extracellularCAMP) const noexcept;
+    double f1(double cAMP) const noexcept;
+    double f2(double cAMP) const noexcept;
+    double calcInactiveReceptor(double extracellularCAMP) const noexcept;
+    double calcActiveReceptor(double extracellularCAMP) const noexcept;
+
+    void setDiffState(double extracellularCAMP) noexcept;
+    void updateState(double extracellularCAMP) noexcept;
+\end{lstlisting}
+
+class UserCellの追加したメンバ関数の定義を以下に示す。
+
+\begin{lstlisting}[caption=class UserCell(UserCell.cpp)]
+double UserCell::emitMolecule(int32_t moleculeId) noexcept
+{
+    return cAMP * Kt / H;
+}
+
+double UserCell::calcSynthesis(double extracellularCAMP) const noexcept
+{
+    const double y   = (activeReceptor * extracellularCAMP) / (1.0 + extracellularCAMP);
+    const double num = ALPHA * (LAMBDA * THETA + EPSILON * y * y);
+    const double den = 1 + ALPHA * THETA + EPSILON * y * y * (1 + ALPHA);
+    const double phi = num / den;
+
+    return Q * SIGMA * phi / (Ki + Kt);
+}
+
+double UserCell::f1(double cAMP) const noexcept
+{
+    return (K1 + K2 * cAMP) / (1 + cAMP);
+}
+
+double UserCell::f2(double cAMP) const noexcept
+{
+    return (K1 * L1 + K2 * L2 * C * cAMP) / (1 + C * cAMP);
+}
+
+void UserCell::setDiffState(double extracellularCAMP) noexcept
+{
+    diffCamp = calcSynthesis(extracellularCAMP);
+    diffActiveReceptor = (-activeReceptor * f1(extracellularCAMP) + (1.0 - activeReceptor) * f2(extracellularCAMP));
+}
+
+void UserCell::updateState(double extracellularCAMP) noexcept
+{
+    cAMP = diffCamp;
+    activeReceptor += diffActiveReceptor * SimulationSettings::DELTA_TIME;
+    activeReceptor = std::max(0.0, activeReceptor);
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption=class UserMoleculeSpace(UserMoleculeSpace.hpp)]
+private:
+    const double _D = 0.024 * 1000000.0;
+\end{lstlisting}
+
+\begin{lstlisting}[caption=calcConcentrationDiff()]
+void UserMoleculeSpace::calcConcentrationDiff() noexcept
+{
+    constexpr double hydrolysisCoefficient = 5.4;
+
+    for (u_int32_t x = 1; x <= width; x++) {
+        for (u_int32_t y = 1; y <= height; y++) {
+            for (u_int32_t z = 1; z <= depth; z++) {
+                deltaMoleculeSpace[x][y][z] = diffuse(x, y, z);
+                deltaMoleculeSpace[x][y][z] += -hydrolysisCoefficient * moleculeSpace[x][y][z];
+            }
+        }
+    }
+
+    const int32_t width  = SimulationSettings::FIELD_X_LEN;
+    const int32_t height = SimulationSettings::FIELD_Y_LEN;
+    const int32_t depth  = SimulationSettings::FIELD_Z_LEN;
+    
+    for (u_int32_t i = 0; i < cells.size(); i++) {
+        std::shared_ptr<UserCell>& cell = cells[i];
+            
+        int32_t x = (int32_t)((cell->getPosition().x + width / 2)) + 1;
+        int32_t y = (int32_t)((cell->getPosition().y + height / 2)) + 1;
+        int32_t z = (int32_t)((cell->getPosition().z + depth / 2)) + 1;
+
+        deltaMoleculeSpace[x][y][z] += cell->emitMolecule(ID);
+    }
+
+    for (u_int32_t i = 0; i < cells.size(); i++) {
+        int32_t x = (int32_t)((cells[i]->getPosition().x + width / 2)) + 1;
+        int32_t y = (int32_t)((cells[i]->getPosition().y + height / 2)) + 1;
+        int32_t z = (int32_t)((cells[i]->getPosition().z + depth / 2)) + 1;
+
+        cells[i]->setDiffState(moleculeSpace[x][y][z]);
+    }
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption=config.yaml]
+cell:
+    cell_seed: 10 # cellの位置などを設定する際に用いるシード値
+    cell_num: 500000 # cellの初期個数。TODO: 複数種類の細胞に対応する。細胞数を増やすとやたら重くなる。理由を調べる
+    position_update_method: EULER # AB4, AB3, AB2, EULER から選択
+
+simulation:
+    sim_step: 100000 # シミュレーションの総ステップ数
+    output_interval: 100 # 出力間隔
+    field_x_len: 1024 # シミュレーションフィールドのx座標の長さ
+    field_y_len: 1024 # シミュレーションフィールドのy座標の長さ
+    field_z_len: 0 # シミュレーションフィールドのz座標の長さ
+    delta_time: 0.001 # 1ステップあたりのシミュレーション内時間
+
+molecule:
+    default_molecule_nums: # 各分子の初期個数(リストで表現する)
+        - 3000
+    delta_time: 0.001
+    field_x_len: 1024 # 分子管理用フィールドのx座標の長さ >= 1
+    field_y_len: 1024 # 分子管理用フィールドのy座標の長さ >= 1
+    field_z_len: 1 # 分子管理用フィールドのz座標の長さ >= 1
+    boundary_condition: # 分子管理用フィールドの境界条件
+        xy1: NEUMANN
+        xy2: NEUMANN
+        yz1: NEUMANN
+        yz2: NEUMANN
+        zx1: NEUMANN
+        zx2: NEUMANN
+
+# 今回は使用しないので関係なし
+cell_list:
+    use_cell_list: false # cell listを用いるかどうか
+    grid_size_mag: 32 # cell listにおけるグリッドの分割倍率。最小は1、値は2^nである必要がある。
+    search_radius: 256 # この半径内(positionの差)にあるcellを力の計算対象とする。
 \end{lstlisting}
 
 \end{document}
